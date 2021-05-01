@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Editor</class>
+ <widget class="QMainWindow" name="Editor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>881</width>
+    <height>647</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>S-GIF Editor</string>
+  </property>
+  <widget class="QWidget" name="mCentralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="mTabWidget">
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="mMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>881</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="mMenuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="mActionNewTemplate"/>
+    <addaction name="mActionOpenTemplate"/>
+    <addaction name="separator"/>
+    <addaction name="mActionSave"/>
+    <addaction name="mActionSaveAs"/>
+    <addaction name="mActionExport"/>
+    <addaction name="separator"/>
+    <addaction name="mActionCloseTemplate"/>
+    <addaction name="separator"/>
+    <addaction name="mActionRelease"/>
+    <addaction name="separator"/>
+    <addaction name="mActionExitEditor"/>
+   </widget>
+   <widget class="QMenu" name="mMenuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="mActionUndo"/>
+    <addaction name="mActionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="mActionCopy"/>
+    <addaction name="mActionCut"/>
+    <addaction name="mActionDelete"/>
+    <addaction name="separator"/>
+    <addaction name="mActionSelect"/>
+    <addaction name="mActionMutiSelect"/>
+    <addaction name="separator"/>
+    <addaction name="mActionRotate90Clockwise"/>
+    <addaction name="mActionRotate90Anticlockwise"/>
+    <addaction name="mActionRotate"/>
+    <addaction name="separator"/>
+    <addaction name="mActionFlipHorizentally"/>
+    <addaction name="mActionFlipVertically"/>
+    <addaction name="separator"/>
+    <addaction name="mActionScale"/>
+    <addaction name="separator"/>
+    <addaction name="mActionTranslate"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="mActionTool_Bar"/>
+    <addaction name="mActionStyle_Panel"/>
+    <addaction name="mActionLayer_Panel"/>
+    <addaction name="mActionPallete"/>
+    <addaction name="mActionHistory_Panel"/>
+    <addaction name="separator"/>
+    <addaction name="mActionGrid"/>
+    <addaction name="mActionReferenceLine"/>
+    <addaction name="separator"/>
+    <addaction name="mActionDefault"/>
+    <addaction name="mActionShowAllPanels"/>
+    <addaction name="separator"/>
+    <addaction name="mActionZoomin"/>
+    <addaction name="mActionZoomout"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuLayer">
+    <property name="title">
+     <string>Layer</string>
+    </property>
+    <addaction name="mActionBringForward"/>
+    <addaction name="mActionSendBackward"/>
+    <addaction name="separator"/>
+    <addaction name="mActionBringtoFront"/>
+    <addaction name="mActionSendtoBack"/>
+    <addaction name="separator"/>
+    <addaction name="mActionAlignLeft"/>
+    <addaction name="mActionAlignMiddle"/>
+    <addaction name="mActionAlignRight"/>
+    <addaction name="separator"/>
+    <addaction name="mActionAlignTop"/>
+    <addaction name="mActionAlignCenter"/>
+    <addaction name="mActionAlignBottom"/>
+    <addaction name="separator"/>
+    <addaction name="mActionDistributeHorizentally"/>
+    <addaction name="mActionDistributeVertically"/>
+    <addaction name="separator"/>
+    <addaction name="mActionShowLayer"/>
+    <addaction name="mActionHideLayer"/>
+    <addaction name="separator"/>
+    <addaction name="mActionShowAll"/>
+    <addaction name="mActionHideAll"/>
+    <addaction name="separator"/>
+    <addaction name="mActionRename"/>
+    <addaction name="mActionChangeColor"/>
+    <addaction name="separator"/>
+    <addaction name="mActionExportLayer"/>
+   </widget>
+   <widget class="QMenu" name="mMenuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="mActionTutorials"/>
+    <addaction name="mActionForum"/>
+    <addaction name="mActionWebsite"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tool</string>
+    </property>
+    <addaction name="mActionSelectTool"/>
+    <addaction name="mActionCombineTool"/>
+    <addaction name="separator"/>
+    <addaction name="mActionBrush"/>
+    <addaction name="mActionEraser"/>
+    <addaction name="mActionPen"/>
+    <addaction name="mActionShape"/>
+    <addaction name="mActionText"/>
+    <addaction name="separator"/>
+    <addaction name="mActionAnotator"/>
+    <addaction name="separator"/>
+    <addaction name="mActionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="mMenuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="mActionShake"/>
+    <addaction name="mActionMotion"/>
+    <addaction name="mActionSpin"/>
+   </widget>
+   <addaction name="mMenuFile"/>
+   <addaction name="mMenuEdit"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuLayer"/>
+   <addaction name="mMenuAnimation"/>
+   <addaction name="menuView"/>
+   <addaction name="mMenuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="mStatusBar"/>
+  <widget class="QToolBar" name="mToolBar">
+   <property name="windowTitle">
+    <string/>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QDockWidget" name="mDockStyle">
+   <property name="windowTitle">
+    <string>Style</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="mDockStyleWidget"/>
+  </widget>
+  <widget class="QDockWidget" name="mDockPallete">
+   <property name="windowTitle">
+    <string>Pallete</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="mDockPalleteWidget"/>
+  </widget>
+  <widget class="QDockWidget" name="mDockHistory">
+   <property name="windowTitle">
+    <string>History</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="mDockHistoryWdiget"/>
+  </widget>
+  <widget class="QDockWidget" name="mDockLayer">
+   <property name="windowTitle">
+    <string>Layer</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="mDockLayerWidget"/>
+  </widget>
+  <action name="mActionNewTemplate">
+   <property name="text">
+    <string>New Template...</string>
+   </property>
+  </action>
+  <action name="mActionOpenTemplate">
+   <property name="text">
+    <string>Open Template...</string>
+   </property>
+  </action>
+  <action name="mActionCloseTemplate">
+   <property name="text">
+    <string>Close Template</string>
+   </property>
+  </action>
+  <action name="mActionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="mActionSaveAs">
+   <property name="text">
+    <string>Save as...</string>
+   </property>
+  </action>
+  <action name="mActionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </action>
+  <action name="mActionRelease">
+   <property name="text">
+    <string>Release</string>
+   </property>
+  </action>
+  <action name="mActionExitEditor">
+   <property name="text">
+    <string>Exit Editor</string>
+   </property>
+  </action>
+  <action name="mActionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="mActionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
+  <action name="mActionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="mActionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+  </action>
+  <action name="mActionDelete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="mActionSelect">
+   <property name="text">
+    <string>Select</string>
+   </property>
+  </action>
+  <action name="mActionMutiSelect">
+   <property name="text">
+    <string>Muti-Select</string>
+   </property>
+  </action>
+  <action name="mActionRotate90Clockwise">
+   <property name="text">
+    <string>Rotate 90° Clockwise</string>
+   </property>
+  </action>
+  <action name="mActionRotate90Anticlockwise">
+   <property name="text">
+    <string>Rotate 90° Counter-clockwise</string>
+   </property>
+  </action>
+  <action name="mActionRotate">
+   <property name="text">
+    <string>Rotate...</string>
+   </property>
+  </action>
+  <action name="mActionFlipHorizentally">
+   <property name="text">
+    <string>Flip Horizentally</string>
+   </property>
+  </action>
+  <action name="mActionFlipVertically">
+   <property name="text">
+    <string>Flip Vertically</string>
+   </property>
+  </action>
+  <action name="mActionScale">
+   <property name="text">
+    <string>Scale...</string>
+   </property>
+  </action>
+  <action name="mActionTranslate">
+   <property name="text">
+    <string>Translate...</string>
+   </property>
+  </action>
+  <action name="mActionSelectTool">
+   <property name="text">
+    <string>Select Tool</string>
+   </property>
+  </action>
+  <action name="mActionCombineTool">
+   <property name="text">
+    <string>Combine Tool</string>
+   </property>
+  </action>
+  <action name="mActionBrush">
+   <property name="text">
+    <string>Brush</string>
+   </property>
+  </action>
+  <action name="mActionEraser">
+   <property name="text">
+    <string>Eraser</string>
+   </property>
+  </action>
+  <action name="mActionPen">
+   <property name="text">
+    <string>Pen</string>
+   </property>
+  </action>
+  <action name="mActionShape">
+   <property name="text">
+    <string>Shape</string>
+   </property>
+  </action>
+  <action name="mActionText">
+   <property name="text">
+    <string>Text</string>
+   </property>
+  </action>
+  <action name="mActionAnotator">
+   <property name="text">
+    <string>Anotator</string>
+   </property>
+  </action>
+  <action name="mActionBringForward">
+   <property name="text">
+    <string>Bring Forward</string>
+   </property>
+  </action>
+  <action name="mActionSendBackward">
+   <property name="text">
+    <string>Send Backward</string>
+   </property>
+  </action>
+  <action name="mActionBringtoFront">
+   <property name="text">
+    <string>Bring to Front</string>
+   </property>
+  </action>
+  <action name="mActionSendtoBack">
+   <property name="text">
+    <string>Send to Back</string>
+   </property>
+  </action>
+  <action name="mActionAlignLeft">
+   <property name="text">
+    <string>Align Left</string>
+   </property>
+  </action>
+  <action name="mActionAlignMiddle">
+   <property name="text">
+    <string>Align Middle</string>
+   </property>
+  </action>
+  <action name="mActionAlignRight">
+   <property name="text">
+    <string>Align Right</string>
+   </property>
+  </action>
+  <action name="mActionAlignTop">
+   <property name="text">
+    <string>Align Top</string>
+   </property>
+  </action>
+  <action name="mActionAlignCenter">
+   <property name="text">
+    <string>Align Center</string>
+   </property>
+  </action>
+  <action name="mActionAlignBottom">
+   <property name="text">
+    <string>Align Bottom</string>
+   </property>
+  </action>
+  <action name="mActionShowLayer">
+   <property name="text">
+    <string>Show Layer</string>
+   </property>
+  </action>
+  <action name="mActionHideLayer">
+   <property name="text">
+    <string>Hide Layer</string>
+   </property>
+  </action>
+  <action name="mActionDistributeHorizentally">
+   <property name="text">
+    <string>Distribute Horizentally</string>
+   </property>
+  </action>
+  <action name="mActionDistributeVertically">
+   <property name="text">
+    <string>Distribute Vertically</string>
+   </property>
+  </action>
+  <action name="mActionShowAll">
+   <property name="text">
+    <string>Show All</string>
+   </property>
+  </action>
+  <action name="mActionHideAll">
+   <property name="text">
+    <string>Hide All</string>
+   </property>
+  </action>
+  <action name="mActionRename">
+   <property name="text">
+    <string>Rename Layer...</string>
+   </property>
+  </action>
+  <action name="mActionChangeColor">
+   <property name="text">
+    <string>Change Color...</string>
+   </property>
+  </action>
+  <action name="mActionExportLayer">
+   <property name="text">
+    <string>Export Layer...</string>
+   </property>
+  </action>
+  <action name="mActionTool_Bar">
+   <property name="text">
+    <string>Tool Bar</string>
+   </property>
+  </action>
+  <action name="mActionHistory_Panel">
+   <property name="text">
+    <string>History Panel</string>
+   </property>
+  </action>
+  <action name="mActionPallete">
+   <property name="text">
+    <string>Pallete</string>
+   </property>
+  </action>
+  <action name="mActionStyle_Panel">
+   <property name="text">
+    <string>Style Panel</string>
+   </property>
+  </action>
+  <action name="mActionLayer_Panel">
+   <property name="text">
+    <string>Layer Panel</string>
+   </property>
+  </action>
+  <action name="mActionGrid">
+   <property name="text">
+    <string>Grid</string>
+   </property>
+  </action>
+  <action name="mActionReferenceLine">
+   <property name="text">
+    <string>Reference Line</string>
+   </property>
+  </action>
+  <action name="mActionScaleplate">
+   <property name="text">
+    <string>Scaleplate</string>
+   </property>
+  </action>
+  <action name="mActionDefault">
+   <property name="text">
+    <string>Default View</string>
+   </property>
+  </action>
+  <action name="mActionShowAllPanels">
+   <property name="text">
+    <string>Show All Panels</string>
+   </property>
+  </action>
+  <action name="mActionShake">
+   <property name="text">
+    <string>Shake</string>
+   </property>
+  </action>
+  <action name="mActionMotion">
+   <property name="text">
+    <string>Motion</string>
+   </property>
+  </action>
+  <action name="mActionSpin">
+   <property name="text">
+    <string>Spin</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="mActionTutorials">
+   <property name="text">
+    <string>Tutorials</string>
+   </property>
+  </action>
+  <action name="mActionForum">
+   <property name="text">
+    <string>Forum</string>
+   </property>
+  </action>
+  <action name="mActionWebsite">
+   <property name="text">
+    <string>Website</string>
+   </property>
+  </action>
+  <action name="mActionPreferences">
+   <property name="text">
+    <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="mActionZoomin">
+   <property name="text">
+    <string>Zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+=</string>
+   </property>
+  </action>
+  <action name="mActionZoomout">
+   <property name="text">
+    <string>Zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

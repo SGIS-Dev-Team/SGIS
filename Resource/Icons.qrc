@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/TrayIcon">
+        <file>TrayIcon/active.png</file>
+        <file>TrayIcon/sleeping.png</file>
+    </qresource>
+    <qresource prefix="/TrayActionIcon">
+        <file>TrayActionIcon/activate.png</file>
+        <file>TrayActionIcon/maximize.png</file>
+        <file>TrayActionIcon/notification_off.png</file>
+        <file>TrayActionIcon/notification_on.png</file>
+        <file>TrayActionIcon/quit.png</file>
+        <file>TrayActionIcon/show.png</file>
+        <file>TrayActionIcon/sleep.png</file>
+        <file>TrayActionIcon/hide.png</file>
+    </qresource>
+</RCC>
