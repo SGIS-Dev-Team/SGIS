@@ -12,6 +12,7 @@ SLogger::SLogger()
 SLogger::~SLogger()
 {
     closeLog();
+
 }
 
 void SLogger::closeLog()
