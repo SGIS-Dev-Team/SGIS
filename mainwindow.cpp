@@ -97,7 +97,7 @@ void MainWindow::initialize()
     if(mpTrayIconMgr->isShowingMainWnd())
         this->show();
     else if(mpTrayIconMgr->isNotifOn())
-        mpTrayIconMgr->sendNotification(tr("S-GIF"), tr("S-GIF initialization complete. Click the tray icon to show the main window."));
+        mpTrayIconMgr->sendNotification(tr("S-GIS"), tr("S-GIS initialization complete. Click the tray icon to show the main window."));
     //写入日志
     gbLogger->addEntry(Me, SLogger::RunningStatus, "Application initialization complete.");
 

@@ -24,7 +24,7 @@ SOURCES += \
     straymgr.cpp
 
 HEADERS += \
-    ClassAnotationTemplate.h \
+    ClassAnnotationTemplate.h \
     global.h \
     mainwindow.h \
     qcanvas.h \
@@ -43,15 +43,12 @@ FORMS += \
     seditor.ui
 
 TRANSLATIONS += \
-    S-GIF_zh_CN.ts
+    S-GIS_zh_CN.ts
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-INCLUDEPATH += 'D:/Program Files/OpenCV-4.5.0WithQt/include'
-DEPENDPATH += 'D:/Program Files/OpenCV-4.5.0WithQt/include'
 
 RESOURCES += \
     Resource/Icons.qrc

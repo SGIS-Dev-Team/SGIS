@@ -3,10 +3,10 @@
 #include <QDebug>
 #include <cassert>
 //配置文件开头
-#define CFG_HEAD "# S-GIF Application Configuration File\n"
-#define LOG_HEAD "# S-GIF Application Log File\n"
+#define CFG_HEAD "# S-GIS Application Configuration File\n"
+#define LOG_HEAD "# S-GIS Application Log File\n"
 //版本号
-#define VER 0.02
+#define VER 0.01
 #define VER_STR "# version: " + QString::number(VER, 'g', 2) + "\n"
 //网站
 #define WEBSITE "# [WebSite]\n"

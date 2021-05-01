@@ -61,7 +61,7 @@ void STrayMgr::onActionMainWndTriggered()
     mpActionMainWnd->setText(text);
     //发送通知
     if(mbNotify && !mbShowMainWnd)
-        sendNotification(tr("S-GIF"), tr("The program will keep running in the backgroud."));
+        sendNotification(tr("S-GIS"), tr("The program will keep running in the backgroud."));
 }
 
 void STrayMgr::onActionMaximizeTriggered()

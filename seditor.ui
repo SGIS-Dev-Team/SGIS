@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Editor</class>
- <widget class="QMainWindow" name="Editor">
+ <class>SEditor</class>
+ <widget class="QMainWindow" name="SEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>S-GIF Editor</string>
+   <string>S-GIS Editor</string>
   </property>
   <widget class="QWidget" name="mCentralWidget">
    <layout class="QGridLayout" name="gridLayout">
