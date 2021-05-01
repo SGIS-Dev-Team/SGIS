@@ -50,16 +50,6 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# OpenCV
-
-win32:CONFIG(release, debug|release): LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_core450
-else:win32:CONFIG(debug, debug|release): LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_core450d
-else:unix: LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_core450
-
-win32:CONFIG(release, debug|release): LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_highgui450
-else:win32:CONFIG(debug, debug|release): LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_highgui450d
-else:unix: LIBS += -L'D:/Program Files/OpenCV-4.5.0WithQt/x64/vc16/lib/' -lopencv_highgui450
-
 INCLUDEPATH += 'D:/Program Files/OpenCV-4.5.0WithQt/include'
 DEPENDPATH += 'D:/Program Files/OpenCV-4.5.0WithQt/include'
 
