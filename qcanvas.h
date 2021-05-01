@@ -31,12 +31,16 @@ public:
     void mousePressEvent(QMouseEvent* event)override;
     //画布鼠标左键松开事件
     void mouseReleaseEvent(QMouseEvent* event)override;
+    //画布鼠标滚轮事件
+    void wheelEvent(QWheelEvent* event)override;
 
     /*-----信号-----*/
 signals:
     //鼠标移动
     void mouseMoved(QPoint pos);
-    //缩放信号
+    //缩放激活信号
+    void scaling(QPoint pos, int delta);
+    //缩放成功信号
     void scaled(double value);
 
     /*-----槽函数-----*/
@@ -104,14 +108,26 @@ public:
     inline QPoint AtoL(QPoint pt_Actual)const;
     inline QPointF AtoL(QPointF ptF_Actual)const;
 
-
-
-
-    /*----------用于测试的变量---------*/
-public:
-    QImage* img;
-    SImage* imgObj;
-
 };
+
+QPoint QCanvas::LtoA(QPoint pt_Logical) const
+{
+    return QPoint(pt_Logical.x() * mdScale, pt_Logical.y() * mdScale);
+}
+
+QPointF QCanvas::LtoA(QPointF ptF_Logical) const
+{
+    return QPointF(ptF_Logical.x() * mdScale, ptF_Logical.y() * mdScale);
+}
+
+QPoint QCanvas::AtoL(QPoint pt_Actual) const
+{
+    return QPoint(pt_Actual.x() / mdScale, pt_Actual.y() / mdScale);
+}
+
+QPointF QCanvas::AtoL(QPointF ptF_Actual) const
+{
+    return QPointF(ptF_Actual.x() / mdScale, ptF_Actual.y() / mdScale);
+}
 
 #endif // QCANVAS_H

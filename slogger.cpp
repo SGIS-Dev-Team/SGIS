@@ -30,8 +30,8 @@ void SLogger::closeLog()
 void SLogger::newLog()
 {
     closeLog();
-    //存放在我的文档sgif文件夹
-    mStrLogDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgif";
+    //存放在我的文档sgis文件夹
+    mStrLogDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis";
     //检查sgif文件夹是否存在
     QDir dir;
     if(!dir.exists(mStrLogDir))
@@ -43,7 +43,7 @@ void SLogger::newLog()
     if(!mLogFile.open(QIODevice::WriteOnly | QIODevice::Text))
         QMessageBox::critical(nullptr,
                               tr("Fatal Error"),
-                              tr((QString("S-GIF Logging System fails to create new log File in ") + mStrLogDir).toStdString().c_str()));
+                              tr((QString("S-GIS Logging System fails to create new log File in ") + mStrLogDir).toStdString().c_str()));
     mLogStream.setDevice(&mLogFile);
     //写入日志头
     mLogStream << LOG_HEAD
@@ -83,8 +83,8 @@ void SLogger::addEntry(const QString &id, LogType type, const QString& entry)
     case LocalError:
         mLogStream << "Local_Error : ";
         break;
-    case NetworkError:
-        mLogStream << "Network_Error : ";
+    case RemoteError:
+        mLogStream << "Remote_Error : ";
         break;
     case RunningStatus:
         mLogStream << "Running_Status : ";

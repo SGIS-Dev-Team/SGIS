@@ -19,7 +19,7 @@ public:
         RunningStatus, //运行状态
         UserAction,    //用户操作
         LocalError,    //本地错误
-        NetworkError       //远程错误
+        RemoteError       //远程错误
     };
 
     //构造函数与析构函数

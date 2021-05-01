@@ -1,6 +1,8 @@
 ﻿#include "qcanvas.h"
 #include <QPainter>
 #include <QMouseEvent>
+#include <QWheelEvent>
+#include <QScrollBar>
 #include <sshape.h>
 #include <simage.h>
 
@@ -13,12 +15,6 @@ QCanvas::QCanvas(QWidget *parent, QSize canvasSize): QWidget(parent)
 
     this->mSzLogical = this->mSzActual = canvasSize;
     mdScale = 1.0;
-
-    //****测试****//
-    this->img = new QImage("D:/RS_Files/Rectified_out.jpg");
-    this->imgObj = new SImage(sgif::PaintObject::ImageBase, const_cast<const QImage&>(*img), true, QPoint(this->width() / 2, this->height() / 2));
-    this->mbSelectMode = true;
-    this->mObjSelected = imgObj;
 }
 
 QCanvas::~QCanvas()
@@ -61,14 +57,14 @@ void QCanvas::paintEvent(QPaintEvent *event)
         delete[] pPtFPairsY;
     }
 
+    /*-----画布内容绘制-----*/
+    //缩放绘制器
     painter.scale(mdScale, mdScale);
 
-    SShape rect(sgif::PaintObject::ShapeBase, true, QPoint(5000, 5000));
-    rect.addVertex({QPointF(-1000, -1000), QPointF(1000, -1000), QPointF(1000, 1000), QPointF(-1000, 1000)});
+    SShape rect(PaintObject::ShapeBase, true, QPoint(5000, 5000));
+    rect.addVertex({QPointF(4900, 4900), QPointF(5100, 4900), QPointF(5100, 5100), QPointF(4900, 5100)});
+
     rect.paint(&painter);
-
-    imgObj->paint(&painter);
-
 }
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)
@@ -77,7 +73,10 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     //------坐标显示-----//
     if(pos.x() < 0 || pos.x() >= mSzActual.width() || pos.y() < 0 || pos.y() >= mSzActual.height())
         return;
-    emit mouseMoved(AtoL(pos));
+    //显示逻辑坐标
+    //emit mouseMoved(AtoL(pos));
+    //显示实际坐标
+    emit mouseMoved(pos);
 }
 
 void QCanvas::mousePressEvent(QMouseEvent *event)
@@ -93,6 +92,15 @@ void QCanvas::mouseReleaseEvent(QMouseEvent *event)
     if(mObjSelected)
         mObjSelected->tranlate(shift.x(), shift.y());
     this->update();
+}
+
+void QCanvas::wheelEvent(QWheelEvent *event)
+{
+    if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+    {
+        emit scaling(AtoL(event->pos()), event->delta());
+        return;
+    }
 }
 
 QSize QCanvas::logicalSize() const
@@ -120,31 +128,11 @@ bool QCanvas::isRefLineOn() const
     return mbRefLineOn;
 }
 
-QPoint QCanvas::LtoA(QPoint pt_Logical) const
-{
-    return QPoint(pt_Logical.x() * mdScale, pt_Logical.y() * mdScale);
-}
-
-QPointF QCanvas::LtoA(QPointF ptF_Logical) const
-{
-    return QPointF(ptF_Logical.x() * mdScale, ptF_Logical.y() * mdScale);
-}
-
-QPoint QCanvas::AtoL(QPoint pt_Actual) const
-{
-    return QPoint(pt_Actual.x() / mdScale, pt_Actual.y() / mdScale);
-}
-
-QPointF QCanvas::AtoL(QPointF ptF_Actual) const
-{
-    return QPointF(ptF_Actual.x() / mdScale, ptF_Actual.y() / mdScale);
-}
-
 bool QCanvas::setScaleValue(double value)
 {
     bool bScaled{false};
-    mdScale = value < ScaleLevelValue[0] ? ScaleLevelValue[0], bScaled = false :
-              value > ScaleLevelValue[SCALE_LEVEL - 1] ? ScaleLevelValue[SCALE_LEVEL - 1], bScaled = false : value, bScaled = true;
+    mdScale = value < ScaleLevelValue[0] ?  bScaled = false, ScaleLevelValue[0] :
+              value > ScaleLevelValue[SCALE_LEVEL - 1] ? bScaled = false, ScaleLevelValue[SCALE_LEVEL - 1] : value, bScaled = true;
     mSzActual = QSize(mSzLogical.width() * value, mSzLogical.height() * value);
     this->setFixedSize(mSzActual);
     if(bScaled)

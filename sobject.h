@@ -9,7 +9,7 @@
 //  绘图对象虚基类
 //  规定基类及其子类在实现中点的坐标使用中心相对坐标
 
-using namespace sgif;
+using namespace sgis;
 
 class SObject
 {

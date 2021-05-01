@@ -4,13 +4,10 @@
 
 QCanvasArea::QCanvasArea(const QSize &CanvasSize, QWidget *parent): QScrollArea(parent)
 {
+    //创建画布
     mpCanvas = new QCanvas(this, CanvasSize);
-
-    //设置滚动条范围为画布逻辑尺寸像素范围
-    this->horizontalScrollBar()->setMinimum(0);
-    this->horizontalScrollBar()->setMaximum(mpCanvas->width() - 1);
-    this->verticalScrollBar()->setMinimum(0);
-    this->verticalScrollBar()->setMaximum(mpCanvas->height() - 1);
+    //链接事件响应
+    connect(mpCanvas, &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
 
     //调整对齐
     setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignVCenter));
@@ -52,24 +49,63 @@ void QCanvasArea::wheelEvent(QWheelEvent *event)
 
     if(event->modifiers() == Qt::KeyboardModifier::ControlModifier && event->delta() != 0)
     {
-        //------为鼠标所在点预计算所在窗口位置------//
-        //计算窗口左上角点在画布中的逻辑坐标
-        QPointF ptLeftTop(this->horizontalScrollBar()->value(), this->verticalScrollBar()->value());
-
+        return;
         bool isScaled{false};
         if(event->delta() > 0)
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() + mpCanvas->scaleValue() / 10.0);
         else
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() - mpCanvas->scaleValue() / 10.0);
-
-        if(isScaled)
-        {
-
-        }
     }
+
     else if(event->modifiers() == Qt::KeyboardModifier::ShiftModifier)
         this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - event->delta());
     else if(event->modifiers() == Qt::KeyboardModifier::NoModifier)
         this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - event->delta());
 
+}
+
+void QCanvasArea::mouseMoveEvent(QMouseEvent *event)
+{
+    qDebug() << event->pos() << "\n";
+}
+
+void QCanvasArea::onCanvasScaling(QPoint lgcPos, int delta)
+{
+    QScrollBar *hor = this->horizontalScrollBar(), *ver = this->verticalScrollBar();
+    qDebug() << S6DBG(hor->value(), hor->minimum(), hor->maximum(), ver->value(), ver->minimum(), ver->maximum());
+
+    //确定视图区左上角点在画布上的实际坐标
+    QPointF ptViewportLTActual(hor->value(), ver->value());
+    //计算鼠标点实际坐标
+    QPointF ptCursorActual = mpCanvas->LtoA(lgcPos);
+    //保存原先缩放值
+    double dScale0 = mpCanvas->scaleValue();
+
+    //进行缩放操作
+    bool isScaled{false};
+
+    if(delta > 0)
+        isScaled = mpCanvas->setScaleValue(dScale0 * 1.10);
+    else
+        isScaled = mpCanvas->setScaleValue(dScale0 * 0.90);
+
+    if(!isScaled)
+        return;
+
+    //获取当前缩放值
+    double dScale = mpCanvas->scaleValue();
+    double dRatio = dScale / dScale0;
+
+    //计算缩放后鼠标点在画布实际坐标系下的位置
+    QPointF ptCursorActual_Resized(ptCursorActual.x() * dRatio, ptCursorActual.y() * dRatio);
+
+    //计算视图区偏移
+    QPointF viewportShift = ptCursorActual_Resized - ptCursorActual;
+
+    //视图区缩放后左上角点
+    QPointF ptViewportLTActual_Resized = viewportShift + ptViewportLTActual;
+
+    //将视图区移动到新左上角点
+    hor->setValue(ptViewportLTActual_Resized.x());
+    ver->setValue(ptViewportLTActual_Resized.y());
 }

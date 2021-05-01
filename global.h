@@ -13,13 +13,22 @@
 //托盘菜单配置文件名
 #define TRAY_MENU_CFG_NAME "/tmenu.cfg"
 //日志文件名前缀
-#define LOG_NAME_PFX "/sgif_log_"
+#define LOG_NAME_PFX "/sgis_log_"
 //单个文件最大日志条目数
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
 #define DEFAULT_CANVAS_SIZE QSize(10000,10000)
+//debug流辅助宏函数
+#define SSTR(expr)#expr
+#define SDBG(expr)SSTR(expr)<<expr<<"\n"
+#define S2DBG(expr1,expr2)SDBG(expr1)<<SDBG(expr2)
+#define S3DBG(expr1,expr2,expr3)S2DBG(expr1,expr2)<<SDBG(expr3)
+#define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)
+#define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
+#define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
+
 //绘图对象类名
-namespace sgif
+namespace sgis
 {
 enum PaintObject
 {
