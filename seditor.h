@@ -58,8 +58,8 @@ public:
     //初始化函数
     void initialize();
     //创建新的绘图区
-    void createTemplate(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
-    void createTemplate(const QString& templateFilePath);
+    void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
+    void createWorkspace(const QString& templateFilePath);
 
     /*-----UI与控件-----*/
 private:

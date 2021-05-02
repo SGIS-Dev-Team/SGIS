@@ -3,7 +3,9 @@
 #include <QWidget>
 #include "simage.h"
 #include <global.h>
+#include <sdocument.h>
 
+class SDocument;
 class QCanvas : public QWidget
 {
     Q_OBJECT
@@ -46,17 +48,6 @@ signals:
     /*-----槽函数-----*/
 private slots:
 
-
-    /*-----控制标记-----*/
-private:
-    //是否处于选择模式
-    bool mbSelectMode{false};
-    //选中的绘图对象
-    SObject *mObjSelected{};
-    //拖动起始点
-    QPoint mDragStartPt{};
-
-
     /*-----属性-----*/
 private:
     //开启网格
@@ -72,10 +63,14 @@ private:
 
     /*-----成员变量-----*/
 private:
+    SDocument* mpDoc;
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
+
+    //获取文档
+    SDocument* getDocument();
 
     //画布逻辑尺寸
     QSize logicalSize()const;
@@ -89,6 +84,8 @@ public:
     bool isRefLineOn()const;
 
     //[更改函数]
+
+    void setDocument(SDocument* pDoc);
 
     //按数值缩放画布实际尺寸
     bool setScaleValue(double value);

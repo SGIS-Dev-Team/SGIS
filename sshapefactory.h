@@ -9,7 +9,6 @@
 
 class SShapeFactory: QObject
 {
-    Q_OBJECT
     //常量和枚举
 public:
     enum ShapeSet

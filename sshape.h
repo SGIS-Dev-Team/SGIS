@@ -64,7 +64,7 @@ protected:
     QBrush mBrush{nullptr};
 
     //填充图像
-    QImage mFillImage;
+    QImage* mTextureImage;
 
     //是否闭合，这仅仅是一个标记
     bool mbClose{};
@@ -109,7 +109,7 @@ public:
     void addVertex(std::initializer_list<QPointF> pt);
 
     //设置填充图像
-    void setImage(const QImage& image);
+    void setTextureImage(QImage *image);
 
 protected:
     //添加顶点并为控制点分配内存

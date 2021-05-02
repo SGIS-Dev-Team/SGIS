@@ -56,14 +56,14 @@ void SEditor::initialize()
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
     /*-----创建绘图区-----*/
-    createTemplate();
+    createWorkspace();
 
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
 
 }
 
-void SEditor::createTemplate(const QSize &CanvasSize)
+void SEditor::createWorkspace(const QSize &CanvasSize)
 {
     //创建新的绘图区控件
     QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
@@ -71,7 +71,7 @@ void SEditor::createTemplate(const QSize &CanvasSize)
     mpCanvasAreaVec.push_back(newCanvasArea);
     //添加Tab页面并激活
     //TODO:解决重名问题
-    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Template"));
+    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
@@ -81,6 +81,6 @@ void SEditor::createTemplate(const QSize &CanvasSize)
     onCanvasScaled(1);
 }
 
-void SEditor::createTemplate(const QString &templateFilePath)
+void SEditor::createWorkspace(const QString &templateFilePath)
 {
 }

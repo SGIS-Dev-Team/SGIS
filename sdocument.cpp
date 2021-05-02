@@ -1,6 +1,17 @@
-#include "sdocument.h"
+﻿#include "sdocument.h"
 
-SDocument::SDocument()
+
+SDocument::SDocument(QCanvas *canvas)
+{
+
+}
+
+SDocument::SDocument(QCanvas *canvas, const QString &path)
+{
+
+}
+
+SDocument::~SDocument()
 {
 
 }

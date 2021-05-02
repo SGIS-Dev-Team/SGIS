@@ -16,6 +16,7 @@ SOURCES += \
     sdocument.cpp \
     seditor.cpp \
     simage.cpp \
+    slayermanager.cpp \
     slogger.cpp \
     sobject.cpp \
     sshape.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     sdocument.h \
     seditor.h \
     simage.h \
+    slayermanager.h \
     slogger.h \
     sobject.h \
     sshape.h \

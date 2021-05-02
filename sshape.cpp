@@ -169,13 +169,13 @@ void SShape::addVertex(std::initializer_list<QPointF> pt)
         addVertex(_pt);
 }
 
-void SShape::setImage(const QImage &image)
+void SShape::setTextureImage(QImage *image)
 {
-    if(image.isNull())
+    if(image->isNull())
         return;
-    this->mFillImage = image.copy();
+    this->mTextureImage = image;
     this->filler = Image;
-    this->mBrush.setTextureImage(mFillImage);
+    this->mBrush.setTextureImage(*mTextureImage);
 }
 
 

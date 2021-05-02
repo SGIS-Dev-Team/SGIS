@@ -81,17 +81,10 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
 
 void QCanvas::mousePressEvent(QMouseEvent *event)
 {
-    if(!mbSelectMode)
-        return;
-    mDragStartPt = event->pos();
 }
 
 void QCanvas::mouseReleaseEvent(QMouseEvent *event)
 {
-    QPoint shift = event->pos() - mDragStartPt;
-    if(mObjSelected)
-        mObjSelected->tranlate(shift.x(), shift.y());
-    this->update();
 }
 
 void QCanvas::wheelEvent(QWheelEvent *event)
