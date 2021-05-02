@@ -58,13 +58,11 @@ void QCanvas::paintEvent(QPaintEvent *event)
     }
 
     /*-----画布内容绘制-----*/
-    //缩放绘制器
+    //缩放绘制画笔
     painter.scale(mdScale, mdScale);
 
-    SShape rect(PaintObject::ShapeBase, true, QPoint(5000, 5000));
-    rect.addVertex({QPointF(4900, 4900), QPointF(5100, 4900), QPointF(5100, 5100), QPointF(4900, 5100)});
-
-    rect.paint(&painter);
+    if(mpDoc)
+        mpDoc->paint(painter);
 }
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)
@@ -91,7 +89,7 @@ void QCanvas::wheelEvent(QWheelEvent *event)
 {
     if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
     {
-        emit scaling(AtoL(event->pos()), event->delta());
+        emit scaling(AtoL(event->position()), event->angleDelta().y());
         return;
     }
 }
@@ -119,6 +117,11 @@ bool QCanvas::isGridOn() const
 bool QCanvas::isRefLineOn() const
 {
     return mbRefLineOn;
+}
+
+void QCanvas::setDocument(SDocument *pDoc)
+{
+    this->mpDoc = pDoc;
 }
 
 bool QCanvas::setScaleValue(double value)

@@ -16,8 +16,6 @@ class QCanvasArea : public QScrollArea
 public:
     //指定画布尺寸创建新绘图区
     explicit QCanvasArea(const QSize& CanvasSize, QWidget *parent = Q_NULLPTR);
-    //指定文档路径创建新绘图区
-    explicit QCanvasArea(const QString& templateFilePath, QWidget *parent = Q_NULLPTR);
     //使用默认尺寸创建新绘图区
     explicit QCanvasArea(QWidget *parent = Q_NULLPTR);
     ~QCanvasArea();
@@ -36,7 +34,7 @@ signals:
 
     /*-----槽函数-----*/
 private slots:
-    void onCanvasScaling(QPoint lgcPos, int delta);
+    void onCanvasScaling(QPointF lgcPos, int delta);
 
     /*-----成员变量-----*/
 private:
@@ -47,10 +45,6 @@ public:
     //[访问函数]
 
     QCanvas *canvas();
-
-    //[修改函数]
-
-    void setCanvas(QCanvas* newCanvas);
 };
 
 #endif // QCANVASAREA_H

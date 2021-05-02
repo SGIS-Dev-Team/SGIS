@@ -14,26 +14,17 @@ QCanvasArea::QCanvasArea(const QSize &CanvasSize, QWidget *parent): QScrollArea(
     this->setWidget(mpCanvas);
 }
 
-QCanvasArea::QCanvasArea(const QString &templateFilePath, QWidget *parent)
-{
-
-}
-
 QCanvasArea::QCanvasArea(QWidget *parent): QCanvasArea(DEFAULT_CANVAS_SIZE, parent) {}
 
 QCanvasArea::~QCanvasArea()
 {
-    delete mpCanvas;
+    if(mpCanvas)
+        delete mpCanvas;
 }
 
 QCanvas *QCanvasArea::canvas()
 {
     return mpCanvas;
-}
-
-void QCanvasArea::setCanvas(QCanvas * newCanvas)
-{
-    mpCanvas = newCanvas;
 }
 
 void QCanvasArea::keyPressEvent(QKeyEvent *event)
@@ -46,21 +37,22 @@ void QCanvasArea::wheelEvent(QWheelEvent *event)
     //Ctrl+滚轮   缩放画布
     //滚轮        滚动条上下移动
     //Shift+滚轮  滚动条左右移动
+    int delta = event->angleDelta().y();
 
-    if(event->modifiers() == Qt::KeyboardModifier::ControlModifier && event->delta() != 0)
+    if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
     {
         return;
         bool isScaled{false};
-        if(event->delta() > 0)
+        if(delta > 0)
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() + mpCanvas->scaleValue() / 10.0);
         else
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() - mpCanvas->scaleValue() / 10.0);
     }
 
     else if(event->modifiers() == Qt::KeyboardModifier::ShiftModifier)
-        this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - event->delta());
+        this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - delta);
     else if(event->modifiers() == Qt::KeyboardModifier::NoModifier)
-        this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - event->delta());
+        this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - delta);
 
 }
 
@@ -69,7 +61,7 @@ void QCanvasArea::mouseMoveEvent(QMouseEvent *event)
     qDebug() << event->pos() << "\n";
 }
 
-void QCanvasArea::onCanvasScaling(QPoint lgcPos, int delta)
+void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
 {
     QScrollBar *hor = this->horizontalScrollBar(), *ver = this->verticalScrollBar();
     qDebug() << S6DBG(hor->value(), hor->minimum(), hor->maximum(), ver->value(), ver->minimum(), ver->maximum());

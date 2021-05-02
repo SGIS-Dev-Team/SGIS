@@ -50,8 +50,13 @@ private:
     QString Me = QString("SEditor");
     //[当前绘图区]
     QCanvasArea* mpCurCanvasArea{};
+    //[当前文档]
+    SDocument* mpCurDoc{};
     //[已打开并加载的绘图区]
     std::vector<QCanvasArea*> mpCanvasAreaVec{};
+    //[已打开并加载的文档]
+    std::vector<SDocument*> mpDocVec{};
+
 
     /*-----成员函数-----*/
 public:
@@ -59,7 +64,6 @@ public:
     void initialize();
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
-    void createWorkspace(const QString& templateFilePath);
 
     /*-----UI与控件-----*/
 private:

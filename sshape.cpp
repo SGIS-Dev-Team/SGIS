@@ -8,24 +8,24 @@ SShape::SShape(PaintObject _type, bool _selected, QPoint center,
 
 SShape::~SShape() {}
 
-void SShape::paint(QPainter *painter) const
+void SShape::paint(QPainter &painter) const
 {
     //保存原来的样式
-    const QPen& oldPen = painter->pen();
-    const QBrush& oldBrush = painter->brush();
+    const QPen& oldPen = painter.pen();
+    const QBrush& oldBrush = painter.brush();
     //设置为本形状样式
-    painter->setPen(mPen);
-    painter->setBrush(mBrush);
+    painter.setPen(mPen);
+    painter.setBrush(mBrush);
     //平移到中心点
-    painter->translate(mPtCenter);
+    painter.translate(mPtCenter);
     //绘图
-    painter->drawPath(mPath);
+    painter.drawPath(mPath);
 
     //返回原点
-    painter->translate(-mPtCenter);
+    painter.translate(-mPtCenter);
     //还原样式
-    painter->setPen(oldPen);
-    painter->setBrush(oldBrush);
+    painter.setPen(oldPen);
+    painter.setBrush(oldBrush);
 }
 
 QRectF SShape::rect()
