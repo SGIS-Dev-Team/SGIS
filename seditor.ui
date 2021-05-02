@@ -57,6 +57,7 @@
     <addaction name="separator"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionSaveAs"/>
+    <addaction name="actionImport"/>
     <addaction name="mActionExport"/>
     <addaction name="separator"/>
     <addaction name="mActionCloseTemplate"/>
@@ -167,19 +168,10 @@
     <addaction name="separator"/>
     <addaction name="mActionPreferences"/>
    </widget>
-   <widget class="QMenu" name="mMenuAnimation">
-    <property name="title">
-     <string>Animation</string>
-    </property>
-    <addaction name="mActionShake"/>
-    <addaction name="mActionMotion"/>
-    <addaction name="mActionSpin"/>
-   </widget>
    <addaction name="mMenuFile"/>
    <addaction name="mMenuEdit"/>
    <addaction name="menuTools"/>
    <addaction name="menuLayer"/>
-   <addaction name="mMenuAnimation"/>
    <addaction name="menuView"/>
    <addaction name="mMenuHelp"/>
   </widget>
@@ -233,12 +225,12 @@
   </widget>
   <action name="mActionNewTemplate">
    <property name="text">
-    <string>New Template...</string>
+    <string>New Workspace...</string>
    </property>
   </action>
   <action name="mActionOpenTemplate">
    <property name="text">
-    <string>Open Template...</string>
+    <string>Open Workspace...</string>
    </property>
   </action>
   <action name="mActionCloseTemplate">
@@ -580,6 +572,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import...</string>
    </property>
   </action>
  </widget>
