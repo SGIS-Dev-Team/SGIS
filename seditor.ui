@@ -236,7 +236,7 @@
       <number>1</number>
      </property>
      <item>
-      <widget class="QTreeView" name="mTreeViewLayer"/>
+      <widget class="QLayerView" name="mLayerView"/>
      </item>
     </layout>
    </widget>
@@ -598,6 +598,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QLayerView</class>
+   <extends>QTreeView</extends>
+   <header>qlayerview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
