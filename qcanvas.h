@@ -41,7 +41,7 @@ signals:
     //鼠标移动
     void mouseMoved(QPoint pos);
     //缩放激活信号
-    void scaling(QPoint pos, int delta);
+    void scaling(QPointF pos, int delta);
     //缩放成功信号
     void scaled(double value);
 
@@ -63,7 +63,7 @@ private:
 
     /*-----成员变量-----*/
 private:
-    SDocument* mpDoc;
+    SDocument* mpDoc{nullptr};
 
     /*-----成员函数-----*/
 public:

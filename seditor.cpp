@@ -65,22 +65,21 @@ void SEditor::initialize()
 
 void SEditor::createWorkspace(const QSize &CanvasSize)
 {
-    //创建新的绘图区控件
+    //创建新的绘图区控件,保存绘图区控件指针
     QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
-    //保存绘图区控件指针
     mpCanvasAreaVec.push_back(newCanvasArea);
+    //创建新的工作区文档,保存文档指针
+    SDocument* newDocument = new SDocument(newCanvasArea->canvas());
+    this->mpDocVec.push_back(newDocument);
     //添加Tab页面并激活
     //TODO:解决重名问题
     int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
+    mpCurDoc = newDocument;
     //链接绘图区信息显示
     connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
     connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
     onCanvasScaled(1);
-}
-
-void SEditor::createWorkspace(const QString &templateFilePath)
-{
 }

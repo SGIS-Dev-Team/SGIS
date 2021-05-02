@@ -2,6 +2,7 @@
 #define SSHAPE_H
 
 #include "sobject.h"
+#include <QPainterPath>
 #include "initializer_list"
 
 //  SShape
@@ -37,7 +38,7 @@ public:
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter* painter)const;
+    virtual void paint(QPainter &painter)const;
     //获取包围矩形
     virtual QRectF rect();
     //是否包含某点

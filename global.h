@@ -1,5 +1,8 @@
 ﻿#ifndef GLOBAL_H
 #define GLOBAL_H
+
+class SDocument;
+
 #include <QDebug>
 #include <cassert>
 //配置文件开头

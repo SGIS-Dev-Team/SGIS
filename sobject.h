@@ -24,7 +24,7 @@ public:
     /*-----虚函数-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter* painter)const = 0;
+    virtual void paint(QPainter &painter)const = 0;
     //获取包围矩形
     virtual QRectF rect() = 0;
     //是否包含某点

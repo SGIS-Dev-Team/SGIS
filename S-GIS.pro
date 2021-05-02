@@ -13,6 +13,7 @@ SOURCES += \
     mainwindow.cpp \
     qcanvas.cpp \
     qcanvasarea.cpp \
+    qlayerview.cpp \
     sdocument.cpp \
     seditor.cpp \
     simage.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     mainwindow.h \
     qcanvas.h \
     qcanvasarea.h \
+    qlayerview.h \
     sdocument.h \
     seditor.h \
     simage.h \
