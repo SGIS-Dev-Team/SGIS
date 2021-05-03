@@ -30,6 +30,8 @@ class SDocument;
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
 
+//图层预览图标大小
+#define LAYER_ICON_SIZE 32
 //绘图对象类名
 namespace sgis
 {

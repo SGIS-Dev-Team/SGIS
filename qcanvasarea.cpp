@@ -58,14 +58,11 @@ void QCanvasArea::wheelEvent(QWheelEvent *event)
 
 void QCanvasArea::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() << event->pos() << "\n";
 }
 
 void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
 {
     QScrollBar *hor = this->horizontalScrollBar(), *ver = this->verticalScrollBar();
-    qDebug() << S6DBG(hor->value(), hor->minimum(), hor->maximum(), ver->value(), ver->minimum(), ver->maximum());
-
     //确定视图区左上角点在画布上的实际坐标
     QPointF ptViewportLTActual(hor->value(), ver->value());
     //计算鼠标点实际坐标

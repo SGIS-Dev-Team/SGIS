@@ -1,12 +1,12 @@
 ﻿#include "simage.h"
 
-SImage::SImage(PaintObject _type, QImage &image, bool _selected, QPoint center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+SImage::SImage(PaintObject _type, const QImage &image, bool _selected, QPoint center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SShape(_type, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
     if(image.isNull())
         return;
     //图像初始化
-    this->setTextureImage(&image);
+    this->setTextureImage(QPixmap::fromImage(image));
     //显示区域初始化
     QPointF leftTop(-image.width() / 2, -image.height() / 2);
     QPointF rightTop(image.width() / 2, -image.height() / 2);
@@ -37,7 +37,7 @@ void SImage::paint(QPainter &painter) const
     painter.translate(mPtCenter);
     //绘图
     painter.drawPath(mPath);
-    painter.drawImage(mImageRect, *this->mTextureImage, mTextureImage->rect());
+    painter.drawPixmap(mImageRect, this->mTextureImage, mTextureImage.rect());
     //返回原点
     painter.translate(-mPtCenter);
     //还原样式

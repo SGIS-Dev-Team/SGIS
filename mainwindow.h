@@ -49,8 +49,6 @@ private:
     QString mStrTrayConfigDir;
     //托盘图标
     STrayMgr* mpTrayIconMgr;
-    //日志记录器
-    SLogger* gbLogger;
     //[Me]
     QString Me = "Main_Window";
 

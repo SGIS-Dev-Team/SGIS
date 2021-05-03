@@ -155,13 +155,20 @@
     <property name="title">
      <string>Tool</string>
     </property>
+    <widget class="QMenu" name="menuShape">
+     <property name="title">
+      <string>Shape</string>
+     </property>
+     <addaction name="mActionCreateRect"/>
+     <addaction name="mActionLoadImage"/>
+    </widget>
     <addaction name="mActionSelectTool"/>
     <addaction name="mActionCombineTool"/>
     <addaction name="separator"/>
     <addaction name="mActionBrush"/>
     <addaction name="mActionEraser"/>
     <addaction name="mActionPen"/>
-    <addaction name="mActionShape"/>
+    <addaction name="menuShape"/>
     <addaction name="mActionText"/>
     <addaction name="separator"/>
     <addaction name="mActionAnotator"/>
@@ -374,11 +381,6 @@
   <action name="mActionPen">
    <property name="text">
     <string>Pen</string>
-   </property>
-  </action>
-  <action name="mActionShape">
-   <property name="text">
-    <string>Shape</string>
    </property>
   </action>
   <action name="mActionText">
@@ -595,6 +597,16 @@
   <action name="mActionImport">
    <property name="text">
     <string>Import...</string>
+   </property>
+  </action>
+  <action name="mActionCreateRect">
+   <property name="text">
+    <string>[Test] Create Rect</string>
+   </property>
+  </action>
+  <action name="mActionLoadImage">
+   <property name="text">
+    <string>[Test] Load Image</string>
    </property>
   </action>
  </widget>

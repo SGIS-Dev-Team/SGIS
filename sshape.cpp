@@ -1,12 +1,15 @@
 ﻿#include "sshape.h"
-
+#include <QIcon>
+#include <QPixmap>
 SShape::SShape(PaintObject _type, bool _selected, QPoint center,
                const QString &_layerName,
                const QString &_layerDiscription,
                const QColor &_layerColor)
     : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor) {}
 
-SShape::~SShape() {}
+SShape::~SShape()
+{
+}
 
 void SShape::paint(QPainter &painter) const
 {
@@ -28,7 +31,7 @@ void SShape::paint(QPainter &painter) const
     painter.setBrush(oldBrush);
 }
 
-QRectF SShape::rect()
+QRectF SShape::rect()const
 {
     //统计所有点xmin，xmax，ymin，ymax
     double xMin = DBL_MAX, xMax = DBL_MIN, yMin = DBL_MAX, yMax = DBL_MIN;
@@ -44,9 +47,8 @@ QRectF SShape::rect()
 
 }
 
-bool SShape::contains(const QPointF &pt)
+bool SShape::contains(const QPointF &pt)const
 {
-    this->updatePath();
     return mPath.contains(pt);
 }
 
@@ -89,7 +91,7 @@ void SShape::scale(double sx, double sy)
     updatePath();
 }
 
-void SShape::writeBinaryData(QDataStream &stream)
+void SShape::writeBinaryData(QDataStream &stream)const
 {
 
 }
@@ -97,6 +99,21 @@ void SShape::writeBinaryData(QDataStream &stream)
 void SShape::readBinaryData(QDataStream &stream)
 {
 
+}
+
+const QIcon &SShape::icon()
+{
+    QPixmap iconPixmap(LAYER_ICON_SIZE, LAYER_ICON_SIZE);
+    QPainter iconPainter(&iconPixmap);
+
+    QRectF shapeRect = this->rect();
+    iconPainter.scale(LAYER_ICON_SIZE / shapeRect.width(), LAYER_ICON_SIZE / shapeRect.height());
+
+    this->paint(iconPainter);
+
+    this->mIcon = QIcon(iconPixmap);
+
+    return this->mIcon;
 }
 
 const std::vector<QPointF> &SShape::vertices() const
@@ -169,13 +186,13 @@ void SShape::addVertex(std::initializer_list<QPointF> pt)
         addVertex(_pt);
 }
 
-void SShape::setTextureImage(QImage *image)
+void SShape::setTextureImage(const QPixmap& pixmap)
 {
-    if(image->isNull())
+    if(pixmap.isNull())
         return;
-    this->mTextureImage = image;
+    this->mTextureImage = pixmap;
     this->filler = Image;
-    this->mBrush.setTextureImage(*mTextureImage);
+    this->mBrush.setTexture(pixmap);
 }
 
 

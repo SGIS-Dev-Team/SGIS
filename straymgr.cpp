@@ -1,11 +1,11 @@
 ﻿#include "straymgr.h"
 
-STrayMgr::STrayMgr(SLogger* _SLogger): gbLogger(_SLogger)
+STrayMgr::STrayMgr()
 {
     loadConfig("");
 }
 
-STrayMgr::STrayMgr(SLogger* _SLogger, const QString &configDir): gbLogger(_SLogger)
+STrayMgr::STrayMgr(const QString &configDir)
 {
     mStrConfigDir = configDir;
     loadConfig(configDir);
@@ -139,8 +139,6 @@ void STrayMgr::initialize()
     //托盘图标激活事件响应启动
     connect(mpTrayIcon, &QSystemTrayIcon::activated, this, &STrayMgr::onTrayIconActivated);
     mpTrayIcon->show();
-    //记录日志
-    gbLogger->addEntry(Me, SLogger::RunningStatus, "Initialization complete.");
 }
 
 void STrayMgr::loadConfig(const QString &dir)
@@ -148,7 +146,6 @@ void STrayMgr::loadConfig(const QString &dir)
     QFile cfg(dir + TRAY_MENU_CFG_NAME);
     if(!cfg.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        gbLogger->addEntry(Me, SLogger::LocalError, "Failed to read configuration file at " + dir);
         mbActive = true;
         mbNotify = true;
         mnStyle = 0;
@@ -201,7 +198,7 @@ void STrayMgr::saveConfig(const QString &dir) const
     //打开文件
     QFile cfg(dir + TRAY_MENU_CFG_NAME);
     if(!cfg.open(QIODevice::WriteOnly | QIODevice::Text))
-        gbLogger->addEntry(Me, SLogger::LocalError, "Failed to write configuration file at " + dir);
+        qDebug() << "Failed to write configuration file at " + dir;
     //保存数据
     QTextStream cfgStream(&cfg);
     cfgStream << CFG_HEAD

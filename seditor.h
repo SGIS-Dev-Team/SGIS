@@ -17,7 +17,7 @@ class SEditor : public QMainWindow
     Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SEditor(SLogger* _logger, QWidget *parent = nullptr);
+    explicit SEditor(QWidget *parent = nullptr);
     ~SEditor();
 
     /*-----信号-----*/
@@ -29,6 +29,9 @@ private slots:
     //[菜单选项响应]
     void onActionZoominTriggered();
     void onActionZoomoutTriggered();
+    //[测试]
+    void onActionCreateRectTriggered();
+    void onActionLoadImageTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]
@@ -36,6 +39,8 @@ private slots:
     void onCanvasMouseMoved(QPoint Log_pos);
     //缩放
     void onCanvasScaled(double value);
+    //[图层事件响应]
+    void onLayersUpdated(SLayerManager* which);
 
     /*-----虚函数重载-----*/
 public:
@@ -44,8 +49,6 @@ public:
 
     /*-----成员变量-----*/
 private:
-    //日志记录器
-    SLogger* gbLogger{};
     //[Me]
     QString Me = QString("SEditor");
     //[当前绘图区]
@@ -62,6 +65,8 @@ private:
 public:
     //初始化函数
     void initialize();
+    //初始化链接
+    void initializeConnections();
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
 

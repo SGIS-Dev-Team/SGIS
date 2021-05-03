@@ -17,6 +17,9 @@
 //
 //------------------------------------------
 
+typedef std::list<SObject*>::iterator list_iterator;
+typedef std::list<SObject*> layer_list ;
+
 class SLayerManager: public QObject
 {
     Q_OBJECT
@@ -26,6 +29,7 @@ public:
 
     /*-----信号-----*/
 signals:
+    void layersUpdated(SLayerManager* which);
     void selectStateChanged();
 
     /*-----槽函数-----*/
@@ -33,10 +37,11 @@ private slots:
 
     /*-----成员变量-----*/
 private:
+
     //图层链表
-    std::list<SObject*> mLayerList;
+    layer_list mLayerList;
     //选中的图层在链表中的迭代器组成的链表
-    std::list<std::list<SObject*>::iterator> mSelectedLayerIterList;
+    std::list<list_iterator> mSelectedLayerIterList;
 
     //图层数据模型
     QStandardItemModel mLayerModel;
@@ -64,7 +69,9 @@ public:
     //搜索图层:搜索方向自顶向下
 
     //获取图层链表
-    std::list<SObject *> &getLayerList();
+    const layer_list &getLayerList()const;
+    //获取图层数据模型
+    const QStandardItemModel *getLayerModel()const;
     //按位置（从下往上数）获取图层
     SObject &layerAt(size_t pos);
 
@@ -79,9 +86,19 @@ public:
     //[功能函数]
 private:
     //使用位置索引链表迭代器：O(n),尽量单次使用
-    std::list<SObject *>::iterator iterAt(size_t pos);
+    list_iterator _iterAt(size_t pos);
+    //通过迭代器反求位置
+    size_t _posOf(list_iterator it);
+    //计算链表中的位置对应的数据模型行数
+    inline size_t _posOfModel(size_t pos_of_List);
     //使用SObject*初始化图层数据项
-    QStandardItem *createItem(SObject* obj);
+    QList<QStandardItem *> _createRowItem(SObject* obj);
 };
+
+size_t SLayerManager::_posOfModel(size_t pos_of_List)
+{
+    assert(pos_of_List < mLayerList.size());
+    return mLayerList.size() - pos_of_List - 1;
+}
 
 #endif // SLAYERMANAGER_H

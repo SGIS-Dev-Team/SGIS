@@ -72,9 +72,9 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     if(pos.x() < 0 || pos.x() >= mSzActual.width() || pos.y() < 0 || pos.y() >= mSzActual.height())
         return;
     //显示逻辑坐标
-    //emit mouseMoved(AtoL(pos));
+    emit mouseMoved(AtoL(pos));
     //显示实际坐标
-    emit mouseMoved(pos);
+    //  emit mouseMoved(pos);
 }
 
 void QCanvas::mousePressEvent(QMouseEvent *event)

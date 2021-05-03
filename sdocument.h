@@ -32,6 +32,9 @@ public:
     //获取画布
     QCanvas * getCanvas();
 
+    //获取图层管理器
+    SLayerManager& getLayerManager();
+
     //在画布上绘制图层
     void paint(QPainter & painter);
 };
