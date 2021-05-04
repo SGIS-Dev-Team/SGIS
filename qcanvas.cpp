@@ -75,20 +75,45 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     if(pos.x() < 0 || pos.x() >= mSzActual.width() || pos.y() < 0 || pos.y() >= mSzActual.height())
         return;
     //显示逻辑坐标
-    emit mouseMoved(AtoL(pos));
-    //显示实际坐标
-    //  emit mouseMoved(pos);
+    QPoint lgcPos = AtoL(pos);
+    emit mouseMoved(lgcPos);
+
+    //------拖动选中图层------//
+    if(mbDraging)
+    {
+        const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
+        for(const list_iterator& iter : selectedIterList)
+        {
+            (*iter)->translate(lgcPos - mPtLogicalPressPos);
+        }
+        update();
+    }
+    this->mPtLogicalPressPos = lgcPos;
 }
 
-void QCanvas::mousePressEvent(QMouseEvent *event)
+void QCanvas::mousePressEvent(QMouseEvent * event)
 {
+    //判断鼠标点是否在某个已经选中的对象内
+    QPoint lgcPos = AtoL(event->pos());
+    const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
+    for(const list_iterator& iter : selectedIterList)
+    {
+        if((*iter)->contains(lgcPos))
+        {
+            mbDraging = true;
+            break;
+        }
+    }
+    //记录鼠标点位置
+    this->mPtLogicalPressPos = lgcPos;
+    qDebug() << SDBG(lgcPos);
 }
-
-void QCanvas::mouseReleaseEvent(QMouseEvent *event)
+void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
+    mbDraging = false;
 }
 
-void QCanvas::wheelEvent(QWheelEvent *event)
+void QCanvas::wheelEvent(QWheelEvent * event)
 {
     if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
     {
@@ -122,7 +147,7 @@ bool QCanvas::isRefLineOn() const
     return mbRefLineOn;
 }
 
-void QCanvas::setDocument(SDocument *pDoc)
+void QCanvas::setDocument(SDocument * pDoc)
 {
     this->mpDoc = pDoc;
 }

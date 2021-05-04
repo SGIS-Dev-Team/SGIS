@@ -34,7 +34,8 @@ public:
     //是否包含某点
     virtual bool contains(const QPointF& pt)const = 0;
     //变换
-    virtual void tranlate(double dx, double dy) = 0;
+    virtual void translate(double dx, double dy) = 0;
+    virtual void translate(const QPointF& pt) = 0;
     virtual void rotate(double angle) = 0;
     virtual void scale(double sx, double sy) = 0;
     //输出与输入
@@ -42,6 +43,10 @@ public:
     virtual void readBinaryData(QDataStream& stream) = 0;
     //图层预览图标（调用时生成）
     virtual const QIcon &icon() = 0;
+
+
+    //绘制边框矩形
+    virtual void paintBoundRect(QPainter &painter, bool doTranslate = true);
 
     /*-----属性-----*/
 protected:

@@ -45,14 +45,18 @@ QRectF SShape::rect()const
 
 bool SShape::contains(const QPointF &pt)const
 {
-    return mPath.contains(pt);
+    return mPath.contains(this->AtoC(pt));
 }
 
-void SShape::tranlate(double dx, double dy)
+void SShape::translate(double dx, double dy)
 {
     mPtCenter.rx() += dx;
     mPtCenter.ry() += dy;
-    updatePath();
+}
+
+void SShape::translate(const QPointF &pt)
+{
+    mPtCenter += pt;
 }
 
 void SShape::rotate(double angle)

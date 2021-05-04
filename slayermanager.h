@@ -61,17 +61,18 @@ public:
     //更换图层
     void replaceLayer(size_t pos, SObject* newLayer);
     void replaceLayer(SObject* oldLayer, SObject* newLayer);
-    void replaceLayer(std::list<SObject*>::iterator it, SObject* newLayer);
+    void replaceLayer(list_iterator it, SObject* newLayer);
 
     //删除图层
     void removeLayer(SObject* obj);
     void removeLayer(size_t pos);
-    void removeLayer(std::list<SObject*>::iterator it);
+    void removeLayer(list_iterator it);
 
     //搜索图层:搜索方向自顶向下
 
     //获取图层链表
     const layer_list &getLayerList()const;
+    const std::list<list_iterator> &getSelectedLayerIterList()const;
     //获取图层数据模型
     const QStandardItemModel *getLayerModel()const;
     //按位置（从下往上数）获取图层

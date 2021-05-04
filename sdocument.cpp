@@ -31,7 +31,9 @@ SLayerManager &SDocument::getLayerManager()
 
 void SDocument::paint(QPainter &painter)
 {
-    const std::list<SObject*>& layerList = mLayerMgr.getLayerList();
+    const layer_list layerList = mLayerMgr.getLayerList();
+
+    //自底向上绘制图层
     std::list<SObject*>::const_iterator iter = layerList.begin();
     for(iter = layerList.begin(); iter != layerList.end(); ++iter)
     {
@@ -39,4 +41,20 @@ void SDocument::paint(QPainter &painter)
         if(obj->isVisible())
             obj->paint(painter);
     }
+
+    //绘制选框
+    //TODO::组合功能上线后重新调整逻辑
+    //现在只绘制一个选框
+    std::list<list_iterator> selectedLayerIterList = mLayerMgr.getSelectedLayerIterList();
+    if(selectedLayerIterList.empty())
+        return;
+    const list_iterator firstSelectedIter = selectedLayerIterList.front();
+    (*firstSelectedIter)->paintBoundRect(painter);
 }
+
+
+
+
+
+
+

@@ -20,7 +20,7 @@ class SDocument;
 //单个文件最大日志条目数
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
-#define DEFAULT_CANVAS_SIZE QSize(10000,10000)
+#define DEFAULT_CANVAS_SIZE QSize(50000,50000)
 //图层预览图标大小
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
@@ -31,6 +31,9 @@ class SDocument;
 #define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
+
+//外接矩形逻辑像素
+#define BOUND_RECT_PEN_WIDTH 5
 
 //绘图对象类名
 namespace sgis

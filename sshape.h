@@ -45,7 +45,8 @@ public:
     //是否包含某点
     virtual bool contains(const QPointF& pt)const;
     //变换
-    virtual void tranlate(double dx, double dy);
+    virtual void translate(double dx, double dy);
+    virtual void translate(const QPointF& pt);
     virtual void rotate(double angle);
     virtual void scale(double sx, double sy);
     //输出与输入
