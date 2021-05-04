@@ -27,19 +27,21 @@ void SImage::updatePath()
     mPath.closeSubpath();
 }
 
-void SImage::paint(QPainter &painter) const
+void SImage::paint(QPainter &painter, bool doTranslate) const
 {
     //保存原来的样式
     const QPen& oldPen = painter.pen();
     //设置为本形状样式
     painter.setPen(mPen);
     //平移到中心点
-    painter.translate(mPtCenter);
+    if(doTranslate)
+        painter.translate(mPtCenter);
     //绘图
     painter.drawPath(mPath);
     painter.drawPixmap(mImageRect, this->mTextureImage, mTextureImage.rect());
     //返回原点
-    painter.translate(-mPtCenter);
+    if(doTranslate)
+        painter.translate(-mPtCenter);
     //还原样式
     painter.setPen(oldPen);
 }

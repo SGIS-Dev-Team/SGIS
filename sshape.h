@@ -39,7 +39,7 @@ protected:
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter)const;
+    virtual void paint(QPainter &painter, bool doTranslate = true)const;
     //获取包围矩形
     virtual QRectF rect()const;
     //是否包含某点
@@ -151,7 +151,6 @@ public:
 
     //[功能函数]
     virtual void updatePath();
-
 };
 
 #endif // SSHAPE_H

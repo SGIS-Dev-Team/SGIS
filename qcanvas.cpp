@@ -25,7 +25,17 @@ QCanvas::~QCanvas()
 void QCanvas::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
+
+    /*-----画布内容绘制-----*/
+    //缩放绘制画笔
+    painter.scale(mdScale, mdScale);
+
+    if(mpDoc)
+        mpDoc->paint(painter);
+
     /*-----画布背景绘图部分-----*/
+    painter.resetTransform();
+
     //若画布缩放比例大于800%，则显示像素网格
     if(mdScale >= 8.0)
     {
@@ -56,13 +66,6 @@ void QCanvas::paintEvent(QPaintEvent *event)
         painter.drawLines(pPtFPairsY, mSzLogical.width());
         delete[] pPtFPairsY;
     }
-
-    /*-----画布内容绘制-----*/
-    //缩放绘制画笔
-    painter.scale(mdScale, mdScale);
-
-    if(mpDoc)
-        mpDoc->paint(painter);
 }
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)

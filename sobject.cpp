@@ -12,6 +12,16 @@ SObject::SObject(PaintObject _type, bool _selected, QPoint center,
 
 SObject::~SObject() {}
 
+bool SObject::isVisible() const
+{
+    return mbVisible;
+}
+
+bool SObject::isLocked() const
+{
+    return mbLocked;
+}
+
 bool SObject::isSelected() const
 {
     return mbSelected;
@@ -42,6 +52,16 @@ const QColor &SObject::layerColor() const
     return mLayerColor;
 }
 
+void SObject::setVisible(bool visible)
+{
+    this->mbVisible = visible;
+}
+
+void SObject::setLocked(bool lock)
+{
+    this->mbLocked = lock;
+}
+
 void SObject::setSelected(bool select)
 {
     mbSelected = select;
@@ -70,24 +90,4 @@ void SObject::setLayerDiscription(const QString &discription)
 void SObject::setLayerColor(const QColor &color)
 {
     mLayerColor = color;
-}
-
-QPointF SObject::CtoA(const QPointF &pt) const
-{
-    return pt + mPtCenter;
-}
-
-QPoint SObject::CtoA(const QPoint &pt) const
-{
-    return QPoint(pt.x() + mPtCenter.x(), pt.y() + mPtCenter.y());
-}
-
-QPointF SObject::AtoC(const QPointF &pt) const
-{
-    return pt - mPtCenter;
-}
-
-QPoint SObject::AtoC(const QPoint &pt) const
-{
-    return QPoint(pt.x() - mPtCenter.x(), pt.y() - mPtCenter.y());
 }

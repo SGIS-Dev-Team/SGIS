@@ -33,6 +33,8 @@ signals:
     void selectStateChanged();
 
     /*-----槽函数-----*/
+public slots:
+    void onLayerViewClicked(const QModelIndex& index);
 private slots:
 
     /*-----成员变量-----*/
@@ -89,16 +91,16 @@ private:
     list_iterator _iterAt(size_t pos);
     //通过迭代器反求位置
     size_t _posOf(list_iterator it);
-    //计算链表中的位置对应的数据模型行数
-    inline size_t _posOfModel(size_t pos_of_List);
+    //链表中的索引与模型中的行数互换
+    inline size_t _posSwitch(size_t pos);
     //使用SObject*初始化图层数据项
     QList<QStandardItem *> _createRowItem(SObject* obj);
 };
 
-size_t SLayerManager::_posOfModel(size_t pos_of_List)
+size_t SLayerManager::_posSwitch(size_t pos)
 {
-    assert(pos_of_List < mLayerList.size());
-    return mLayerList.size() - pos_of_List - 1;
+    assert(pos < mLayerList.size());
+    return mLayerList.size() - pos - 1;
 }
 
 #endif // SLAYERMANAGER_H

@@ -35,6 +35,8 @@ void SDocument::paint(QPainter &painter)
     std::list<SObject*>::const_iterator iter = layerList.begin();
     for(iter = layerList.begin(); iter != layerList.end(); ++iter)
     {
-        (*iter)->paint(painter);
+        SObject* obj = *iter;
+        if(obj->isVisible())
+            obj->paint(painter);
     }
 }

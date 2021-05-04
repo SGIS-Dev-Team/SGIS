@@ -21,7 +21,7 @@ protected:
 
 public:
     virtual void updatePath();
-    virtual void paint(QPainter &painter)const;
+    virtual void paint(QPainter &painter, bool doTranslate = true)const;
 
 };
 

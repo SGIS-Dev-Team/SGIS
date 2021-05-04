@@ -32,10 +32,12 @@ void SEditor::onActionCreateRectTriggered()
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SShape * rect = SShapeFactory::createShape(ShapeSet::Rectangle);
+    SShape * rect = SShapeFactory::createShape(ShapeSet::Hexagon);
     rect->setCenterPoint(QPoint(x, y));
     rect->scale(800, 800);
     rect->setLayerName(rect->layerName() + QString::number(x + y));
+    rect->setClose(true);
+    rect->setFillRule(Qt::FillRule::WindingFill);
     mpCurDoc->getLayerManager().addLayer(rect);
 }
 
@@ -44,7 +46,7 @@ void SEditor::onActionLoadImageTriggered()
 {
     QString path = QFileDialog::getOpenFileName(this);
     SImage * img[100];
-    for(int i = 0; i < 100; ++i)
+    for(int i = 0; i < 1; ++i)
     {
         quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
@@ -123,6 +125,7 @@ void SEditor::createWorkspace(const QSize &CanvasSize)
     //链接绘图区信息显示
     connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
     connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);

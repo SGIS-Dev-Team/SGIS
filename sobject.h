@@ -28,7 +28,7 @@ protected:
     /*-----虚函数-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter)const = 0;
+    virtual void paint(QPainter &painter, bool doTranslate = true)const = 0;
     //获取包围矩形
     virtual QRectF rect()const = 0;
     //是否包含某点
@@ -47,8 +47,12 @@ public:
 protected:
     //[类型]
     const PaintObject type;
+    //是否可见
+    bool mbVisible{true};
+    //是否被锁定
+    bool mbLocked{false};
     //是否被选中
-    bool mbSelected{};
+    bool mbSelected{true};
     //旋转角（顺时针）单位为度
     bool mdRotateAngle{};
     //中心点
@@ -72,7 +76,8 @@ private:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-
+    bool isVisible()const;
+    bool isLocked()const;
     bool isSelected()const;
     bool rotateAngle()const;
     const QPointF centerPoint()const;
@@ -81,7 +86,8 @@ public:
     const QColor& layerColor()const;
 
     //[修改函数]
-
+    void setVisible(bool visible);
+    void setLocked(bool lock);
     void setSelected(bool select);
     //设置旋转角：顺时针，单位为度
     void setRotateAngle(double angle);
@@ -92,13 +98,32 @@ public:
 
     //[功能函数]
     //中心坐标转实际坐标（控件坐标系）
-    QPointF CtoA(const QPointF& pt)const;
-    QPoint CtoA(const QPoint& pt)const;
+    inline QPointF CtoA(const QPointF& pt)const;
+    inline QPoint CtoA(const QPoint& pt)const;
 
     //实际坐标（控件坐标系）转中心坐标
-    QPointF AtoC(const QPointF& pt)const;
-    QPoint AtoC(const QPoint& pt)const;
+    inline QPointF AtoC(const QPointF& pt)const;
+    inline QPoint AtoC(const QPoint& pt)const;
 
 };
 
+QPointF SObject::CtoA(const QPointF &pt) const
+{
+    return pt + mPtCenter;
+}
+
+QPoint SObject::CtoA(const QPoint &pt) const
+{
+    return QPoint(pt.x() + mPtCenter.x(), pt.y() + mPtCenter.y());
+}
+
+QPointF SObject::AtoC(const QPointF &pt) const
+{
+    return pt - mPtCenter;
+}
+
+QPoint SObject::AtoC(const QPoint &pt) const
+{
+    return QPoint(pt.x() - mPtCenter.x(), pt.y() - mPtCenter.y());
+}
 #endif // SOBJECT_H

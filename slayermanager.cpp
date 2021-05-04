@@ -9,6 +9,20 @@ SLayerManager::SLayerManager()
     mLayerModel.setHorizontalHeaderLabels(header);
 }
 
+void SLayerManager::onLayerViewClicked(const QModelIndex &index)
+{
+    if(index.model() != &this->mLayerModel)
+        return;
+    //处理图层可见性
+    if(index.column() == 0)
+    {
+        QStandardItem* pItem = this->mLayerModel.itemFromIndex(index);
+        SObject* obj = *_iterAt(_posSwitch( index.row() ) );
+        obj->setVisible(pItem->checkState() == Qt::Checked ? true : false);
+        emit layersUpdated(this);
+    }
+}
+
 void SLayerManager::addLayer(SObject *obj)
 {
     assert(obj != nullptr);
@@ -36,7 +50,7 @@ void SLayerManager::replaceLayer(size_t pos, SObject* newLayer)
     list_iterator iter = _iterAt(pos);
     SObjectFactory::releaseObject(*iter);
     *iter = newLayer;
-    this->mLayerModel.setItem(_posOfModel(pos), *_createRowItem(newLayer).toVector().data());
+    this->mLayerModel.setItem(_posSwitch(pos), *_createRowItem(newLayer).toVector().data());
     emit layersUpdated(this);
 }
 
@@ -51,7 +65,7 @@ void SLayerManager::replaceLayer(list_iterator it, SObject *newLayer)
 {
     SObjectFactory::releaseObject(*it);
     *it = newLayer;
-    this->mLayerModel.setItem(_posOfModel(_posOf(it)), 0, *_createRowItem(newLayer).toVector().data());
+    this->mLayerModel.setItem(_posSwitch(_posOf(it)), 0, *_createRowItem(newLayer).toVector().data());
     emit layersUpdated(this);
 }
 
@@ -85,7 +99,7 @@ void SLayerManager::removeLayer(list_iterator it)
 
     SObjectFactory::releaseObject(*it);
     //从数据模型中删除图层
-    mLayerModel.removeRow(_posOfModel(_posOf(it)));
+    mLayerModel.removeRow(_posSwitch(_posOf(it)));
     emit layersUpdated(this);
 }
 
@@ -171,8 +185,10 @@ QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
     QStandardItem* itemCheck = new QStandardItem;
     QStandardItem* itemLayerIcon = new QStandardItem(obj->icon(), obj->layerName());
     itemCheck->setCheckable(true);
+    itemCheck->setCheckState(Qt::Checked);
+
 
     QList<QStandardItem *> rowData;
     rowData << itemCheck << itemLayerIcon;
-    return  rowData;
+    return rowData;
 }

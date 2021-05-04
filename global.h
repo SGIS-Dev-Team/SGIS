@@ -21,6 +21,8 @@ class SDocument;
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
 #define DEFAULT_CANVAS_SIZE QSize(10000,10000)
+//图层预览图标大小
+#define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
 #define SSTR(expr)#expr
 #define SDBG(expr)SSTR(expr)<<expr<<"\n"
@@ -30,8 +32,6 @@ class SDocument;
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
 
-//图层预览图标大小
-#define LAYER_ICON_SIZE 32
 //绘图对象类名
 namespace sgis
 {

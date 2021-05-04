@@ -26,10 +26,10 @@ SShape *SShapeFactory::createShape(ShapeSet type)
     case ShapeSet::Rectangle:
         shape->addVertex(
         {
-            QPointF(-0.2, -0.2),
-            QPointF(0.2, -0.2),
-            QPointF(0.5, 0.5),
-            QPointF(-0.5, 0.5)
+            QPointF(-0.5, -0.2),
+            QPointF(0.5, -0.2),
+            QPointF(0.5, 0.2),
+            QPointF(-0.5, 0.2)
         });
         shape->setLayerName(tr("Rectangle"));
         break;
@@ -60,10 +60,8 @@ SShape *SShapeFactory::createShape(ShapeSet type)
         shape->addVertex(
         {
 
-        },
-        {
-
-        });
+        }
+        );
         break;
     case ShapeSet::Curve:
         break;
