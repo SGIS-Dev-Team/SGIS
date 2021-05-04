@@ -24,12 +24,19 @@ void SDocument::setCanvas(QCanvas *canvas)
     this->mpCanvas = canvas;
 }
 
+SLayerManager &SDocument::getLayerManager()
+{
+    return mLayerMgr;
+}
+
 void SDocument::paint(QPainter &painter)
 {
-    std::list<SObject*>& layerList = mLayerMgr.getLayerList();
+    const std::list<SObject*>& layerList = mLayerMgr.getLayerList();
     std::list<SObject*>::const_iterator iter = layerList.begin();
     for(iter = layerList.begin(); iter != layerList.end(); ++iter)
     {
-        (*iter)->paint(painter);
+        SObject* obj = *iter;
+        if(obj->isVisible())
+            obj->paint(painter);
     }
 }

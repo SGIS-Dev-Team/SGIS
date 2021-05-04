@@ -1,54 +1,79 @@
 ﻿#include "slayermanager.h"
+#include "sobjectfactory.h"
 
 SLayerManager::SLayerManager()
 {
     //初始化图层数据模型
     QStringList header;
-    header << tr("Visible") << tr(" ") << tr("Name");
+    header << tr("Visible") << tr(" ");
     mLayerModel.setHorizontalHeaderLabels(header);
+}
+
+void SLayerManager::onLayerViewClicked(const QModelIndex &index)
+{
+    if(index.model() != &this->mLayerModel)
+        return;
+    //处理图层可见性
+    if(index.column() == 0)
+    {
+        QStandardItem* pItem = this->mLayerModel.itemFromIndex(index);
+        SObject* obj = *_iterAt(_posSwitch( index.row() ) );
+        obj->setVisible(pItem->checkState() == Qt::Checked ? true : false);
+        emit layersUpdated(this);
+    }
 }
 
 void SLayerManager::addLayer(SObject *obj)
 {
-    if(!obj)
-        throw "Object Pointer = nullptr";
+    assert(obj != nullptr);
+    //更新图层链表
     this->mLayerList.push_back(obj);
-
-    this->mLayerModel.insertRow(0, createItem(obj));
+    //更新图层数据模型
+    this->mLayerModel.insertRow(0, _createRowItem(obj));
+    //发射图层更新信号
+    emit layersUpdated(this);
 }
 
 void SLayerManager::addLayers(std::vector<SObject *> objVec)
 {
     for(SObject* obj : objVec)
     {
-        if(!obj)
-            throw "Object Pointer = nullptr";
+        assert(obj != nullptr);
         this->mLayerList.push_back(obj);
-
-        this->mLayerModel.insertRow(0, createItem(obj));
+        this->mLayerModel.insertRow(0, _createRowItem(obj));
     }
+    emit layersUpdated(this);
 }
 
 void SLayerManager::replaceLayer(size_t pos, SObject* newLayer)
 {
-    *iterAt(pos) = newLayer;
+    list_iterator iter = _iterAt(pos);
+    SObjectFactory::releaseObject(*iter);
+    *iter = newLayer;
+    this->mLayerModel.setItem(_posSwitch(pos), *_createRowItem(newLayer).toVector().data());
+    emit layersUpdated(this);
 }
 
 void SLayerManager::replaceLayer(SObject *oldLayer, SObject *newLayer)
 {
-    *std::find(mLayerList.begin(), mLayerList.end(), oldLayer) = newLayer;
+    list_iterator iter = std::find(mLayerList.begin(), mLayerList.end(), oldLayer);
+    replaceLayer(iter, newLayer);
+    emit layersUpdated(this);
 }
 
-void SLayerManager::replaceLayer(std::list<SObject*>::iterator it, SObject *newLayer)
+void SLayerManager::replaceLayer(list_iterator it, SObject *newLayer)
 {
+    SObjectFactory::releaseObject(*it);
     *it = newLayer;
+    this->mLayerModel.setItem(_posSwitch(_posOf(it)), 0, *_createRowItem(newLayer).toVector().data());
+    emit layersUpdated(this);
 }
 
 void SLayerManager::removeLayer(SObject *obj)
 {
     if(!obj)
         return;
-    std::list<SObject*>::iterator iter = std::find(mLayerList.begin(), mLayerList.end(), obj);
+    list_iterator iter = std::find(mLayerList.begin(), mLayerList.end(), obj);
 
     if(iter == mLayerList.end())
         return;
@@ -58,7 +83,7 @@ void SLayerManager::removeLayer(SObject *obj)
 
 void SLayerManager::removeLayer(size_t pos)
 {
-    std::list<SObject*>::iterator iter = iterAt(pos);
+    list_iterator iter = _iterAt(pos);
 
     if(iter == mLayerList.end())
         return;
@@ -66,29 +91,36 @@ void SLayerManager::removeLayer(size_t pos)
     removeLayer(iter);
 }
 
-void SLayerManager::removeLayer(std::list<SObject*>::iterator it)
+void SLayerManager::removeLayer(list_iterator it)
 {
     //从选中链表中删除图层
     mSelectedLayerIterList.remove(it);
     mLayerList.erase(it);
 
-    if(*it)
-        delete *it;
+    SObjectFactory::releaseObject(*it);
+    //从数据模型中删除图层
+    mLayerModel.removeRow(_posSwitch(_posOf(it)));
+    emit layersUpdated(this);
 }
 
-std::list<SObject*> & SLayerManager::getLayerList()
+const layer_list & SLayerManager::getLayerList()const
 {
     return mLayerList;
 }
 
+const QStandardItemModel *SLayerManager::getLayerModel()const
+{
+    return &mLayerModel;
+}
+
 SObject &SLayerManager::layerAt(size_t pos)
 {
-    return *(*iterAt(pos));
+    return *(*_iterAt(pos));
 }
 
 const SObject *SLayerManager::clickSelect(const QPoint & pt)
 {
-    std::list<SObject*>::reverse_iterator iter;
+    layer_list::reverse_iterator iter;
     //自顶向下遍历图层链表
     for(iter = mLayerList.rbegin(); iter != mLayerList.rend(); ++iter)
     {
@@ -96,7 +128,7 @@ const SObject *SLayerManager::clickSelect(const QPoint & pt)
         {
             //若鼠标点所在的最顶层的图层不在选择链表中，则添加，否则去除
             bool deselected{false}; //是否进行了去除选择操作
-            for(const std::list<SObject*>::iterator& selectedIter : mSelectedLayerIterList)
+            for(const list_iterator& selectedIter : mSelectedLayerIterList)
             {
                 if(*selectedIter == *iter)
                 {
@@ -125,27 +157,38 @@ void SLayerManager::clearSelection()
     emit selectStateChanged();
 }
 
-std::list<SObject *>::iterator SLayerManager::iterAt(size_t pos)
+list_iterator SLayerManager::_iterAt(size_t pos)
 {
-    if(pos > mLayerList.size())
-        throw "Array Index out of bound.";
-    std::list<SObject*>::iterator iter = mLayerList.begin();
+    assert(pos < mLayerList.size());
+
+    list_iterator iter = mLayerList.begin();
     for(size_t i = 0; i < pos; ++i)
         ++iter;
     return iter;
 }
 
-QStandardItem *SLayerManager::createItem(SObject *obj)
+size_t SLayerManager::_posOf(list_iterator it)
 {
-    if(!obj)
-        throw "Object Pointer = nullptr";
+    size_t pos{0};
+    while(it != mLayerList.begin())
+    {
+        ++pos;
+        --it;
+    }
+    return pos;
+}
 
-    QStandardItem* newItem = new QStandardItem;
-    newItem->setCheckable(true);
-    newItem->setDragEnabled(true);
-    newItem->setDropEnabled(true);
+QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
+{
+    assert(obj != nullptr);
 
-    //newItem->set
+    QStandardItem* itemCheck = new QStandardItem;
+    QStandardItem* itemLayerIcon = new QStandardItem(obj->icon(), obj->layerName());
+    itemCheck->setCheckable(true);
+    itemCheck->setCheckState(Qt::Checked);
 
-    return newItem;
+
+    QList<QStandardItem *> rowData;
+    rowData << itemCheck << itemLayerIcon;
+    return rowData;
 }

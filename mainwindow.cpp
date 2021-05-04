@@ -12,10 +12,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    //程序关闭
-    gbLogger->addEntry(Me, SLogger::RunningStatus, "Application shutting down.");
-    //释放日志记录器
-    delete gbLogger;
     //释放托盘图标管理器
     delete mpTrayIconMgr;
     delete ui;
@@ -53,7 +49,7 @@ void MainWindow::onButtonEditorClicked()
     //初始化编辑器类
     if(!mWndEditor)
     {
-        mWndEditor = new SEditor(gbLogger, nullptr);
+        mWndEditor = new SEditor(nullptr);
         connect(mWndEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
     }
 
@@ -77,18 +73,14 @@ void MainWindow::onEditorClosed()
 }
 
 void MainWindow::initialize()
-
 {
-    /*-----初始化日志记录器-----*/
-    gbLogger = new SLogger();
-
     /*-----初始化主界面-----*/
     //连接编辑器
     connect(ui->mButtonEditor, &QPushButton::clicked, this, &MainWindow::onButtonEditorClicked);
 
     /*-----初始化托盘图标-----*/
     mStrTrayConfigDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgif";
-    mpTrayIconMgr = new STrayMgr(gbLogger, mStrTrayConfigDir);
+    mpTrayIconMgr = new STrayMgr(mStrTrayConfigDir);
     //链接响应事件
     connect(mpTrayIconMgr->getActionPtr(STrayMgr::Quit), &QAction::triggered, qApp, &QApplication::quit);
     connect(mpTrayIconMgr->getActionPtr(STrayMgr::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
@@ -98,8 +90,6 @@ void MainWindow::initialize()
         this->show();
     else if(mpTrayIconMgr->isNotifOn())
         mpTrayIconMgr->sendNotification(tr("S-GIS"), tr("S-GIS initialization complete. Click the tray icon to show the main window."));
-    //写入日志
-    gbLogger->addEntry(Me, SLogger::RunningStatus, "Application initialization complete.");
 
     /*-----测试用-----*/
     //打开编辑器，隐藏主窗口

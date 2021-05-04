@@ -5,30 +5,36 @@
 //  形状工厂类
 //  用于创建形状
 
+#include "sobjectfactory.h"
 #include "sshape.h"
 
-class SShapeFactory: QObject
+enum class ShapeSet
 {
-    //常量和枚举
+    Line,
+    Triangle,
+    Rectangle,
+    Pantagon,
+    Hexagon,
+
+    Circle,
+    Curve,
+
+    Custom_Figure
+};
+
+class SShapeFactory
+    : public SObjectFactory
+{
+private:
+    SShapeFactory();
 public:
-    enum ShapeSet
-    {
-        Line,
-        Triangle,
-        Rectangle,
-        Pantagon,
-        Hexagon,
+    ~SShapeFactory();
 
-        Circle,
-        Curve,
-
-        Custom_Figure
-    };
 
     /*-----成员函数-----*/
 public:
     //[功能函数]
-    static SShape* createShape(ShapeSet type, const QPoint& pt);
+    static SShape* createShape(ShapeSet type);
 };
 
 #endif // SSHAPEFACTORY_H

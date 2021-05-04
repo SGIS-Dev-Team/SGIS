@@ -32,8 +32,8 @@ public:
 
     /*-----构造函数与析构函数-----*/
 public:
-    STrayMgr(SLogger* _logger);
-    STrayMgr(SLogger* _logger, const QString& configDir);
+    STrayMgr();
+    STrayMgr(const QString& configDir);
     virtual ~STrayMgr();
 
     /*-----槽函数-----*/
@@ -82,8 +82,6 @@ private:
     //[配置文件路径]
     QString mStrConfigDir{};
 
-    //[日志记录器]
-    SLogger* gbLogger;
     //[Me]
     QString Me = "Tray_Icon_Manager";
 

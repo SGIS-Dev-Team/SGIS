@@ -27,7 +27,8 @@ class SShape : public SObject
     };
 
     /*-----构造函数与析构函数-----*/
-public:
+    //仅可使用形状工程创建
+protected:
     SShape() = delete;
     explicit SShape(PaintObject _type, bool _selected = true, QPoint center = QPoint(),
                     const QString& _layerName = "",
@@ -38,18 +39,20 @@ public:
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter)const;
+    virtual void paint(QPainter &painter, bool doTranslate = true)const;
     //获取包围矩形
-    virtual QRectF rect();
+    virtual QRectF rect()const;
     //是否包含某点
-    virtual bool contains(const QPointF& pt);
+    virtual bool contains(const QPointF& pt)const;
     //变换
     virtual void tranlate(double dx, double dy);
     virtual void rotate(double angle);
     virtual void scale(double sx, double sy);
     //输出与输入
-    virtual void writeBinaryData(QDataStream& stream);
+    virtual void writeBinaryData(QDataStream& stream)const;
     virtual void readBinaryData(QDataStream& stream);
+    //图层预览图标
+    virtual const QIcon &icon();
 
     /*-----属性-----*/
 protected:
@@ -65,7 +68,7 @@ protected:
     QBrush mBrush{nullptr};
 
     //填充图像
-    QImage* mTextureImage;
+    QPixmap mTextureImage;
 
     //是否闭合，这仅仅是一个标记
     bool mbClose{};
@@ -110,7 +113,7 @@ public:
     void addVertex(std::initializer_list<QPointF> pt);
 
     //设置填充图像
-    void setTextureImage(QImage *image);
+    void setTextureImage(const QPixmap &image);
 
 protected:
     //添加顶点并为控制点分配内存
@@ -148,7 +151,6 @@ public:
 
     //[功能函数]
     virtual void updatePath();
-
 };
 
 #endif // SSHAPE_H

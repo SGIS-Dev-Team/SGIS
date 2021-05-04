@@ -37,6 +37,7 @@ HEADERS += \
     slayermanager.h \
     slogger.h \
     sobject.h \
+    sobjectfactory.h \
     sshape.h \
     sshapefactory.h \
     straymgr.h

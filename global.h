@@ -21,6 +21,8 @@ class SDocument;
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
 #define DEFAULT_CANVAS_SIZE QSize(10000,10000)
+//图层预览图标大小
+#define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
 #define SSTR(expr)#expr
 #define SDBG(expr)SSTR(expr)<<expr<<"\n"

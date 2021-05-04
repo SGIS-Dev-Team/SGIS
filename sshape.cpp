@@ -1,14 +1,20 @@
 ﻿#include "sshape.h"
-
+#include <QIcon>
+#include <QPixmap>
 SShape::SShape(PaintObject _type, bool _selected, QPoint center,
                const QString &_layerName,
                const QString &_layerDiscription,
                const QColor &_layerColor)
-    : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor) {}
+    : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor)
+{
+    this->mBrush.setColor(QColor(128, 128, 128, 128));
+}
 
-SShape::~SShape() {}
+SShape::~SShape()
+{
+}
 
-void SShape::paint(QPainter &painter) const
+void SShape::paint(QPainter &painter, bool doTranslate) const
 {
     //保存原来的样式
     const QPen& oldPen = painter.pen();
@@ -17,36 +23,28 @@ void SShape::paint(QPainter &painter) const
     painter.setPen(mPen);
     painter.setBrush(mBrush);
     //平移到中心点
-    painter.translate(mPtCenter);
+    if(doTranslate)
+        painter.translate(mPtCenter);
     //绘图
     painter.drawPath(mPath);
 
     //返回原点
-    painter.translate(-mPtCenter);
+    if(doTranslate)
+        painter.translate(-mPtCenter);
     //还原样式
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
 }
 
-QRectF SShape::rect()
+QRectF SShape::rect()const
 {
-    //统计所有点xmin，xmax，ymin，ymax
-    double xMin = DBL_MAX, xMax = DBL_MIN, yMin = DBL_MAX, yMax = DBL_MIN;
-    for(auto& pt : mVerticesVec)
-    {
-        if(pt.x() > xMax) xMax = pt.x();
-        if(pt.x() < xMin) xMin = pt.x();
-        if(pt.y() > yMax) yMax = pt.y();
-        if(pt.y() < yMin) yMin = pt.y();
-    }
-    QRectF bound_rect(this->CtoA(QPointF(xMin, yMin)), this->CtoA(QPointF(xMax, yMax)));
-    return bound_rect;
-
+    QRectF boundRect = mPath.boundingRect();
+    boundRect.translate(mPtCenter);
+    return boundRect;
 }
 
-bool SShape::contains(const QPointF &pt)
+bool SShape::contains(const QPointF &pt)const
 {
-    this->updatePath();
     return mPath.contains(pt);
 }
 
@@ -89,7 +87,7 @@ void SShape::scale(double sx, double sy)
     updatePath();
 }
 
-void SShape::writeBinaryData(QDataStream &stream)
+void SShape::writeBinaryData(QDataStream &stream)const
 {
 
 }
@@ -97,6 +95,25 @@ void SShape::writeBinaryData(QDataStream &stream)
 void SShape::readBinaryData(QDataStream &stream)
 {
 
+}
+
+const QIcon &SShape::icon()
+{
+    QPixmap iconPixmap(LAYER_ICON_SIZE);
+    iconPixmap.fill(Qt::transparent);
+    QPainter iconPainter(&iconPixmap);
+
+    //确定形状的外接矩形
+    QRectF shapeRect = mPath.boundingRect();
+    //平移外界矩形中心点到画布中心
+    iconPainter.translate(iconPixmap.rect().center());
+    //使形状填充画布
+    iconPainter.scale(iconPixmap.width() / shapeRect.width(), iconPixmap.height() / shapeRect.height());
+
+    this->paint(iconPainter, false);
+
+    this->mIcon = QIcon(iconPixmap);
+    return this->mIcon;
 }
 
 const std::vector<QPointF> &SShape::vertices() const
@@ -169,13 +186,13 @@ void SShape::addVertex(std::initializer_list<QPointF> pt)
         addVertex(_pt);
 }
 
-void SShape::setTextureImage(QImage *image)
+void SShape::setTextureImage(const QPixmap& pixmap)
 {
-    if(image->isNull())
+    if(pixmap.isNull())
         return;
-    this->mTextureImage = image;
+    this->mTextureImage = pixmap;
     this->filler = Image;
-    this->mBrush.setTextureImage(*mTextureImage);
+    this->mBrush.setTexture(pixmap);
 }
 
 
@@ -326,7 +343,7 @@ void SShape::updatePath()
     //封闭图形
     if(mbClose)
     {
-        //mPath.cubicTo(mControlPtVec[mControlPtVec.size() - 2], mControlPtVec[mControlPtVec.size() - 1], mVerticesVec.front());
-        //mPath.closeSubpath();
+        mPath.cubicTo(mControlPtVec[mControlPtVec.size() - 2], mControlPtVec[mControlPtVec.size() - 1], mVerticesVec.front());
+        mPath.closeSubpath();
     }
 }

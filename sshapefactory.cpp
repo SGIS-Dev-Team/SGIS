@@ -1,12 +1,12 @@
 ﻿#include "sshapefactory.h"
 #include <cassert>
 
-SShape *SShapeFactory::createShape(SShapeFactory::ShapeSet type, const QPoint& pt)
+SShape *SShapeFactory::createShape(ShapeSet type)
 {
-    SShape* shape = new SShape(ShapeBase, true, pt);
+    SShape* shape = new SShape(ShapeBase, true);
     switch (type)
     {
-    case Line:
+    case ShapeSet::Line:
         shape->addVertex(
         {
             QPointF(0, 0),
@@ -14,7 +14,7 @@ SShape *SShapeFactory::createShape(SShapeFactory::ShapeSet type, const QPoint& p
         });
         shape->setLayerName(tr("Line"));
         break;
-    case Triangle:
+    case ShapeSet::Triangle:
         shape->addVertex(
         {
             QPointF(-0.5, 0.5),
@@ -23,17 +23,17 @@ SShape *SShapeFactory::createShape(SShapeFactory::ShapeSet type, const QPoint& p
         });
         shape->setLayerName(tr("Triangle"));
         break;
-    case Rectangle:
+    case ShapeSet::Rectangle:
         shape->addVertex(
         {
-            QPointF(-0.2, -0.2),
-            QPointF(0.2, -0.2),
-            QPointF(0.5, 0.5),
-            QPointF(-0.5, 0.5)
+            QPointF(-0.5, -0.2),
+            QPointF(0.5, -0.2),
+            QPointF(0.5, 0.2),
+            QPointF(-0.5, 0.2)
         });
         shape->setLayerName(tr("Rectangle"));
         break;
-    case Pantagon:
+    case ShapeSet::Pantagon:
         shape->addVertex(
         {
             QPointF(0.0000000, -0.4000000),
@@ -44,7 +44,7 @@ SShape *SShapeFactory::createShape(SShapeFactory::ShapeSet type, const QPoint& p
         });
         shape->setLayerName(tr("Pantagon"));
         break;
-    case Hexagon:
+    case ShapeSet::Hexagon:
         shape->addVertex(
         {
             QPointF(0.0000000, -0.4000000),
@@ -56,18 +56,16 @@ SShape *SShapeFactory::createShape(SShapeFactory::ShapeSet type, const QPoint& p
         });
         shape->setLayerName(tr("Pantagon"));
         break;
-    case Circle:
+    case ShapeSet::Circle:
         shape->addVertex(
         {
 
-        },
-        {
-
-        });
+        }
+        );
         break;
-    case Curve:
+    case ShapeSet::Curve:
         break;
-    case Custom_Figure:
+    case ShapeSet::Custom_Figure:
         break;
     default:
         //形状不存在

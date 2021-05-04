@@ -1,8 +1,8 @@
 ﻿#include "seditor.h"
 #include "ui_seditor.h"
+#include <sshapefactory.h>
 
-SEditor::SEditor(SLogger* _logger, QWidget *parent) :
-    QMainWindow(parent), gbLogger(_logger),
+SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
@@ -26,6 +26,37 @@ void SEditor::onActionZoomoutTriggered()
     mpCurCanvasArea->canvas()->setScaleLevelDown();
 }
 
+#include <QRandomGenerator>
+void SEditor::onActionCreateRectTriggered()
+{
+    quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+    quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+
+    SShape * rect = SShapeFactory::createShape(ShapeSet::Hexagon);
+    rect->setCenterPoint(QPoint(x, y));
+    rect->scale(800, 800);
+    rect->setLayerName(rect->layerName() + QString::number(x + y));
+    rect->setClose(true);
+    rect->setFillRule(Qt::FillRule::WindingFill);
+    mpCurDoc->getLayerManager().addLayer(rect);
+}
+
+#include <QFileDialog>
+void SEditor::onActionLoadImageTriggered()
+{
+    QString path = QFileDialog::getOpenFileName(this);
+    SImage * img[100];
+    for(int i = 0; i < 1; ++i)
+    {
+        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+
+        img[i] = new SImage(PaintObject::ImageBase, QImage(path), true, QPoint(x, y));
+        img[i]->setLayerName("JIALONGFEI");
+        mpCurDoc->getLayerManager().addLayer(img[i]);
+    }
+}
+
 void SEditor::onTabSwitched()
 {
 
@@ -39,6 +70,12 @@ void SEditor::onCanvasMouseMoved(QPoint Log_pos)
 void SEditor::onCanvasScaled(double value)
 {
     mpStatLblCanvasScale->setText(QString::number(value * 100, 'f', 2) + "%");
+}
+
+void SEditor::onLayersUpdated(SLayerManager *which)
+{
+    if(mpCurCanvasArea)
+        mpCurCanvasArea->canvas()->repaint();
 }
 
 void SEditor::closeEvent(QCloseEvent *event)
@@ -58,8 +95,15 @@ void SEditor::initialize()
     /*-----创建绘图区-----*/
     createWorkspace();
 
+    initializeConnections();
+}
+
+void SEditor::initializeConnections()
+{
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
+    connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
+    connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
 
 }
 
@@ -81,5 +125,8 @@ void SEditor::createWorkspace(const QSize &CanvasSize)
     //链接绘图区信息显示
     connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
     connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
+    //设置图层视图
+    ui->mLayerView->setDocument(mpCurDoc);
 }
