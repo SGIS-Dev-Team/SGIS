@@ -30,6 +30,9 @@ void SLayerManager::addLayer(SObject *obj)
     this->mLayerList.push_back(obj);
     //更新图层数据模型
     this->mLayerModel.insertRow(0, _createRowItem(obj));
+    //更新选中图层迭代器链表
+    if(obj->isSelected())
+        this->mSelectedLayerIterList.push_back(--mLayerList.end());
     //发射图层更新信号
     emit layersUpdated(this);
 }
@@ -41,6 +44,8 @@ void SLayerManager::addLayers(std::vector<SObject *> objVec)
         assert(obj != nullptr);
         this->mLayerList.push_back(obj);
         this->mLayerModel.insertRow(0, _createRowItem(obj));
+        if(obj->isSelected())
+            this->mSelectedLayerIterList.push_back(mLayerList.rbegin().base());
     }
     emit layersUpdated(this);
 }
@@ -48,17 +53,13 @@ void SLayerManager::addLayers(std::vector<SObject *> objVec)
 void SLayerManager::replaceLayer(size_t pos, SObject* newLayer)
 {
     list_iterator iter = _iterAt(pos);
-    SObjectFactory::releaseObject(*iter);
-    *iter = newLayer;
-    this->mLayerModel.setItem(_posSwitch(pos), *_createRowItem(newLayer).toVector().data());
-    emit layersUpdated(this);
+    replaceLayer(iter, newLayer);
 }
 
 void SLayerManager::replaceLayer(SObject *oldLayer, SObject *newLayer)
 {
     list_iterator iter = std::find(mLayerList.begin(), mLayerList.end(), oldLayer);
     replaceLayer(iter, newLayer);
-    emit layersUpdated(this);
 }
 
 void SLayerManager::replaceLayer(list_iterator it, SObject *newLayer)
@@ -106,6 +107,11 @@ void SLayerManager::removeLayer(list_iterator it)
 const layer_list & SLayerManager::getLayerList()const
 {
     return mLayerList;
+}
+
+const std::list<list_iterator> &SLayerManager::getSelectedLayerIterList() const
+{
+    return mSelectedLayerIterList;
 }
 
 const QStandardItemModel *SLayerManager::getLayerModel()const

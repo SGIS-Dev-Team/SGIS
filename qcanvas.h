@@ -48,6 +48,11 @@ signals:
     /*-----槽函数-----*/
 private slots:
 
+    /*-----控制标记-----*/
+private:
+    QPoint mPtLogicalPressPos{};
+    bool mbDraging{false};
+
     /*-----属性-----*/
 private:
     //开启网格

@@ -29,6 +29,8 @@ void SEditor::onActionZoomoutTriggered()
 #include <QRandomGenerator>
 void SEditor::onActionCreateRectTriggered()
 {
+    mpCurDoc->getLayerManager().clearSelection();
+
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
@@ -44,6 +46,7 @@ void SEditor::onActionCreateRectTriggered()
 #include <QFileDialog>
 void SEditor::onActionLoadImageTriggered()
 {
+    mpCurDoc->getLayerManager().clearSelection();
     QString path = QFileDialog::getOpenFileName(this);
     SImage * img[100];
     for(int i = 0; i < 1; ++i)
