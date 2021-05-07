@@ -25,7 +25,7 @@ void SLayerManager::onLayerViewClicked(const QModelIndex &index)
 
 void SLayerManager::addLayer(SObject *obj)
 {
-    assert(obj != nullptr);
+    Q_ASSERT(obj != nullptr);
     //更新图层链表
     this->mLayerList.push_back(obj);
     //更新图层数据模型
@@ -41,7 +41,7 @@ void SLayerManager::addLayers(std::vector<SObject *> objVec)
 {
     for(SObject* obj : objVec)
     {
-        assert(obj != nullptr);
+        Q_ASSERT(obj != nullptr);
         this->mLayerList.push_back(obj);
         this->mLayerModel.insertRow(0, _createRowItem(obj));
         if(obj->isSelected())
@@ -165,7 +165,7 @@ void SLayerManager::clearSelection()
 
 list_iterator SLayerManager::_iterAt(size_t pos)
 {
-    assert(pos < mLayerList.size());
+    Q_ASSERT(pos < mLayerList.size());
 
     list_iterator iter = mLayerList.begin();
     for(size_t i = 0; i < pos; ++i)
@@ -186,7 +186,7 @@ size_t SLayerManager::_posOf(list_iterator it)
 
 QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
 {
-    assert(obj != nullptr);
+    Q_ASSERT(obj != nullptr);
 
     QStandardItem* itemCheck = new QStandardItem;
     QStandardItem* itemLayerIcon = new QStandardItem(obj->icon(), obj->layerName());

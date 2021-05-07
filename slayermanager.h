@@ -100,7 +100,7 @@ private:
 
 size_t SLayerManager::_posSwitch(size_t pos)
 {
-    assert(pos < mLayerList.size());
+    Q_ASSERT(pos < mLayerList.size());
     return mLayerList.size() - pos - 1;
 }
 

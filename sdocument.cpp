@@ -50,6 +50,7 @@ void SDocument::paint(QPainter &painter)
         return;
     const list_iterator firstSelectedIter = selectedLayerIterList.front();
     (*firstSelectedIter)->paintBoundRect(painter);
+
 }
 
 

@@ -37,6 +37,7 @@ void SEditor::onActionCreateRectTriggered()
     SShape * rect = SShapeFactory::createShape(ShapeSet::Hexagon);
     rect->setCenterPoint(QPoint(x, y));
     rect->scale(800, 800);
+    rect->rotate(15);
     rect->setLayerName(rect->layerName() + QString::number(x + y));
     rect->setClose(true);
     rect->setFillRule(Qt::FillRule::WindingFill);
@@ -48,16 +49,20 @@ void SEditor::onActionLoadImageTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
     QString path = QFileDialog::getOpenFileName(this);
-    SImage * img[100];
-    for(int i = 0; i < 1; ++i)
-    {
-        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
-        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-        img[i] = new SImage(PaintObject::ImageBase, QImage(path), true, QPoint(x, y));
-        img[i]->setLayerName("JIALONGFEI");
-        mpCurDoc->getLayerManager().addLayer(img[i]);
-    }
+    quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+    quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+
+    QPixmap* pixmap = new QPixmap;
+    pixmap->load(path);
+
+    SImage* pImg = new SImage(PaintObject::ImageBase, pixmap, true, QPoint(x, y));
+
+
+    pImg->scale(2, 3);
+    pImg->rotate(30);
+    mpCurDoc->getLayerManager().addLayer(pImg);
+
 }
 
 void SEditor::onTabSwitched()

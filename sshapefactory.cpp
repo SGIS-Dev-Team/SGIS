@@ -54,7 +54,7 @@ SShape *SShapeFactory::createShape(ShapeSet type)
             QPointF(0.3464102, 0.2000000),
             QPointF(0.3464102, -0.2000000)
         });
-        shape->setLayerName(tr("Pantagon"));
+        shape->setLayerName(tr("Hexagon"));
         break;
     case ShapeSet::Circle:
         shape->addVertex(
@@ -69,7 +69,7 @@ SShape *SShapeFactory::createShape(ShapeSet type)
         break;
     default:
         //形状不存在
-        assert(0);
+        Q_ASSERT(0);
         break;
     }
     return shape;

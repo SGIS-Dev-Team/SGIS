@@ -26,7 +26,7 @@ void SShape::paint(QPainter &painter, bool doTranslate) const
     if(doTranslate)
         painter.translate(mPtCenter);
     //绘图
-    painter.drawPath(mPath);
+    painter.drawPath(mPathTransformed);
 
     //返回原点
     if(doTranslate)
@@ -36,59 +36,27 @@ void SShape::paint(QPainter &painter, bool doTranslate) const
     painter.setBrush(oldBrush);
 }
 
-QRectF SShape::rect()const
+QPolygonF SShape::boundingRect()const
 {
     QRectF boundRect = mPath.boundingRect();
-    boundRect.translate(mPtCenter);
-    return boundRect;
+
+    QPointF topLeft = boundRect.topLeft(),
+            topRight = boundRect.topRight(),
+            bottomRight = boundRect.bottomRight(),
+            bottomLeft = boundRect.bottomLeft();
+
+    QVector<QPointF> ptVec;
+    ptVec.push_back(mTransform.map(topLeft));
+    ptVec.push_back(mTransform.map(topRight));
+    ptVec.push_back(mTransform.map(bottomRight));
+    ptVec.push_back(mTransform.map(bottomLeft));
+
+    return QPolygonF(ptVec).translated(mPtCenter);
 }
 
 bool SShape::contains(const QPointF &pt)const
 {
-    return mPath.contains(this->AtoC(pt));
-}
-
-void SShape::translate(double dx, double dy)
-{
-    mPtCenter.rx() += dx;
-    mPtCenter.ry() += dy;
-}
-
-void SShape::translate(const QPointF &pt)
-{
-    mPtCenter += pt;
-}
-
-void SShape::rotate(double angle)
-{
-    mdRotateAngle = fmod(mdRotateAngle + angle, 360);
-    for(auto& pt : mVerticesVec)
-    {
-        pt.rx() = pt.rx() * cos(angle) - pt.ry() * sin(angle);
-        pt.ry() = -pt.ry() * cos(angle) - pt.rx() * sin(angle);
-    }
-    for(auto& pt : mControlPtVec)
-    {
-        pt.rx() = pt.rx() * cos(angle) - pt.ry() * sin(angle);
-        pt.ry() = -pt.ry() * cos(angle) - pt.rx() * sin(angle);
-    }
-    updatePath();
-}
-
-void SShape::scale(double sx, double sy)
-{
-    assert(sx > 0 && sy > 0);
-    for(auto& pt : mVerticesVec)
-    {
-        pt.rx() *= sx;
-        pt.ry() *= sy;
-    }
-    for(auto& pt : mControlPtVec)
-    {
-        pt.rx() *= sx;
-        pt.ry() *= sy;
-    }
-    updatePath();
+    return mPathTransformed.contains(this->AtoC(pt));
 }
 
 void SShape::writeBinaryData(QDataStream &stream)const
@@ -101,23 +69,10 @@ void SShape::readBinaryData(QDataStream &stream)
 
 }
 
-const QIcon &SShape::icon()
+void SShape::_applyTransform()
 {
-    QPixmap iconPixmap(LAYER_ICON_SIZE);
-    iconPixmap.fill(Qt::transparent);
-    QPainter iconPainter(&iconPixmap);
-
-    //确定形状的外接矩形
-    QRectF shapeRect = mPath.boundingRect();
-    //平移外界矩形中心点到画布中心
-    iconPainter.translate(iconPixmap.rect().center());
-    //使形状填充画布
-    iconPainter.scale(iconPixmap.width() / shapeRect.width(), iconPixmap.height() / shapeRect.height());
-
-    this->paint(iconPainter, false);
-
-    this->mIcon = QIcon(iconPixmap);
-    return this->mIcon;
+    updatePath();
+    mPathTransformed = mTransform.map(mPath);
 }
 
 const std::vector<QPointF> &SShape::vertices() const
@@ -241,7 +196,7 @@ void SShape::setVertex(const QPointF & _pt, size_t idx)
     mControlPtVec[idx * 2 + 1] += sftFactor;
     mControlPtVec[idx == 0 ? mControlPtVec.size() - 1 : idx * 2 - 1] += sftFactor * 2.0;
     mControlPtVec[idx == 0 ? mControlPtVec.size() - 2 : idx * 2 - 2] += sftFactor;
-    updatePath();
+    _applyTransform();
 }
 
 void SShape::insertVertex(const QPointF & _pt, size_t idx)
@@ -264,7 +219,7 @@ void SShape::insertVertex(const QPointF & _pt, size_t idx)
     mControlPtVec.insert(mControlPtVec.begin() + idx * 2, {pt + fwdSftFactor, pt + fwdSftFactor * 2.0});
     //插入顶点
     mVerticesVec.insert(mVerticesVec.begin() + idx, pt);
-    updatePath();
+    _applyTransform();
 }
 
 QPointF SShape::removeVertex(size_t idx)
@@ -284,14 +239,14 @@ QPointF SShape::removeVertex(size_t idx)
     size_t cidx = idx == 0 ? mControlPtVec.size() : idx * 2;
     mControlPtVec.erase(mControlPtVec.begin() + cidx - 2, mControlPtVec.begin() + cidx - 1);
     return this->CtoA(tmpPt);
-    updatePath();
+    _applyTransform();
 }
 
 void SShape::setCtrlPt(const QPointF &cpt, size_t idx, bool secondPt)
 {
     assert(!(mbClose == false && idx == mVerticesVec.size() - 1));
     mControlPtVec[idx * 2 + secondPt] = this->AtoC(cpt);
-    updatePath();
+    _applyTransform();
 }
 
 void SShape::setPen(const QPen & pen)
@@ -323,7 +278,7 @@ void SShape::setClose(bool close)
 {
     assert(mVerticesVec.size() > 2);
     mbClose = close;
-    updatePath();
+    _applyTransform();
 }
 
 bool SShape::doUpdate() const
@@ -339,6 +294,7 @@ void SShape::setUpdate(bool update)
 
 void SShape::updatePath()
 {
+    mPath.clear();
     //创建新绘制路径：位于(0,0)
     mPath.moveTo(mVerticesVec.front());
     //用贝塞尔曲线链接
@@ -346,8 +302,7 @@ void SShape::updatePath()
         mPath.cubicTo(mControlPtVec[idx * 2], mControlPtVec[idx * 2 + 1], mVerticesVec[idx + 1]);
     //封闭图形
     if(mbClose)
-    {
         mPath.cubicTo(mControlPtVec[mControlPtVec.size() - 2], mControlPtVec[mControlPtVec.size() - 1], mVerticesVec.front());
-        mPath.closeSubpath();
-    }
+
+    mPath.closeSubpath();
 }
