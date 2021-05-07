@@ -12,7 +12,7 @@ SObject::SObject(PaintObject _type, bool _selected, QPoint center,
 
 SObject::~SObject() {}
 
-void SObject::paintBoundRect(QPainter &painter, bool doTranslate)
+void SObject::paintBoundRect(QPainter &painter)
 {
     //保存原来的样式
     const QPen& oldPen = painter.pen();
@@ -28,24 +28,23 @@ void SObject::paintBoundRect(QPainter &painter, bool doTranslate)
     painter.setBrush(brush);
     painter.setCompositionMode(oldCompoMode);
 
-    QRectF bound_rect = this->rect();
+    QPolygonF bound_polygon = this->boundingRect();
 
     //------------绘图-------------//
 
     //绘制矩形
-    painter.drawRect(bound_rect);
+    painter.drawPolygon(bound_polygon);
     //绘制操作点
     pen.setWidth(1);
     //四个角点
-    painter.drawEllipse(bound_rect.topLeft(), 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse(bound_rect.topRight(), 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse(bound_rect.bottomLeft(), 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse(bound_rect.bottomRight(), 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
+    for(auto& pt : bound_polygon)
+        painter.drawEllipse(pt, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
     //四个边中点
-    painter.drawEllipse((bound_rect.topLeft() + bound_rect.topRight()) / 2, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse((bound_rect.topLeft() + bound_rect.bottomLeft()) / 2, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse((bound_rect.bottomRight() + bound_rect.topRight()) / 2, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
-    painter.drawEllipse((bound_rect.bottomRight() + bound_rect.bottomLeft()) / 2, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
+    for(int i = 0; i < 4; ++i)
+    {
+        QPointF center = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
+        painter.drawEllipse(center, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
+    }
 
     //------------绘图-------------//
 
@@ -53,6 +52,52 @@ void SObject::paintBoundRect(QPainter &painter, bool doTranslate)
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
     painter.setCompositionMode(oldCompoMode);
+}
+
+
+void SObject::translate(double dx, double dy)
+{
+    mPtCenter.rx() += dx;
+    mPtCenter.ry() += dy;
+}
+
+void SObject::translate(const QPointF &pt)
+{
+    mPtCenter += pt;
+}
+
+void SObject::rotate(double angle)
+{
+    mdRotateAngle += angle;
+    _reCalcTransfrom();
+    _applyTransform();
+}
+
+void SObject::scale(double sx, double sy)
+{
+    Q_ASSERT(sx > 0 && sy > 0);
+    mdSx *= sx;
+    mdSy *= sy;
+    _reCalcTransfrom();
+    _applyTransform();
+}
+
+QIcon SObject::icon()const
+{
+    QPixmap iconPixmap(LAYER_ICON_SIZE);
+    iconPixmap.fill(Qt::transparent);
+    QPainter iconPainter(&iconPixmap);
+
+    //确定形状的外接矩形尺寸
+    QRectF bound_rect = this->boundingRect().boundingRect();
+    //平移外界矩形中心点到画布中心
+    iconPainter.translate(iconPixmap.rect().center());
+    //使形状填充画布
+    iconPainter.scale(iconPixmap.width() / bound_rect.width(), iconPixmap.height() / bound_rect.height());
+
+    this->paint(iconPainter, false);
+
+    return QIcon(iconPixmap);
 }
 
 bool SObject::isVisible() const
@@ -73,6 +118,12 @@ bool SObject::isSelected() const
 bool SObject::rotateAngle() const
 {
     return mdRotateAngle;
+}
+
+void SObject::scaleFactor(double &sx, double &sy) const
+{
+    sx = this->mdSx;
+    sy = this->mdSy;
 }
 
 const QPointF SObject::centerPoint() const
@@ -112,7 +163,12 @@ void SObject::setSelected(bool select)
 
 void SObject::setRotateAngle(double angle)
 {
-    mdRotateAngle = angle;
+    this->rotate(angle - mdRotateAngle);
+}
+
+void SObject::setScaleFactor(double sx, double sy)
+{
+    this->scale(sx / mdSx, sy / mdSy);
 }
 
 void SObject::setCenterPoint(const QPointF &newCenterPt)
@@ -133,4 +189,11 @@ void SObject::setLayerDiscription(const QString &discription)
 void SObject::setLayerColor(const QColor &color)
 {
     mLayerColor = color;
+}
+
+void SObject::_reCalcTransfrom()
+{
+    mTransform.reset();
+    mTransform.rotate(mdRotateAngle);
+    mTransform.scale(mdSx, mdSy);
 }

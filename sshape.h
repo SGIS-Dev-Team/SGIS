@@ -27,7 +27,7 @@ class SShape : public SObject
     };
 
     /*-----构造函数与析构函数-----*/
-    //仅可使用形状工程创建
+    //仅可使用形状工厂创建
 protected:
     SShape() = delete;
     explicit SShape(PaintObject _type, bool _selected = true, QPoint center = QPoint(),
@@ -41,19 +41,14 @@ public:
     //绘制函数
     virtual void paint(QPainter &painter, bool doTranslate = true)const;
     //获取包围矩形
-    virtual QRectF rect()const;
+    virtual QPolygonF boundingRect()const;
     //是否包含某点
     virtual bool contains(const QPointF& pt)const;
-    //变换
-    virtual void translate(double dx, double dy);
-    virtual void translate(const QPointF& pt);
-    virtual void rotate(double angle);
-    virtual void scale(double sx, double sy);
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const;
     virtual void readBinaryData(QDataStream& stream);
-    //图层预览图标
-    virtual const QIcon &icon();
+    //应用变换
+    virtual void _applyTransform();
 
     /*-----属性-----*/
 protected:
@@ -61,9 +56,10 @@ protected:
     std::vector<QPointF> mVerticesVec{};
     //形状贝塞尔曲线控制点向量，存储每条线的两个三次贝塞尔曲线控制点
     std::vector<QPointF> mControlPtVec{};
+
     //绘制路径
     QPainterPath mPath;
-
+    QPainterPath mPathTransformed;
     //样式
     QPen mPen{nullptr};
     QBrush mBrush{nullptr};
