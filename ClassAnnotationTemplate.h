@@ -26,7 +26,8 @@ private slots:
 protected:
 
     /*-----成员变量-----*/
-private:
+protected:
+
 
     /*-----成员函数-----*/
 public:

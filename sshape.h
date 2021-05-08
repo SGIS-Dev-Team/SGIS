@@ -30,7 +30,7 @@ class SShape : public SObject
     //仅可使用形状工厂创建
 protected:
     SShape() = delete;
-    explicit SShape(PaintObject _type, bool _selected = true, QPoint center = QPoint(),
+    explicit SShape(PaintObject _type, bool _selected = true, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
                     const QColor& _layerColor = "");

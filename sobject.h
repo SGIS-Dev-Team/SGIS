@@ -34,7 +34,7 @@ class SObject
     friend class SObjectFactory;
     /*-----构造函数与析构函数-----*/
 protected:
-    explicit SObject(PaintObject _type, bool _selected = true, QPoint center = QPoint(),
+    explicit SObject(PaintObject _type, bool _selected = true, QPointF center = QPointF(),
                      const QString& _layerName = "",
                      const QString& _layerDiscription = "",
                      const QColor& _layerColor = "");
