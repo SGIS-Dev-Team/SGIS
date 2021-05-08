@@ -43,7 +43,7 @@ protected:
     /*-----虚函数-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter, bool doTranslate = true)const = 0;
+    virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const = 0;
     //是否包含某点

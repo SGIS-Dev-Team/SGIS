@@ -43,7 +43,6 @@ private:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-
     QCanvas *canvas();
 };
 

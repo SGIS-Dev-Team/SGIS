@@ -1,23 +1,26 @@
 ﻿#include "sfragmatrix.h"
 
+SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, QStringList _dataPath): SFragMatrix(_rows, _cols)
+{
+    Q_ASSERT((size_t)_dataPath.size() >= _rows * _cols);
+    for(size_t i = 0; i < _rows * _cols; ++i)
+        dataPath[i] = _dataPath[i];
+    _dataPath.clear();
+}
+
 SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, QString *_dataPath, size_t _count): SFragMatrix(_rows, _cols)
 {
     Q_ASSERT(_count >= _rows * _cols);
     for(size_t i = 0; i < _rows * _cols; ++i)
-    {
         dataPath[i] = _dataPath[i];
-        _dataPath[i].clear();
-    }
 }
 
 SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, std::vector<QString> &_dataPath): SFragMatrix(_rows, _cols)
 {
     Q_ASSERT(_dataPath.size() >= _rows * _cols);
     for(size_t i = 0; i < _rows * _cols; ++i)
-    {
         dataPath[i] = _dataPath[i];
-        _dataPath[i].clear();
-    }
+    _dataPath.clear();
 }
 
 SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, SImage **_data, size_t _count): SFragMatrix(_rows, _cols)

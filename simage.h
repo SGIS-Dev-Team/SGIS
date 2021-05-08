@@ -13,7 +13,7 @@
 
 class SImage : public SObject
 {
-public: //测试完记得给回protected
+public:
     explicit SImage(PaintObject _type, QPixmap *_image, bool _selected = true, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
@@ -22,7 +22,7 @@ public: //测试完记得给回protected
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter, bool doTranslate = true)const;
+    virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const;
     //获取包围矩形
     virtual QPolygonF boundingRect()const;
     //是否包含某点
@@ -40,6 +40,8 @@ private:
     /*-----成员变量-----*/
 private:
     const QString Me = "ImageBase";
+    //图像文件路径
+
 
     //图像
     QPixmap *mpImage{nullptr};
@@ -53,6 +55,7 @@ public:
     //[访问函数]
 
     //[修改函数]
+
 
     //[功能函数]
 };

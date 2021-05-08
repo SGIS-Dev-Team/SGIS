@@ -1,11 +1,11 @@
 ﻿#include "sobject.h"
 
 
-SObject::SObject(PaintObject _type, bool _selected, QPoint center,
+SObject::SObject(PaintObject _type, bool _selected, QPointF _center,
                  const QString &_layerName,
                  const QString &_layerDiscription,
                  const QColor &_layerColor)
-    :   type(_type), mbSelected(_selected), mPtCenter(center),
+    :   type(_type), mbSelected(_selected), mPtCenter(_center),
         mStrLayerName(_layerName),
         mStrLayerDiscription(_layerDiscription),
         mLayerColor(_layerColor) {}

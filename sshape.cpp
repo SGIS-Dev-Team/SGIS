@@ -14,7 +14,7 @@ SShape::~SShape()
 {
 }
 
-void SShape::paint(QPainter &painter, bool doTranslate) const
+void SShape::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue) const
 {
     //保存原来的样式
     const QPen& oldPen = painter.pen();

@@ -28,7 +28,7 @@ SImage::~SImage()
     mpImage = nullptr;
 }
 
-void SImage::paint(QPainter &painter, bool doTranslate) const
+void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue)const
 {
     if(!mpImage)
         return;

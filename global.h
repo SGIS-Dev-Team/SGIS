@@ -31,6 +31,8 @@ class SDocument;
 #define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
+//默认分片影像读取栈大小
+#define DEFAULT_FRAG_STACK_SIZE 10
 
 //外接矩形逻辑像素
 #define BOUND_RECT_PEN_WIDTH 5

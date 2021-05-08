@@ -7,6 +7,7 @@ class SFragMatrix
 {
     /*-----构造函数与析构函数-----*/
 public:
+    explicit SFragMatrix(size_t _rows, size_t _cols, QStringList _dataPath);
     explicit SFragMatrix(size_t _rows, size_t _cols, QString *_dataPath, size_t _count);
     explicit SFragMatrix(size_t _rows, size_t _cols, std::vector<QString> &_dataPath);
     explicit SFragMatrix(size_t _rows, size_t _cols, SImage **_data, size_t _count);
@@ -48,9 +49,10 @@ private:
 public:
     //[访问函数]
     //重载括号运算符
-    inline SImage*& operator()(size_t row, size_t col);
-    inline QString& pathAt(size_t row, size_t col);
+    inline SImage *&operator()(size_t row, size_t col);
+    inline QString &pathAt(size_t row, size_t col);
     SFragMatrix block(size_t begin_row, size_t row_span, size_t begin_col, size_t col_span);
+    inline SImage **getData()const;
 
     //元数据
     inline size_t Rows()const;
@@ -71,7 +73,7 @@ public:
                              size_t _level_width, size_t _level_height,
                              size_t _frag_width, size_t _frag_height);
     inline void setPathAt(size_t row, size_t col, const QString& path);
-    inline void loadData(size_t row, size_t col, const QString& _path = "");
+    inline void loadDataAt(size_t row, size_t col, const QString& _path = "");
 
     //[功能函数]
 private:
@@ -95,6 +97,11 @@ QString &SFragMatrix::pathAt(size_t row, size_t col)
 {
     Q_ASSERT(row < rows && col < cols);
     return dataPath[row * cols + col];
+}
+
+SImage **SFragMatrix::getData() const
+{
+    return data;
 }
 
 size_t SFragMatrix::Rows()const
@@ -171,7 +178,7 @@ void SFragMatrix::setPathAt(size_t row, size_t col, const QString& path)
     this->pathAt(row, col) = path;
 }
 
-void SFragMatrix::loadData(size_t row, size_t col, const QString &_path)
+void SFragMatrix::loadDataAt(size_t row, size_t col, const QString &_path)
 {
     QString &path = pathAt(row, col);
     if(!_path.isEmpty())
