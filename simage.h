@@ -14,7 +14,7 @@
 class SImage : public SObject
 {
 public: //测试完记得给回protected
-    explicit SImage(PaintObject _type, QPixmap *image, bool _selected = true, QPoint center = QPoint(),
+    explicit SImage(PaintObject _type, QPixmap *_image, bool _selected = true, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
                     const QColor& _layerColor = "");

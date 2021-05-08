@@ -16,6 +16,9 @@ SOURCES += \
     qlayerview.cpp \
     sdocument.cpp \
     seditor.cpp \
+    sfragimage.cpp \
+    sfragloader.cpp \
+    sfragmatrix.cpp \
     simage.cpp \
     slayermanager.cpp \
     slogger.cpp \
@@ -33,6 +36,9 @@ HEADERS += \
     qlayerview.h \
     sdocument.h \
     seditor.h \
+    sfragimage.h \
+    sfragloader.h \
+    sfragmatrix.h \
     simage.h \
     slayermanager.h \
     slogger.h \

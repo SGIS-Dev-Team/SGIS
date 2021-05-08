@@ -1,7 +1,7 @@
 ﻿#include "sshape.h"
 #include <QIcon>
 #include <QPixmap>
-SShape::SShape(PaintObject _type, bool _selected, QPoint center,
+SShape::SShape(PaintObject _type, bool _selected, QPointF center,
                const QString &_layerName,
                const QString &_layerDiscription,
                const QColor &_layerColor)

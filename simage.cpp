@@ -1,16 +1,16 @@
 ﻿#include "simage.h"
 
-SImage::SImage(PaintObject _type, QPixmap *image, bool _selected, QPoint center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+SImage::SImage(PaintObject _type, QPixmap *_image, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
-    if(image->isNull())
+    if(_image->isNull())
         return;
-    this->mpImage = image;
+    this->mpImage = _image;
     //显示区域初始化
-    QPointF topLeft(-image->width() / 2, -image->height() / 2);
-    QPointF topRight(image->width() / 2, -image->height() / 2);
-    QPointF bottomLeft(-image->width() / 2, image->height() / 2);
-    QPointF bottomRight(image->width() / 2, image->height() / 2);
+    QPointF topLeft(-_image->width() / 2, -_image->height() / 2);
+    QPointF topRight(_image->width() / 2, -_image->height() / 2);
+    QPointF bottomLeft(-_image->width() / 2, _image->height() / 2);
+    QPointF bottomRight(_image->width() / 2, _image->height() / 2);
     //确定包围控制点
     mpBoundPt[0] = topLeft;
     mpBoundPt[1] = topRight;
