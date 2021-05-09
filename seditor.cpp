@@ -53,16 +53,23 @@ void SEditor::onActionLoadImageTriggered()
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    QPixmap* pixmap = new QPixmap;
-    pixmap->load(path);
-
-    SImage* pImg = new SImage(PaintObject::ImageBase, pixmap, true, QPoint(x, y));
-
+    SImage* pImg = new SImage(path, true, QPoint(x, y));
 
     pImg->scale(2, 3);
     pImg->rotate(30);
     mpCurDoc->getLayerManager().addLayer(pImg);
 
+}
+
+#include <sfragimage.h>
+void SEditor::onActionLoadFragmentsTriggered()
+{
+    QString path = QFileDialog::getExistingDirectory(this);
+    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true,
+                                          QPointF(DEFAULT_CANVAS_SIZE.width() / 2, DEFAULT_CANVAS_SIZE.height() / 2));
+    pFragImg->setFragmentPath(path, "H50E00060001");
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
+    mpCurCanvasArea->ensureVisible(25000, 25000);
 }
 
 void SEditor::onTabSwitched()
@@ -112,6 +119,7 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
+    connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
 
 }
 

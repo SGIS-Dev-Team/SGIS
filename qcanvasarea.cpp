@@ -8,10 +8,12 @@ QCanvasArea::QCanvasArea(const QSize &CanvasSize, QWidget *parent): QScrollArea(
     mpCanvas = new QCanvas(this, CanvasSize);
     //链接事件响应
     connect(mpCanvas, &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
-
+    connect(this->horizontalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
     //调整对齐
     setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignVCenter));
     this->setWidget(mpCanvas);
+    mpCanvas->setViewArea(viewArea());
 }
 
 QCanvasArea::QCanvasArea(QWidget *parent): QCanvasArea(DEFAULT_CANVAS_SIZE, parent) {}
@@ -25,6 +27,15 @@ QCanvasArea::~QCanvasArea()
 QCanvas *QCanvasArea::canvas()
 {
     return mpCanvas;
+}
+
+QRectF QCanvasArea::viewArea() const
+{
+    double scaleValue = mpCanvas->scaleValue();
+    return QRectF(this->horizontalScrollBar()->value() / scaleValue,
+                  this->verticalScrollBar()->value() / scaleValue,
+                  this->horizontalScrollBar()->pageStep() / scaleValue,
+                  this->verticalScrollBar()->pageStep() / scaleValue);
 }
 
 void QCanvasArea::keyPressEvent(QKeyEvent *event)
@@ -97,4 +108,12 @@ void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
     //将视图区移动到新左上角点
     hor->setValue(ptViewportLTActual_Resized.x());
     ver->setValue(ptViewportLTActual_Resized.y());
+
+    //发送视图区域改变信号
+    mpCanvas->setViewArea(viewArea());
+}
+
+void QCanvasArea::onSliderValueChange(int value)
+{
+    mpCanvas->setViewArea(viewArea());
 }

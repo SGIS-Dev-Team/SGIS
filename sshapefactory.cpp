@@ -3,7 +3,7 @@
 
 SShape *SShapeFactory::createShape(ShapeSet type)
 {
-    SShape* shape = new SShape(ShapeBase, true);
+    SShape* shape = new SShape(true);
     switch (type)
     {
     case ShapeSet::Line:

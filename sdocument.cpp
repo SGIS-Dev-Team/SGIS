@@ -7,6 +7,7 @@ SDocument::SDocument(QCanvas *canvas)
         return;
     setCanvas(canvas);
     canvas->setDocument(this);
+    _initializeConnections();
 }
 
 SDocument::SDocument(QCanvas *canvas, const QString &path): SDocument(canvas)
@@ -19,6 +20,16 @@ SDocument::~SDocument()
 
 }
 
+void SDocument::onImageLoaded(SImage *pImage)
+{
+    const QRectF& viewAreaRect = mpCanvas->viewArea();
+    double scaleValue = mpCanvas->scaleValue();
+    mpCanvas->repaint(viewAreaRect.left() * scaleValue,
+                      viewAreaRect.top() * scaleValue,
+                      viewAreaRect.width() * scaleValue,
+                      viewAreaRect.height() * scaleValue);
+}
+
 void SDocument::setCanvas(QCanvas *canvas)
 {
     this->mpCanvas = canvas;
@@ -29,7 +40,12 @@ SLayerManager &SDocument::getLayerManager()
     return mLayerMgr;
 }
 
-void SDocument::paint(QPainter &painter)
+SFragLoader &SDocument::getFragLoader()
+{
+    return mFragLoader;
+}
+
+void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleValue)
 {
     const layer_list layerList = mLayerMgr.getLayerList();
 
@@ -39,7 +55,7 @@ void SDocument::paint(QPainter &painter)
     {
         SObject* obj = *iter;
         if(obj->isVisible())
-            obj->paint(painter);
+            obj->paint(painter, true, viewArea, scaleValue);
     }
 
     //绘制选框
@@ -51,6 +67,11 @@ void SDocument::paint(QPainter &painter)
     const list_iterator firstSelectedIter = selectedLayerIterList.front();
     (*firstSelectedIter)->paintBoundRect(painter);
 
+}
+
+void SDocument::_initializeConnections()
+{
+    connect(&mFragLoader, &SFragLoader::imageLoaded, this, &SDocument::onImageLoaded);
 }
 
 
