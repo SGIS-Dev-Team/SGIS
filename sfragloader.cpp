@@ -1,42 +1,65 @@
 ﻿#include "sfragloader.h"
 
-SFragLoader::SFragLoader(size_t fragStackSize): muMaxFragCount(fragStackSize)
+
+SFragLoader::SFragLoader(size_t fragTempSize, size_t readInStackSize): muMaxFragCount(fragTempSize), muMaxReadInStackSize(readInStackSize)
 {
-    mReadInStack.resize(muMaxFragCount);
+}
+
+SFragLoader::~SFragLoader()
+{
+
 }
 
 void SFragLoader::run()
 {
-    if(mReadInStack.empty())
-        return;
-    //读取策略：
-    //从栈顶向下读取，寻找第一个空指针，读入
-    //读入后重新从栈顶读取，递归
-    for(auto &ppImage : mReadInStack)
+    //循环读入栈顶分片
+    while(!mReadInStack.empty())
     {
-        if(*ppImage == nullptr)
-        {
+        SImage* pImage = mReadInStack.front();
+        Q_ASSERT(pImage);
 
+        if(pImage->isNull())
+        {
+            pImage->load();
+
+            emit imageLoaded(pImage);
+            //缓存队列超出则清除队首元素
+            if(mFragTempQueue.size() == muMaxFragCount)
+            {
+                mFragTempQueue.front()->releaseImage();
+                mFragTempQueue.pop_front();
+            }
+            mFragTempQueue.push_back(pImage);
         }
+        mReadInStack.pop_front();
     }
 }
 
-
-void SFragLoader::push_front(SImage *&rpImage)
+void SFragLoader::push_front(SImage *pImage)
 {
-    //如果rpImage已有值，则不做任何事
-    if(rpImage)
+    //如果为空指针或已加载图像，则不做任何事
+    if(!pImage || !pImage->isNull())
         return;
 
     //容量已满，则将栈底部弹出
-    if(mReadInStack.size() == muMaxFragCount)
+    if(mReadInStack.size() == muMaxReadInStackSize)
         mReadInStack.pop_back();
 
-    //将参数加入栈顶
-    mReadInStack.push_front(&rpImage);
+    //将image加入栈顶
+    mReadInStack.push_front(pImage);
 }
 
-void SFragLoader::push_front(SImage **ppImageArray[], size_t count)
+void SFragLoader::push_front(SImage** pImage, size_t count)
 {
+    //保证压入量不大于缓存数
+    count = count > muMaxReadInStackSize ? muMaxReadInStackSize : count;
 
+    for(int i = count - 1; i >= 0; --i)
+    {
+        if(!pImage[i] || !pImage[i]->isNull())
+            continue;
+        mReadInStack.push_front(pImage[i]);
+        if(mReadInStack.size() == muMaxReadInStackSize)
+            mReadInStack.pop_back();
+    }
 }

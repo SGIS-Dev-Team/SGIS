@@ -1,11 +1,11 @@
 ﻿#include "sshape.h"
 #include <QIcon>
 #include <QPixmap>
-SShape::SShape(PaintObject _type, bool _selected, QPointF center,
-               const QString &_layerName,
-               const QString &_layerDiscription,
-               const QColor &_layerColor)
-    : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor)
+SShape::SShape( bool _selected, QPointF center,
+                const QString &_layerName,
+                const QString &_layerDiscription,
+                const QColor &_layerColor)
+    : SObject(PaintObject::ShapeBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
     this->mBrush.setColor(QColor(128, 128, 128, 128));
 }

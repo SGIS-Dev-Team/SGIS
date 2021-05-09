@@ -32,6 +32,7 @@ private slots:
     //[测试]
     void onActionCreateRectTriggered();
     void onActionLoadImageTriggered();
+    void onActionLoadFragmentsTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]

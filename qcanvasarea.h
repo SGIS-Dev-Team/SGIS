@@ -34,7 +34,11 @@ signals:
 
     /*-----槽函数-----*/
 private slots:
+    //画布缩放信号响应
     void onCanvasScaling(QPointF lgcPos, int delta);
+    //滚动条位置改变信号响应
+    void onSliderValueChange(int value);
+
 
     /*-----成员变量-----*/
 private:
@@ -44,6 +48,8 @@ private:
 public:
     //[访问函数]
     QCanvas *canvas();
+    //获取视图区逻辑坐标矩形
+    QRectF viewArea()const;
 };
 
 #endif // QCANVASAREA_H

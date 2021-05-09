@@ -21,11 +21,11 @@ class SFragImage : public SObject
 {
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SFragImage(PaintObject _type, SFragLoader& _loader, bool _selected = true, QPointF center = QPointF(),
+    explicit SFragImage(SFragLoader& _loader, bool _selected = true, QPointF center = QPointF(),
                         const QString& _layerName = "",
                         const QString& _layerDiscription = "",
                         const QColor& _layerColor = "");
-
+    virtual ~SFragImage();
     /*-----虚函数重载-----*/
 public:
     //绘制函数
@@ -37,6 +37,8 @@ public:
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const;
     virtual void readBinaryData(QDataStream& stream);
+    //改变缩略图标生成策略
+    virtual QIcon icon()const;
 
 private:
     virtual void _applyTransform();
@@ -56,6 +58,8 @@ protected:
 
     /*-----成员变量-----*/
 protected:
+    //[Me]
+    const QString Me = "Frag Image Base";
     //每一层的金字塔分片图像: 索引值为金字塔层级倒数取1/2为底的对数
     std::vector<SFragMatrix> mFragMatVec{};
     //加载器

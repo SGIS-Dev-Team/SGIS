@@ -12,6 +12,11 @@ SObject::SObject(PaintObject _type, bool _selected, QPointF _center,
 
 SObject::~SObject() {}
 
+bool SObject::intersect(const QRectF &rect) const
+{
+    return boundingRect().intersects(rect);
+}
+
 void SObject::paintBoundRect(QPainter &painter)
 {
     //保存原来的样式
@@ -146,6 +151,11 @@ const QColor &SObject::layerColor() const
     return mLayerColor;
 }
 
+PaintObject SObject::getType()
+{
+    return type;
+}
+
 void SObject::setVisible(bool visible)
 {
     this->mbVisible = visible;
@@ -196,4 +206,19 @@ void SObject::_reCalcTransfrom()
     mTransform.reset();
     mTransform.rotate(mdRotateAngle);
     mTransform.scale(mdSx, mdSy);
+}
+
+void SObject::_initializeWith(const SObject &theObj)
+{
+    mbVisible = theObj.mbVisible;
+    mbLocked = theObj.mbLocked;
+    mbSelected = theObj.mbSelected;
+    mTransform = theObj.mTransform;
+    mdRotateAngle = theObj.mdRotateAngle;
+    mdSx = theObj.mdSx;
+    mdSy = theObj.mdSy;
+    mPtCenter = theObj.mPtCenter;
+    mStrLayerName = theObj.mStrLayerName;
+    mStrLayerDiscription = theObj.mStrLayerDiscription;
+    mLayerColor = theObj.mLayerColor;
 }

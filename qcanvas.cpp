@@ -31,7 +31,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
     painter.scale(mdScale, mdScale);
 
     if(mpDoc)
-        mpDoc->paint(painter);
+        mpDoc->paint(painter, mViewArea, mdScale);
 
     /*-----画布背景绘图部分-----*/
     painter.resetTransform();
@@ -137,6 +137,11 @@ double QCanvas::scaleValue() const
     return mdScale;
 }
 
+const QRectF &QCanvas::viewArea() const
+{
+    return mViewArea;
+}
+
 bool QCanvas::isGridOn() const
 {
     return mbGridOn;
@@ -189,4 +194,9 @@ bool QCanvas::setScaleLevelDown()
         if(mdScale > ScaleLevelValue[--level])
             break;
     return setScaleLevel(level);
+}
+
+void QCanvas::setViewArea(const QRectF &rect)
+{
+    mViewArea = rect;
 }

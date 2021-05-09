@@ -22,6 +22,8 @@
 //  4. 实现paint虚函数时记得对painter进行平移变换到中心点，
 //绘制完成后逆向平移。
 //
+//  ***其他***
+//  在没有定义拷贝与移动函数前不要拷贝子类对象。
 //
 //                                      Shepard Liu
 //                                      2021.05.07
@@ -34,7 +36,7 @@ class SObject
     friend class SObjectFactory;
     /*-----构造函数与析构函数-----*/
 protected:
-    explicit SObject(PaintObject _type, bool _selected = true, QPointF center = QPointF(),
+    explicit SObject(PaintObject _type, bool _selected = true, QPointF _center = QPointF(),
                      const QString& _layerName = "",
                      const QString& _layerDiscription = "",
                      const QColor& _layerColor = "");
@@ -46,13 +48,17 @@ public:
     virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const = 0;
-    //是否包含某点
+    //是否包含某点(画布坐标系)
     virtual bool contains(const QPointF& pt)const = 0;
+    //变换后包围矩形是否与目标矩形有交集
+    virtual bool intersect(const QRectF& rect)const;
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const = 0;
     virtual void readBinaryData(QDataStream& stream) = 0;
     //绘制边框矩形
     virtual void paintBoundRect(QPainter &painter);
+    //图层预览图标（调用时生成）
+    virtual QIcon icon()const;
 
 private:
     virtual void _applyTransform() = 0;
@@ -101,8 +107,7 @@ public:
     const QString& layerName()const;
     const QString& layerDiscription()const;
     const QColor& layerColor()const;
-    //图层预览图标（调用时生成）
-    QIcon icon()const;
+    PaintObject getType();
 
     //[修改函数]
     //变换
@@ -123,7 +128,7 @@ public:
     void setLayerColor(const QColor& color);
 
     //[功能函数]
-
+    //按旋转和缩放重新计算变换
     void _reCalcTransfrom();
 
     //中心坐标转实际坐标（控件坐标系）
@@ -133,6 +138,8 @@ public:
     //实际坐标（控件坐标系）转中心坐标
     inline QPointF AtoC(const QPointF& pt)const;
     inline QPoint AtoC(const QPoint& pt)const;
+
+    void _initializeWith(const SObject& theObj);
 };
 
 QPointF SObject::CtoA(const QPointF &pt) const

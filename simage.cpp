@@ -1,31 +1,31 @@
 ﻿#include "simage.h"
+#include <QMutex>
 
-SImage::SImage(PaintObject _type, QPixmap *_image, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
-    : SObject(_type, _selected, center, _layerName, _layerDiscription, _layerColor)
+SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+    : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
-    if(_image->isNull())
+    if(_imagePath.isEmpty())
         return;
-    this->mpImage = _image;
-    //显示区域初始化
-    QPointF topLeft(-_image->width() / 2, -_image->height() / 2);
-    QPointF topRight(_image->width() / 2, -_image->height() / 2);
-    QPointF bottomLeft(-_image->width() / 2, _image->height() / 2);
-    QPointF bottomRight(_image->width() / 2, _image->height() / 2);
-    //确定包围控制点
-    mpBoundPt[0] = topLeft;
-    mpBoundPt[1] = topRight;
-    mpBoundPt[2] = bottomRight;
-    mpBoundPt[3] = bottomLeft;
-    //确定外围矩形
-    this->mImageRect.setTopLeft(topLeft);
-    this->mImageRect.setBottomRight(bottomRight);
+    load(mStrImagePath);
+
+}
+
+SImage::SImage(const SImage &theImage): SObject(PaintObject::ImageBase)
+{
+    _initializeWith(theImage);
 }
 
 SImage::~SImage()
 {
-    if(mpImage)
-        delete mpImage;
-    mpImage = nullptr;
+    releaseImage();
+}
+
+SImage &SImage::operator=(const SImage &theImage)
+{
+    if(this == &theImage)
+        return *this;
+    _initializeWith(theImage);
+    return *this;
 }
 
 void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue)const
@@ -41,6 +41,7 @@ void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, 
     painter.setTransform(mTransform * painter.transform());
     //绘图
     painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
+
     //执行逆变换
     painter.setTransform(mTransform.inverted() * painter.transform());
 
@@ -84,4 +85,36 @@ void SImage::_applyTransform()
     mpBoundPt[1] = mTransform.map(mImageRect.topRight());
     mpBoundPt[2] = mTransform.map(mImageRect.bottomRight());
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
+}
+
+
+void SImage::load(const QString &_imagePath)
+{
+    if(!_imagePath.isEmpty())
+        mStrImagePath = _imagePath;
+    if(!mStrImagePath.isEmpty())
+        mpImage = new QPixmap(mStrImagePath);
+    //显示区域初始化
+    QPointF topLeft(-mpImage->width() / 2, -mpImage->height() / 2);
+    QPointF topRight(mpImage->width() / 2, -mpImage->height() / 2);
+    QPointF bottomLeft(-mpImage->width() / 2, mpImage->height() / 2);
+    QPointF bottomRight(mpImage->width() / 2, mpImage->height() / 2);
+    //确定外围矩形
+    this->mImageRect.setTopLeft(topLeft);
+    this->mImageRect.setBottomRight(bottomRight);
+    //应用变换
+    _applyTransform();
+}
+
+void SImage::_initializeWith(const SImage &theImage)
+{
+    SObject::_initializeWith(theImage);
+    mStrImagePath = theImage.mStrImagePath;
+    if(mpImage)
+        delete mpImage;
+    if(theImage.mpImage)
+        mpImage = new QPixmap(*theImage.mpImage);
+    mImageRect = theImage.mImageRect;
+    for(int i = 0; i < 4; ++i)
+        mpBoundPt[i] = theImage.mpBoundPt[i];
 }

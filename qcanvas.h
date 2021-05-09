@@ -65,9 +65,12 @@ private:
     QSize mSzActual{};
     //缩放比例
     double mdScale{1.0};
+    //当前绘制区域，由画布区域对象维护
+    QRectF mViewArea{};
 
     /*-----成员变量-----*/
 private:
+    //文档
     SDocument* mpDoc{nullptr};
 
     /*-----成员函数-----*/
@@ -83,6 +86,8 @@ public:
     QSize actualSize()const;
     //缩放值
     double scaleValue()const;
+    //绘制区域
+    const QRectF& viewArea()const;
     //网格是否开启
     bool isGridOn()const;
     //参考线是否开启
@@ -100,6 +105,9 @@ public:
     bool setScaleLevelUp();
     //缩放级别减少
     bool setScaleLevelDown();
+
+    //设置绘制区域
+    void setViewArea(const QRectF& rect);
 
     //[功能函数]
 
