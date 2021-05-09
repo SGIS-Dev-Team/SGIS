@@ -79,7 +79,7 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     emit mouseMoved(lgcPos);
 
     //------拖动选中图层------//
-    if(mbDraging)
+    if(mbDragging)
     {
         const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
         for(const list_iterator& iter : selectedIterList)
@@ -100,17 +100,29 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
     {
         if((*iter)->contains(lgcPos))
         {
-            mbDraging = true;
+            mbDragging = true;
             break;
         }
     }
     //记录鼠标点位置
     this->mPtLogicalPressPos = lgcPos;
-    qDebug() << SDBG(lgcPos);
 }
 void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
-    mbDraging = false;
+    //判断是否有拖动发生
+    if(mPtLogicalPressPos != event->pos())
+        if(mpDoc)
+        {
+            //选中顶层对象
+            SLayerManager& mgr = mpDoc->getLayerManager();
+            mgr.clearSelection();
+            const SObject* pObj = mgr.clickSelect(this->AtoL(event->pos()));
+            //为多重选择做准备
+            if(pObj->isSelected() == false)
+                mgr.clearSelection();
+        }
+
+    mbDragging = false;
 }
 
 void QCanvas::wheelEvent(QWheelEvent * event)

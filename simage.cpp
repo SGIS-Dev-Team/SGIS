@@ -6,7 +6,7 @@ SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const 
 {
     if(_imagePath.isEmpty())
         return;
-    load(mStrImagePath);
+    load(_imagePath);
 
 }
 
@@ -94,6 +94,8 @@ void SImage::load(const QString &_imagePath)
         mStrImagePath = _imagePath;
     if(!mStrImagePath.isEmpty())
         mpImage = new QPixmap(mStrImagePath);
+    else
+        return;
     //显示区域初始化
     QPointF topLeft(-mpImage->width() / 2, -mpImage->height() / 2);
     QPointF topRight(mpImage->width() / 2, -mpImage->height() / 2);

@@ -51,7 +51,7 @@ private slots:
     /*-----控制标记-----*/
 private:
     QPoint mPtLogicalPressPos{};
-    bool mbDraging{false};
+    bool mbDragging{false};
 
     /*-----属性-----*/
 private:
