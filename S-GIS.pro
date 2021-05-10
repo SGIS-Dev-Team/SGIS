@@ -22,6 +22,7 @@ SOURCES += \
     sobject.cpp \
     sshape.cpp \
     sshapefactory.cpp \
+    sslice.cpp \
     straymgr.cpp
 
 HEADERS += \
@@ -40,6 +41,7 @@ HEADERS += \
     sobjectfactory.h \
     sshape.h \
     sshapefactory.h \
+    sslice.h \
     straymgr.h
 
 FORMS += \
