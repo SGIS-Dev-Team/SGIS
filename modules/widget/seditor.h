@@ -2,9 +2,9 @@
 #define SEDITOR_H
 
 #include <QMainWindow>
-#include "qcanvasarea.h"
-#include"slogger.h"
-#include"qcanvas.h"
+#include "modules/widget/qcanvasarea.h"
+#include"modules/slogger.h"
+#include"modules/widget/qcanvas.h"
 #include<QLabel>
 
 namespace Ui

@@ -1,5 +1,5 @@
 ﻿#include "slayermanager.h"
-#include "sobjectfactory.h"
+#include "modules/paint/sobjectfactory.h"
 
 SLayerManager::SLayerManager()
 {
@@ -138,9 +138,9 @@ const SObject *SLayerManager::clickSelect(const QPoint & pt)
             {
                 if(*selectedIter == *iter)
                 {
-                    mSelectedLayerIterList.remove(selectedIter);
                     (*selectedIter)->setSelected(false);
                     deselected = true;
+                    mSelectedLayerIterList.remove(selectedIter);
                     break;
                 }
             }

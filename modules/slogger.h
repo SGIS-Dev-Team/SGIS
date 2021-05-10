@@ -6,7 +6,7 @@
 //  用于记录应用程序运行日志与错误日志
 #include<QFile>
 #include<QTextStream>
-#include"global.h"
+#include"modules/global.h"
 
 class SLogger : public QObject
 {

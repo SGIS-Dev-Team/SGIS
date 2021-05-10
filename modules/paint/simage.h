@@ -1,7 +1,7 @@
 ﻿#ifndef SIMAGE_H
 #define SIMAGE_H
 
-#include "sshape.h"
+#include "modules/paint/sshape.h"
 #include "QImage"
 
 //------------------------
@@ -24,7 +24,6 @@ public:
 
     SImage &operator=(const SImage& theImage);
 
-
     /*-----虚函数重载-----*/
 public:
     //绘制函数
@@ -42,7 +41,7 @@ private:
     virtual void _applyTransform();
 
     /*-----属性-----*/
-
+private:
     /*-----成员变量-----*/
 private:
     const QString Me = "ImageBase";
@@ -61,6 +60,7 @@ public:
     inline const QPixmap& getPixmap();
     inline const QString& getImagePath();
     inline bool isNull()const;
+
     //[修改函数]
     //加载图片
     void load(const QString& _imagePath = "");
@@ -69,7 +69,10 @@ public:
     inline void setPixmap(const QPixmap& pixmap);
     //释放图片内存
     inline void releaseImage();
+
     //[功能函数]
+
+private:
     void _initializeWith(const SImage& theImage);
 };
 
@@ -106,4 +109,6 @@ bool SImage::isNull()const
 {
     return !mpImage;
 }
+
+
 #endif // SIMAGE_H

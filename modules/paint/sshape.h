@@ -1,9 +1,9 @@
 ﻿#ifndef SSHAPE_H
 #define SSHAPE_H
 
-#include "sobject.h"
+#include "modules/paint/sobject.h"
 #include <QPainterPath>
-#include "initializer_list"
+#include <initializer_list>
 
 //  SShape
 //  形状类

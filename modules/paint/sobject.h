@@ -3,7 +3,7 @@
 
 #include<QString>
 #include<QPainter>
-#include"global.h"
+#include"modules/global.h"
 #include<QIcon>
 
 //----------------------------------------------------

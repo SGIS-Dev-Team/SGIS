@@ -1,9 +1,10 @@
 ﻿#ifndef SDOCUMENT_H
 #define SDOCUMENT_H
-#include <qcanvas.h>
-#include <global.h>
-#include <slayermanager.h>
-#include <sfragloader.h>
+#include <modules/widget/qcanvas.h>
+#include <modules/global.h>
+#include <modules/doc/slayermanager.h>
+#include <modules/paint/sfragloader.h>
+
 class QCanvas;
 class SDocument: public QObject
 {

@@ -1,12 +1,11 @@
 ﻿#include "simage.h"
-#include <QMutex>
 
 SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
     if(_imagePath.isEmpty())
         return;
-    load(mStrImagePath);
+    load(_imagePath);
 
 }
 
@@ -87,13 +86,14 @@ void SImage::_applyTransform()
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
 }
 
-
 void SImage::load(const QString &_imagePath)
 {
     if(!_imagePath.isEmpty())
         mStrImagePath = _imagePath;
     if(!mStrImagePath.isEmpty())
         mpImage = new QPixmap(mStrImagePath);
+    else
+        return;
     //显示区域初始化
     QPointF topLeft(-mpImage->width() / 2, -mpImage->height() / 2);
     QPointF topRight(mpImage->width() / 2, -mpImage->height() / 2);

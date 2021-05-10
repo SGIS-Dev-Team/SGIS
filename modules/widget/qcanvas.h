@@ -1,9 +1,9 @@
 ﻿#ifndef QCANVAS_H
 #define QCANVAS_H
 #include <QWidget>
-#include "simage.h"
-#include <global.h>
-#include <sdocument.h>
+#include "modules/paint/simage.h"
+#include <modules/global.h>
+#include <modules/doc/sdocument.h>
 
 class SDocument;
 class QCanvas : public QWidget
@@ -51,7 +51,7 @@ private slots:
     /*-----控制标记-----*/
 private:
     QPoint mPtLogicalPressPos{};
-    bool mbDraging{false};
+    bool mbDragging{false};
 
     /*-----属性-----*/
 private:
