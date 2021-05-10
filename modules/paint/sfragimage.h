@@ -13,9 +13,9 @@
 //----------------------------------------
 
 
-#include "sobject.h"
-#include "sfragmatrix.h"
-#include "sfragloader.h"
+#include "modules/paint/sobject.h"
+#include "modules/paint/sfragmatrix.h"
+#include "modules/paint/sfragloader.h"
 
 class SFragImage : public SObject
 {

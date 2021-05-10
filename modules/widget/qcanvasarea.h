@@ -1,8 +1,8 @@
 ﻿#ifndef QCANVASAREA_H
 #define QCANVASAREA_H
-#include "global.h"
+#include "modules/global.h"
 #include <QScrollArea>
-#include "qcanvas.h"
+#include "modules/widget/qcanvas.h"
 
 //  QCanvasArea
 //  绘图区

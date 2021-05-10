@@ -5,8 +5,8 @@
 //  形状工厂类
 //  用于创建形状
 
-#include "sobjectfactory.h"
-#include "sshape.h"
+#include "modules/paint/sobjectfactory.h"
+#include "modules/paint/sshape.h"
 
 enum class ShapeSet
 {

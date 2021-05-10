@@ -3,8 +3,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QScrollBar>
-#include <sshape.h>
-#include <simage.h>
+#include <modules/paint/sshape.h>
+#include <modules/paint/simage.h>
 
 QCanvas::QCanvas(QWidget *parent, QSize canvasSize): QWidget(parent)
 {
@@ -110,6 +110,7 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
 void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
     //判断是否有拖动发生
+#ifdef SELECT   //暂时停用
     if(mPtLogicalPressPos != event->pos())
         if(mpDoc)
         {
@@ -121,7 +122,7 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
             if(pObj->isSelected() == false)
                 mgr.clearSelection();
         }
-
+#endif
     mbDragging = false;
 }
 

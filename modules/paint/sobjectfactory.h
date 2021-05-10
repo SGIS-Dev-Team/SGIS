@@ -1,7 +1,7 @@
 ﻿#ifndef SOBJECTFACTORY_H
 #define SOBJECTFACTORY_H
 
-#include<sobject.h>
+#include "modules/paint/sobject.h"
 
 class SObjectFactory : public QObject
 {

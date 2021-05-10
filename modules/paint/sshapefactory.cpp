@@ -1,5 +1,4 @@
 ﻿#include "sshapefactory.h"
-#include <cassert>
 
 SShape *SShapeFactory::createShape(ShapeSet type)
 {

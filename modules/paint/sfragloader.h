@@ -2,9 +2,10 @@
 #define SFRAGLOADER_H
 
 #include <QThread>
+#include <QMutex>
 #include <deque>
-#include <simage.h>
-#include "global.h"
+#include <modules/paint/simage.h>
+#include "modules/global.h"
 
 class SFragLoader : public QThread
 {

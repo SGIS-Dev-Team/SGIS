@@ -1,7 +1,7 @@
 ﻿#ifndef SFRAGMATRIX_H
 #define SFRAGMATRIX_H
 
-#include <simage.h>
+#include <modules/paint/simage.h>
 
 class SFragMatrix
 {

@@ -1,6 +1,6 @@
 ﻿#include "seditor.h"
 #include "ui_seditor.h"
-#include <sshapefactory.h>
+#include <modules/paint/sshapefactory.h>
 
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
@@ -62,21 +62,23 @@ void SEditor::onActionLoadImageTriggered()
 
 }
 
-#include <sfragimage.h>
+#include <modules/paint/sfragimage.h>
 void SEditor::onActionLoadFragmentsTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
 
     QString path = QFileDialog::getExistingDirectory(this);
-    quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
-    quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+    for(int i = 0; i < 10; ++i)
+    {
+        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true,
-                                          QPointF(x, y));
+        SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true,
+                                              QPointF(x, y));
 
-    pFragImg->setFragmentPath(path, "H50E00060001");
-    mpCurDoc->getLayerManager().addLayer(pFragImg);
-    mpCurCanvasArea->ensureVisible(25000, 25000);
+        pFragImg->setFragmentPath(path, "H50E00060001");
+        mpCurDoc->getLayerManager().addLayer(pFragImg);
+    }
 }
 
 void SEditor::onTabSwitched()

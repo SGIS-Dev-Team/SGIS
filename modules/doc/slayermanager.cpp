@@ -1,5 +1,5 @@
 ﻿#include "slayermanager.h"
-#include "sobjectfactory.h"
+#include "modules/paint/sobjectfactory.h"
 
 SLayerManager::SLayerManager()
 {

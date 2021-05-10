@@ -1,5 +1,4 @@
 ﻿#include "simage.h"
-#include <QMutex>
 
 SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
@@ -86,7 +85,6 @@ void SImage::_applyTransform()
     mpBoundPt[2] = mTransform.map(mImageRect.bottomRight());
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
 }
-
 
 void SImage::load(const QString &_imagePath)
 {

@@ -8,8 +8,8 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QStandardPaths>
-#include "slogger.h"
-#include "global.h"
+#include "modules/slogger.h"
+#include "modules/global.h"
 
 class STrayMgr:
     public QObject

@@ -1,6 +1,6 @@
-﻿#include "mainwindow.h"
-#include "global.h"
-#include "slogger.h"
+﻿#include "modules/widget/mainwindow.h"
+#include "modules/global.h"
+#include "modules/slogger.h"
 
 #include <QApplication>
 

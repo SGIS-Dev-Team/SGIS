@@ -2,7 +2,7 @@
 #define SLAYERMANAGER_H
 
 #include <list>
-#include <sobject.h>
+#include <modules/paint/sobject.h>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
 

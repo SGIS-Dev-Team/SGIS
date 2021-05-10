@@ -2,10 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "global.h"
-#include "slogger.h"
-#include "straymgr.h"
-#include "seditor.h"
+#include "modules/global.h"
+#include "modules/slogger.h"
+#include "modules/widget/straymgr.h"
+#include "modules/widget/seditor.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {

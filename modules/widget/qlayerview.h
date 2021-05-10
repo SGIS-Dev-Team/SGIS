@@ -7,9 +7,9 @@
 //      继承自QTreeView
 //-----------------------------
 
-#include <global.h>
+#include <modules/global.h>
 #include <QTreeView>
-#include <sdocument.h>
+#include <modules/doc/sdocument.h>
 #include <QStandardItemModel>
 
 class QLayerView : public QTreeView
