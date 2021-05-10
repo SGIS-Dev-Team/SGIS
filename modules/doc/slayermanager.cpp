@@ -66,7 +66,7 @@ void SLayerManager::replaceLayer(list_iterator it, SObject *newLayer)
 {
     SObjectFactory::releaseObject(*it);
     *it = newLayer;
-    this->mLayerModel.setItem(_posSwitch(_posOf(it)), 0, *_createRowItem(newLayer).toVector().data());
+    this->mLayerModel.setItem(static_cast<int>(_posSwitch(_posOf(it))), 0, *_createRowItem(newLayer).toVector().data());
     emit layersUpdated(this);
 }
 

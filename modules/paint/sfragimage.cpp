@@ -117,6 +117,8 @@ void SFragImage::_loadMeta()
     //确定外围矩形
     this->mImageRect.setTopLeft(topLeft);
     this->mImageRect.setBottomRight(bottomRight);
+
+    _applyTransform();
 }
 
 
@@ -186,4 +188,7 @@ void SFragImage::_applyTransform()
     mpBoundPt[1] = mTransform.map(mImageRect.topRight());
     mpBoundPt[2] = mTransform.map(mImageRect.bottomRight());
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
+
+    mImageSize.setWidth(mImageRect.width() * mdSx);
+    mImageSize.setHeight(mImageRect.height() * mdSy);
 }

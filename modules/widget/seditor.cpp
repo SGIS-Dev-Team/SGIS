@@ -69,16 +69,14 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     QString path = QFileDialog::getExistingDirectory(this);
     for(int i = 0; i < 10; ++i)
-    {
-        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
-        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+        for(int j = 0; j < 10; ++j)
+        {
+            SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true);
 
-        SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true,
-                                              QPointF(x, y));
-
-        pFragImg->setFragmentPath(path, "H50E00060001");
-        mpCurDoc->getLayerManager().addLayer(pFragImg);
-    }
+            pFragImg->setFragmentPath(path, "H50E00060001");
+            pFragImg->setCenterPoint(QPointF((i + 0.5) * pFragImg->width(), (j + 0.5) * pFragImg->height()));
+            mpCurDoc->getLayerManager().addLayer(pFragImg);
+        }
 }
 
 void SEditor::onTabSwitched()

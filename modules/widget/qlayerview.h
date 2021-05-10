@@ -35,6 +35,7 @@ protected:
 private:
     SDocument* mpCurDoc;
 
+
     /*-----成员函数-----*/
 public:
     //[访问函数]

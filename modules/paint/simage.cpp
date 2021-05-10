@@ -39,7 +39,8 @@ void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, 
     //执行变换
     painter.setTransform(mTransform * painter.transform());
     //绘图
-    painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
+    if(mpImage)
+        painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
 
     //执行逆变换
     painter.setTransform(mTransform.inverted() * painter.transform());

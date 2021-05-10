@@ -129,8 +129,10 @@ public:
 
     //[功能函数]
     //按旋转和缩放重新计算变换
+private:
     void _reCalcTransfrom();
 
+public:
     //中心坐标转实际坐标（控件坐标系）
     inline QPointF CtoA(const QPointF& pt)const;
     inline QPoint CtoA(const QPoint& pt)const;

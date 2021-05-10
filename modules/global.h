@@ -20,7 +20,7 @@ class SDocument;
 //单个文件最大日志条目数
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
-#define DEFAULT_CANVAS_SIZE QSize(50000,50000)
+#define DEFAULT_CANVAS_SIZE QSize(10*15200,10*10200)
 //图层预览图标大小
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
@@ -49,6 +49,7 @@ enum PaintObject
     BrushBase,
     ImageBase,
     FragImageBase
+
 };
 }
 #endif // GLOBAL_H
