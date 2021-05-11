@@ -17,21 +17,20 @@ bool SObject::intersect(const QRectF &rect) const
     return boundingRect().intersects(rect);
 }
 
-void SObject::paintBoundRect(QPainter &painter)
+void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth, int radius)
 {
     //保存原来的样式
     const QPen& oldPen = painter.pen();
     const QBrush& oldBrush = painter.brush();
-    QPainter::CompositionMode oldCompoMode = painter.compositionMode();
     //定义外界矩形样式
     QPen pen;
-    pen.setWidth(BOUND_RECT_PEN_WIDTH);
     QBrush brush;
-    brush.setColor(QColor(255, 255, 255, 200));
+    pen.setColor(QColor(127, 127, 127));
+    pen.setWidth(lineWidth / scaleValue);
+    brush.setStyle(Qt::NoBrush);
     //设置为外界矩形样式
     painter.setPen(pen);
     painter.setBrush(brush);
-    painter.setCompositionMode(oldCompoMode);
 
     QPolygonF bound_polygon = this->boundingRect();
 
@@ -39,16 +38,18 @@ void SObject::paintBoundRect(QPainter &painter)
 
     //绘制矩形
     painter.drawPolygon(bound_polygon);
-    //绘制操作点
-    pen.setWidth(1);
     //四个角点
+    brush.setColor(QColor(255, 255, 255));
+    brush.setStyle(Qt::SolidPattern);
+    painter.setBrush(brush);
+
     for(auto& pt : bound_polygon)
-        painter.drawEllipse(pt, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
+        painter.drawEllipse(pt, radius / scaleValue, radius / scaleValue);
     //四个边中点
     for(int i = 0; i < 4; ++i)
     {
         QPointF center = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
-        painter.drawEllipse(center, 2 * BOUND_RECT_PEN_WIDTH, 2 * BOUND_RECT_PEN_WIDTH);
+        painter.drawEllipse(center, radius / scaleValue, radius / scaleValue);
     }
 
     //------------绘图-------------//
@@ -56,7 +57,6 @@ void SObject::paintBoundRect(QPainter &painter)
     //还原样式
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
-    painter.setCompositionMode(oldCompoMode);
 }
 
 

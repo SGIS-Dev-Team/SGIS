@@ -36,7 +36,11 @@ class SDocument;
 #define DEFAULT_READ_IN_STACK_SIZE 20
 
 //外接矩形逻辑像素
-#define BOUND_RECT_PEN_WIDTH 5
+#define BOUND_RECT_PEN_WIDTH 2
+#define BOUND_RECT_CORNER_RADIUS 5
+
+//拖动触发的最小曼哈顿距离（像素）
+#define DRAG_TRIGGERING_DISTANCE 3
 
 //绘图对象类名
 namespace sgis

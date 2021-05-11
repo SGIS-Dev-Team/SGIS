@@ -49,12 +49,13 @@ void SEditor::onActionLoadImageTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
     QString path = QFileDialog::getOpenFileName(this);
+    if(path.isEmpty())
+        return;
 
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
     SImage* pImg = new SImage(path, true, QPoint(x, y));
-
 
     pImg->scale(2, 3);
     pImg->rotate(30);
@@ -68,12 +69,14 @@ void SEditor::onActionLoadFragmentsTriggered()
     mpCurDoc->getLayerManager().clearSelection();
 
     QString path = QFileDialog::getExistingDirectory(this);
+    if(path.isEmpty())
+        return;
     for(int i = 0; i < 10; ++i)
         for(int j = 0; j < 10; ++j)
         {
             SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true);
 
-            pFragImg->setFragmentPath(path, "H50E00060001");
+            pFragImg->setFragmentPath(path + '/' + QString::number(i * 10 + j), "H50E00060001");
             pFragImg->setCenterPoint(QPointF((i + 0.5) * pFragImg->width(), (j + 0.5) * pFragImg->height()));
             mpCurDoc->getLayerManager().addLayer(pFragImg);
         }

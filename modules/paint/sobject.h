@@ -55,8 +55,8 @@ public:
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const = 0;
     virtual void readBinaryData(QDataStream& stream) = 0;
-    //绘制边框矩形
-    virtual void paintBoundRect(QPainter &painter);
+    //绘制边框矩形（宽度和半径指定为实际像素）
+    virtual void paintBoundRect(QPainter &painter, double scaleValue = 1, int lineWidth = BOUND_RECT_PEN_WIDTH, int radius = BOUND_RECT_CORNER_RADIUS);
     //图层预览图标（调用时生成）
     virtual QIcon icon()const;
 

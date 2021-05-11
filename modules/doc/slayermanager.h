@@ -78,10 +78,14 @@ public:
     //按位置（从下往上数）获取图层
     SObject &layerAt(size_t pos);
 
+    //链表长度
+    inline size_t layerListSize();
+    inline size_t selectedListSize();
+
     //按对象类型获取图层
 
     //选择图层(函数会将鼠标位置的最顶层图层加入选择，若已加入则剔除选择)
-    const SObject *clickSelect(const QPoint& pt);
+    void clickSelect(const QPoint& pt, bool doMultiSelect = false);
 
     //清空选择
     void clearSelection();
@@ -97,6 +101,16 @@ private:
     //使用SObject*初始化图层数据项
     QList<QStandardItem *> _createRowItem(SObject* obj);
 };
+
+size_t SLayerManager::layerListSize()
+{
+    return mLayerList.size();
+}
+
+size_t SLayerManager::selectedListSize()
+{
+    return mSelectedLayerIterList.size();
+}
 
 size_t SLayerManager::_posSwitch(size_t pos)
 {
