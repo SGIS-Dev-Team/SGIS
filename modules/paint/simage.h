@@ -42,6 +42,7 @@ private:
 
     /*-----属性-----*/
 private:
+
     /*-----成员变量-----*/
 private:
     const QString Me = "ImageBase";

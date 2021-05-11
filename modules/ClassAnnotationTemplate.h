@@ -4,9 +4,9 @@
 //  绘图区
 //  由滚动区域和内置画布组成
 
-class CLASS : public FATHER
+class CLASS : public //QObject
 {
-    // Q_OBJECT
+    //Q_OBJECT
 
     /*-----构造函数与析构函数-----*/
 public:

@@ -51,6 +51,7 @@ private slots:
     /*-----控制标记-----*/
 private:
     QPoint mPtLogicalPressPos{};
+    QPoint mPtLastLogicalPos{};
     bool mbDragging{false};
 
     /*-----属性-----*/
@@ -112,32 +113,59 @@ public:
     //[功能函数]
 
     //逻辑坐标转实际坐标
-    inline QPoint LtoA(QPoint pt_Logical)const;
-    inline QPointF LtoA(QPointF ptF_Logical)const;
+    inline QPoint LtoA(const QPoint& pt_Logical)const;
+    inline QPointF LtoA(const QPointF& ptF_Logical)const;
+
+    inline QRect LtoA(const QRect& rect_Logical)const;
+    inline QRectF LtoA(const QRectF& rectF_Logical)const;
+
     //实际坐标转逻辑坐标
-    inline QPoint AtoL(QPoint pt_Actual)const;
-    inline QPointF AtoL(QPointF ptF_Actual)const;
+    inline QPoint AtoL(const QPoint& pt_Actual)const;
+    inline QPointF AtoL(const QPointF& ptF_Actual)const;
+
+    inline QRect AtoL(const QRect& rect_Actual)const;
+    inline QRectF AtoL(const QRectF& rectF_Actual)const;
 
 };
 
-QPoint QCanvas::LtoA(QPoint pt_Logical) const
+QPoint QCanvas::LtoA(const QPoint& pt_Logical) const
 {
     return QPoint(pt_Logical.x() * mdScale, pt_Logical.y() * mdScale);
 }
 
-QPointF QCanvas::LtoA(QPointF ptF_Logical) const
+QPointF QCanvas::LtoA(const QPointF& ptF_Logical) const
 {
     return QPointF(ptF_Logical.x() * mdScale, ptF_Logical.y() * mdScale);
 }
 
-QPoint QCanvas::AtoL(QPoint pt_Actual) const
+QRect QCanvas::LtoA(const QRect &rect_Logical) const
+{
+    return QRect(rect_Logical.left() * mdScale, rect_Logical.top() * mdScale, rect_Logical.width() * mdScale, rect_Logical.height() * mdScale);
+}
+
+QRectF QCanvas::LtoA(const QRectF &rectF_Logical) const
+{
+    return QRectF(rectF_Logical.left() * mdScale, rectF_Logical.top() * mdScale, rectF_Logical.width() * mdScale, rectF_Logical.height() * mdScale);
+}
+
+QPoint QCanvas::AtoL(const QPoint& pt_Actual) const
 {
     return QPoint(pt_Actual.x() / mdScale, pt_Actual.y() / mdScale);
 }
 
-QPointF QCanvas::AtoL(QPointF ptF_Actual) const
+QPointF QCanvas::AtoL(const QPointF& ptF_Actual) const
 {
     return QPointF(ptF_Actual.x() / mdScale, ptF_Actual.y() / mdScale);
+}
+
+QRect QCanvas::AtoL(const QRect &rect_Actual) const
+{
+    return QRect(rect_Actual.left() / mdScale, rect_Actual.top() / mdScale, rect_Actual.width() / mdScale, rect_Actual.height() / mdScale);
+}
+
+QRectF QCanvas::AtoL(const QRectF &rectF_Actual) const
+{
+    return QRectF(rectF_Actual.left() / mdScale, rectF_Actual.top() / mdScale, rectF_Actual.width() / mdScale, rectF_Actual.height() / mdScale);
 }
 
 #endif // QCANVAS_H

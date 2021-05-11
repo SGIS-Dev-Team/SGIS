@@ -60,12 +60,11 @@ void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleVal
 
     //绘制选框
     //TODO::组合功能上线后重新调整逻辑
-    //现在只绘制一个选框
+    //现在只单独绘制选框
     std::list<list_iterator> selectedLayerIterList = mLayerMgr.getSelectedLayerIterList();
-    if(selectedLayerIterList.empty())
-        return;
-    const list_iterator firstSelectedIter = selectedLayerIterList.front();
-    (*firstSelectedIter)->paintBoundRect(painter);
+    painter.setRenderHint(QPainter::Antialiasing);
+    for(auto& iter : selectedLayerIterList)
+        (*iter)->paintBoundRect(painter, scaleValue);
 
 }
 

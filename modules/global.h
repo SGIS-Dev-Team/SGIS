@@ -20,7 +20,7 @@ class SDocument;
 //单个文件最大日志条目数
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
-#define DEFAULT_CANVAS_SIZE QSize(50000,50000)
+#define DEFAULT_CANVAS_SIZE QSize(10*15200,10*10200)
 //图层预览图标大小
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
@@ -36,7 +36,11 @@ class SDocument;
 #define DEFAULT_READ_IN_STACK_SIZE 20
 
 //外接矩形逻辑像素
-#define BOUND_RECT_PEN_WIDTH 5
+#define BOUND_RECT_PEN_WIDTH 2
+#define BOUND_RECT_CORNER_RADIUS 5
+
+//拖动触发的最小曼哈顿距离（像素）
+#define DRAG_TRIGGERING_DISTANCE 3
 
 //绘图对象类名
 namespace sgis
@@ -49,6 +53,7 @@ enum PaintObject
     BrushBase,
     ImageBase,
     FragImageBase
+
 };
 }
 #endif // GLOBAL_H

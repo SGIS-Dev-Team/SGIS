@@ -36,6 +36,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
     /*-----画布背景绘图部分-----*/
     painter.resetTransform();
 
+#ifdef CANVAS_DRAW_CROSS_LINE
     //若画布缩放比例大于800%，则显示像素网格
     if(mdScale >= 8.0)
     {
@@ -66,6 +67,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
         painter.drawLines(pPtFPairsY, mSzLogical.width());
         delete[] pPtFPairsY;
     }
+#endif
 }
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)
@@ -84,11 +86,11 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
         const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
         for(const list_iterator& iter : selectedIterList)
         {
-            (*iter)->translate(lgcPos - mPtLogicalPressPos);
+            (*iter)->translate(lgcPos - mPtLastLogicalPos);
         }
         update();
     }
-    this->mPtLogicalPressPos = lgcPos;
+    this->mPtLastLogicalPos = lgcPos;
 }
 
 void QCanvas::mousePressEvent(QMouseEvent * event)
@@ -106,23 +108,28 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
     }
     //记录鼠标点位置
     this->mPtLogicalPressPos = lgcPos;
+    this->mPtLastLogicalPos = lgcPos;
 }
 void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
+    QPoint lgcPos = AtoL(event->pos());
     //判断是否有拖动发生
-#ifdef SELECT   //暂时停用
-    if(mPtLogicalPressPos != event->pos())
+    int dragDistance = abs((this->LtoA(mPtLogicalPressPos) - event->pos()).manhattanLength());
+    if(dragDistance < DRAG_TRIGGERING_DISTANCE)
         if(mpDoc)
         {
             //选中顶层对象
             SLayerManager& mgr = mpDoc->getLayerManager();
-            mgr.clearSelection();
-            const SObject* pObj = mgr.clickSelect(this->AtoL(event->pos()));
-            //为多重选择做准备
-            if(pObj->isSelected() == false)
-                mgr.clearSelection();
+
+            bool doMultiSelect{false};
+            //多重选择
+            if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+                doMultiSelect = true;
+
+            mgr.clickSelect(lgcPos, doMultiSelect);
+
+            update(this->LtoA(mViewArea.toRect()));
         }
-#endif
     mbDragging = false;
 }
 

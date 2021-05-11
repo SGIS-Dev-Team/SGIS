@@ -66,7 +66,7 @@ void SLayerManager::replaceLayer(list_iterator it, SObject *newLayer)
 {
     SObjectFactory::releaseObject(*it);
     *it = newLayer;
-    this->mLayerModel.setItem(_posSwitch(_posOf(it)), 0, *_createRowItem(newLayer).toVector().data());
+    this->mLayerModel.setItem(static_cast<int>(_posSwitch(_posOf(it))), 0, *_createRowItem(newLayer).toVector().data());
     emit layersUpdated(this);
 }
 
@@ -124,37 +124,55 @@ SObject &SLayerManager::layerAt(size_t pos)
     return *(*_iterAt(pos));
 }
 
-const SObject *SLayerManager::clickSelect(const QPoint & pt)
+
+void SLayerManager::clickSelect(const QPoint & pt, bool doMultiSelect)
 {
     layer_list::reverse_iterator iter;
+    bool isPtInObject{false};
     //自顶向下遍历图层链表
     for(iter = mLayerList.rbegin(); iter != mLayerList.rend(); ++iter)
     {
         if((*iter)->contains(pt))
         {
-            //若鼠标点所在的最顶层的图层不在选择链表中，则添加，否则去除
-            bool deselected{false}; //是否进行了去除选择操作
+            isPtInObject = true;
+
+            //若是单选，已经选中多项时，不做任何事
+            if(!doMultiSelect && mSelectedLayerIterList.size() > 1)
+                break;
+            //若鼠标点所在的最顶层的图层在选择链表中，则去除；
+            //若鼠标点所在的最顶层的图层不在选择链表中: 若是多选则添加，若是单选但选择列表为空则添加，否则清空选择
+            bool isObjInSelectList{false}; //该图层是否已经在选择列表中
             for(const list_iterator& selectedIter : mSelectedLayerIterList)
             {
                 if(*selectedIter == *iter)
                 {
+                    isObjInSelectList = true;
+
                     (*selectedIter)->setSelected(false);
-                    deselected = true;
                     mSelectedLayerIterList.remove(selectedIter);
                     break;
                 }
             }
-            if(!deselected)
+
+            if(!isObjInSelectList)
             {
-                mSelectedLayerIterList.push_back(iter.base());
+                if(!doMultiSelect && mSelectedLayerIterList.size() != 0)
+                    mSelectedLayerIterList.clear();
+
+                mSelectedLayerIterList.push_back(--iter.base());
                 (*iter)->setSelected(true);
             }
-            //发射选择改变信号
-            emit selectStateChanged();
-            return *iter;
+
+            break;
         }
     }
-    return nullptr;
+
+    if(!isPtInObject && !doMultiSelect)
+        mSelectedLayerIterList.clear();
+
+    //如果不是[多选且点空]，则发射选择改变信号
+    if(!(doMultiSelect && !isPtInObject))
+        emit selectStateChanged();
 }
 
 void SLayerManager::clearSelection()

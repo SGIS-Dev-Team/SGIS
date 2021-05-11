@@ -53,8 +53,10 @@ private slots:
 protected:
     //实际边界角点
     QPointF mpBoundPt[4] {};
-    //原始图像边界矩形
+    //原始图像边界矩形（变换前）
     QRectF mImageRect{};
+    //图像大小（变换后）
+    QSize mImageSize{};
 
     /*-----成员变量-----*/
 protected:
@@ -72,7 +74,9 @@ protected:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-
+    inline int width()const;
+    inline int height()const;
+    inline const QSize& size()const;
     //[修改函数]
     //设置影像金字塔文件路径，影像文件名（不要带格式后缀）
     void setFragmentPath(const QString& folder, const QString& imageFileName);
@@ -81,5 +85,20 @@ public:
     //读取元数据
     void _loadMeta();
 };
+
+int SFragImage::width() const
+{
+    return mImageSize.width();
+}
+
+int SFragImage::height() const
+{
+    return mImageSize.height();
+}
+
+const QSize &SFragImage::size() const
+{
+    return mImageSize;
+}
 
 #endif // SFRAGIMAGE_H
