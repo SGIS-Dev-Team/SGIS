@@ -37,7 +37,7 @@ private slots:
     void onTabSwitched();
     //[画布事件响应]
     //鼠标移动
-    void onCanvasMouseMoved(QPoint Log_pos);
+    void onCanvasMouseMoved(QPointF Log_pos);
     //缩放
     void onCanvasScaled(double value);
     //[图层事件响应]

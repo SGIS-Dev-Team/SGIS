@@ -7,6 +7,7 @@
 #include <modules/paint/simage.h>
 #include "modules/global.h"
 
+//加载器线程类
 class SFragLoader : public QThread
 {
     Q_OBJECT

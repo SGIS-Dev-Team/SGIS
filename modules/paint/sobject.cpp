@@ -1,5 +1,5 @@
 ﻿#include "sobject.h"
-
+#include <QSvgRenderer>
 
 SObject::SObject(PaintObject _type, bool _selected, QPointF _center,
                  const QString &_layerName,
@@ -22,6 +22,7 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     //保存原来的样式
     const QPen& oldPen = painter.pen();
     const QBrush& oldBrush = painter.brush();
+    QTransform oldTransform = painter.transform();
     //定义外界矩形样式
     QPen pen;
     QBrush brush;
@@ -46,17 +47,31 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     for(auto& pt : bound_polygon)
         painter.drawEllipse(pt, radius / scaleValue, radius / scaleValue);
     //四个边中点
+    QPointF ptMid[4] {};
     for(int i = 0; i < 4; ++i)
     {
-        QPointF center = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
-        painter.drawEllipse(center, radius / scaleValue, radius / scaleValue);
+        ptMid[i] = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
+        painter.drawEllipse(ptMid[i], radius / scaleValue, radius / scaleValue);
     }
+    //绘制旋转符号
+    painter.translate(mPtCenter + (bound_polygon[0] - bound_polygon[3]) / 2.0);
+    painter.rotate(mdRotateAngle);
+    painter.scale(1.0 / scaleValue, 1.0 / scaleValue);
 
+    QSvgRenderer rotate_icon(QString(":/WidgetIcon/WidgetIcon/rotate.svg"));
+
+    rotate_icon.render(&painter, ROTATE_ICON_RECT);
+
+    //绘制一条链接线（上边中点到旋转符号）
+    pen.setWidth(BOUND_RECT_PEN_WIDTH);
+    painter.setPen(pen);
+    painter.drawLine(0, -BOUND_RECT_CORNER_RADIUS, 0, -ROTATE_ICON_HOVER_DISTANCE);
     //------------绘图-------------//
 
     //还原样式
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
+    painter.setTransform(oldTransform);
 }
 
 

@@ -13,7 +13,7 @@
 //  注意：SObject对象在类外构造时，对象资源由该类接管，
 //不要在类外释放其内存。
 //
-//
+//  该类使用逻辑坐标系
 //
 //------------------------------------------
 
@@ -75,8 +75,10 @@ public:
     const std::list<list_iterator> &getSelectedLayerIterList()const;
     //获取图层数据模型
     const QStandardItemModel *getLayerModel()const;
+    //获取鼠标位置所在图层,若参数2为True,只获取被选中的图层，若参数3为True
+    SObject *getTopLayerOn(const QPointF& pt, bool onlySelected = false, bool inBoundRect = false)const;
     //按位置（从下往上数）获取图层
-    SObject &layerAt(size_t pos);
+    SObject *layerAt(size_t pos);
 
     //链表长度
     inline size_t layerListSize();
@@ -85,7 +87,7 @@ public:
     //按对象类型获取图层
 
     //选择图层(函数会将鼠标位置的最顶层图层加入选择，若已加入则剔除选择)
-    void clickSelect(const QPoint& pt, bool doMultiSelect = false);
+    void clickSelect(const QPointF& pt, bool doMultiSelect = false);
 
     //清空选择
     void clearSelection();

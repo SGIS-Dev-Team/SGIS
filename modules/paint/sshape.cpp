@@ -17,8 +17,9 @@ SShape::~SShape()
 void SShape::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue) const
 {
     //保存原来的样式
-    const QPen& oldPen = painter.pen();
-    const QBrush& oldBrush = painter.brush();
+    QPen oldPen = painter.pen();
+    QBrush oldBrush = painter.brush();
+    QTransform oldTransform = painter.transform();
     //设置为本形状样式
     painter.setPen(mPen);
     painter.setBrush(mBrush);
@@ -28,12 +29,10 @@ void SShape::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, 
     //绘图
     painter.drawPath(mPathTransformed);
 
-    //返回原点
-    if(doTranslate)
-        painter.translate(-mPtCenter);
     //还原样式
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
+    painter.setTransform(oldTransform);
 }
 
 QPolygonF SShape::boundingRect()const
@@ -54,9 +53,12 @@ QPolygonF SShape::boundingRect()const
     return QPolygonF(ptVec).translated(mPtCenter);
 }
 
-bool SShape::contains(const QPointF &pt)const
+bool SShape::contains(const QPointF &pt, bool isInBoundRect)const
 {
-    return mPathTransformed.contains(this->AtoC(pt));
+    if(isInBoundRect)
+        return boundingRect().containsPoint(pt, Qt::WindingFill);
+    else
+        return mPathTransformed.contains(this->AtoC(pt));
 }
 
 void SShape::writeBinaryData(QDataStream &stream)const
@@ -73,6 +75,11 @@ void SShape::_applyTransform()
 {
     updatePath();
     mPathTransformed = mTransform.map(mPath);
+}
+
+QRectF SShape::_originalRect()
+{
+    return mPath.boundingRect();
 }
 
 const std::vector<QPointF> &SShape::vertices() const

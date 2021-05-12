@@ -119,13 +119,24 @@ const QStandardItemModel *SLayerManager::getLayerModel()const
     return &mLayerModel;
 }
 
-SObject &SLayerManager::layerAt(size_t pos)
+SObject *SLayerManager::getTopLayerOn(const QPointF &pt, bool onlySelected, bool inBoundRect) const
 {
-    return *(*_iterAt(pos));
+    layer_list::const_reverse_iterator riter;
+
+    for(riter =  mLayerList.crbegin(); riter != mLayerList.crend(); ++riter)
+        if((!onlySelected || (*riter)->isSelected()) && (*riter)->contains(QPointF(pt), inBoundRect))
+            return *riter;
+
+    return nullptr;
+}
+
+SObject *SLayerManager::layerAt(size_t pos)
+{
+    return *_iterAt(pos);
 }
 
 
-void SLayerManager::clickSelect(const QPoint & pt, bool doMultiSelect)
+void SLayerManager::clickSelect(const QPointF &pt, bool doMultiSelect)
 {
     layer_list::reverse_iterator iter;
     bool isPtInObject{false};
@@ -162,7 +173,6 @@ void SLayerManager::clickSelect(const QPoint & pt, bool doMultiSelect)
                 mSelectedLayerIterList.push_back(--iter.base());
                 (*iter)->setSelected(true);
             }
-
             break;
         }
     }
