@@ -48,18 +48,18 @@ void SEditor::onActionCreateRectTriggered()
 void SEditor::onActionLoadImageTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
-    QString path = QFileDialog::getOpenFileName(this);
-    if(path.isEmpty())
-        return;
+    QStringList pathList = QFileDialog::getOpenFileNames(this);
 
-    quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
-    quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+    for(int i = 0; i < pathList.size(); ++i)
+    {
+        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SImage* pImg = new SImage(path, true, QPoint(x, y));
+        SImage* pImg = new SImage(pathList[i], true, QPoint(x, y));
+        pImg->rotate(30);
 
-    pImg->scale(2, 3);
-    pImg->rotate(30);
-    mpCurDoc->getLayerManager().addLayer(pImg);
+        mpCurDoc->getLayerManager().addLayer(pImg);
+    }
 
 }
 
@@ -87,7 +87,7 @@ void SEditor::onTabSwitched()
 
 }
 
-void SEditor::onCanvasMouseMoved(QPoint Log_pos)
+void SEditor::onCanvasMouseMoved(QPointF Log_pos)
 {
     mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
 }

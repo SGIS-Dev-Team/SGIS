@@ -34,6 +34,9 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalAr
         mFragLoader.push_front(loadBlockVec.data(), loadBlockVec.size());
     mFragLoader.start();
 
+    //保存原来的变换
+    QTransform oldTransform = painter.transform();
+
     //平移到中心点
     if(doTranslate)
         painter.translate(mPtCenter);
@@ -48,12 +51,8 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalAr
         pFragImage[i].paint(painter);
     //-----绘图-----//
 
-    //执行逆变换
-    painter.setTransform(mTransform.inverted() * painter.transform());
-
-    //返回原点
-    if(doTranslate)
-        painter.translate(-mPtCenter);
+    //还原变换
+    painter.setTransform(oldTransform);
 }
 
 void SFragImage::setFragmentPath(const QString &folder, const QString &imageFileName)
@@ -69,6 +68,7 @@ void SFragImage::_loadMeta()
     if(!file.open(QFile::ReadOnly))
         qDebug() << "Cannot Open Meta File\n";
     QString metaString(file.readAll());
+    file.close();
 
     QTextStream stream(&metaString);
     QString buf;
@@ -129,16 +129,9 @@ QPolygonF SFragImage::boundingRect() const
     .translated(mPtCenter);
 }
 
-bool SFragImage::contains(const QPointF &pt) const
+bool SFragImage::contains(const QPointF &pt, bool isInBoundRect) const
 {
-    QPainterPath path;
-    path.moveTo(mpBoundPt[0]);
-    path.lineTo(mpBoundPt[1]);
-    path.lineTo(mpBoundPt[2]);
-    path.lineTo(mpBoundPt[3]);
-    path.closeSubpath();
-
-    return path.contains(this->AtoC(pt));
+    return this->boundingRect().containsPoint(pt, Qt::WindingFill);
 }
 
 void SFragImage::writeBinaryData(QDataStream &stream) const
@@ -191,4 +184,9 @@ void SFragImage::_applyTransform()
 
     mImageSize.setWidth(mImageRect.width() * mdSx);
     mImageSize.setHeight(mImageRect.height() * mdSy);
+}
+
+QRectF SFragImage::_originalRect()
+{
+    return mImageRect;
 }

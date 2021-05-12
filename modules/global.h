@@ -42,6 +42,11 @@ class SDocument;
 //拖动触发的最小曼哈顿距离（像素）
 #define DRAG_TRIGGERING_DISTANCE 3
 
+//旋转图标矩形
+#define ROTATE_ICON_RECT QRect(-10, -48, 24, 24)
+#define ROTATE_ICON_HOVER_DISTANCE 27
+
+
 //绘图对象类名
 namespace sgis
 {

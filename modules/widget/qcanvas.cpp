@@ -72,23 +72,88 @@ void QCanvas::paintEvent(QPaintEvent *event)
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
-    //------坐标显示-----//
-    if(pos.x() < 0 || pos.x() >= mSzActual.width() || pos.y() < 0 || pos.y() >= mSzActual.height())
+    QPointF actPos = event->pos();
+    //------坐标显示------//
+    if(actPos.x() < 0 || actPos.x() >= mSzActual.width() || actPos.y() < 0 || actPos.y() >= mSzActual.height())
         return;
     //显示逻辑坐标
-    QPoint lgcPos = AtoL(pos);
+    QPointF lgcPos = AtoL(actPos);
     emit mouseMoved(lgcPos);
 
+    //------鼠标悬浮图标显示------//
+    SObject* pObj = mpDoc->getLayerManager().getTopLayerOn(this->AtoL(event->pos()), true, true);
+    Qt::CursorShape cursor_shape{};
+
+    if(mbCursorOnLayer != static_cast<bool>(pObj))
+    {
+        mbCursorOnLayer = static_cast<bool>(pObj);
+        cursor_shape = mbCursorOnLayer ? Qt::DragMoveCursor : Qt::CursorShape::ArrowCursor;
+    }
+
+    if(pObj)
+    {
+        //判断鼠标点在哪个点圆内
+        QPointF nearest_pt;
+        bool isFound{false};
+
+        QPolygonF bound_rect = pObj->boundingRect();
+
+        for(auto& corner : bound_rect)
+        {
+            if((this->LtoA(corner) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 3)
+            {
+                nearest_pt = corner;
+                isFound = true;
+                break;
+            }
+        }
+
+        //计算中点并判断是否在圆内
+        if(!isFound)
+            for(int i = 0; i < 4; ++i)
+            {
+                nearest_pt = (bound_rect[i] + bound_rect[(i + 1) % 4]) / 2;
+                if((this->LtoA(nearest_pt) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+                {
+                    isFound = true;
+                    break;
+                }
+            }
+
+        //选择最合适的鼠标图标
+        if(isFound)
+        {
+            double x = nearest_pt.x() - pObj->centerPoint().x();
+            double y = nearest_pt.y() - pObj->centerPoint().y();
+
+            if(x == 0)
+                cursor_shape = Qt::SizeVerCursor;
+            else
+            {
+                const double tan_22_5 = 0.414213562373095;
+                const double tan_67_5 = 2.414213562373095;
+                double tan_sita = abs(y / x);
+                if(tan_sita < tan_22_5)
+                    cursor_shape = Qt::SizeHorCursor;
+                else if(tan_sita < tan_67_5)
+                    cursor_shape = x * y < 0 ? Qt::SizeBDiagCursor : Qt::SizeFDiagCursor;
+                else
+                    cursor_shape = Qt::SizeVerCursor;
+            }
+        }
+    }
+
+    this->setCursor(QCursor(cursor_shape));
+
     //------拖动选中图层------//
-    if(mbDragging)
+    if(mbPressed)
     {
         const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
         for(const list_iterator& iter : selectedIterList)
         {
             (*iter)->translate(lgcPos - mPtLastLogicalPos);
         }
-        update();
+        update(this->LtoA(viewArea()).toRect());
     }
     this->mPtLastLogicalPos = lgcPos;
 }
@@ -96,25 +161,21 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
 void QCanvas::mousePressEvent(QMouseEvent * event)
 {
     //判断鼠标点是否在某个已经选中的对象内
-    QPoint lgcPos = AtoL(event->pos());
-    const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
-    for(const list_iterator& iter : selectedIterList)
-    {
-        if((*iter)->contains(lgcPos))
-        {
-            mbDragging = true;
-            break;
-        }
-    }
+    QPointF lgcPos = AtoL(QPointF(event->pos()));
+    SObject* pObj = mpDoc->getLayerManager().getTopLayerOn(lgcPos, true);
+    if(pObj)
+        mbPressed = true;
     //记录鼠标点位置
     this->mPtLogicalPressPos = lgcPos;
     this->mPtLastLogicalPos = lgcPos;
 }
 void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
-    QPoint lgcPos = AtoL(event->pos());
+    QPointF lgcPos = AtoL(QPointF(event->pos()));
+
     //判断是否有拖动发生
-    int dragDistance = abs((this->LtoA(mPtLogicalPressPos) - event->pos()).manhattanLength());
+    int dragDistance = (this->LtoA(mPtLogicalPressPos) - event->pos()).manhattanLength();
+    qDebug() << S3DBG(dragDistance, this->LtoA(mPtLogicalPressPos), event->pos());
     if(dragDistance < DRAG_TRIGGERING_DISTANCE)
         if(mpDoc)
         {
@@ -130,7 +191,7 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 
             update(this->LtoA(mViewArea.toRect()));
         }
-    mbDragging = false;
+    mbPressed = false;
 }
 
 void QCanvas::wheelEvent(QWheelEvent * event)
@@ -216,7 +277,7 @@ bool QCanvas::setScaleLevelDown()
     return setScaleLevel(level);
 }
 
-void QCanvas::setViewArea(const QRectF &rect)
+void QCanvas::setViewArea(const QRectF & rect)
 {
     mViewArea = rect;
 }

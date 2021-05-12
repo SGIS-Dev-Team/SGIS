@@ -39,7 +39,7 @@ public:
     /*-----信号-----*/
 signals:
     //鼠标移动
-    void mouseMoved(QPoint pos);
+    void mouseMoved(QPointF pos);
     //缩放激活信号
     void scaling(QPointF pos, int delta);
     //缩放成功信号
@@ -50,9 +50,10 @@ private slots:
 
     /*-----控制标记-----*/
 private:
-    QPoint mPtLogicalPressPos{};
-    QPoint mPtLastLogicalPos{};
-    bool mbDragging{false};
+    QPointF mPtLogicalPressPos{};
+    QPointF mPtLastLogicalPos{};
+    bool mbPressed{false};
+    bool mbCursorOnLayer{false};
 
     /*-----属性-----*/
 private:
