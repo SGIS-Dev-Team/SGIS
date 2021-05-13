@@ -54,9 +54,10 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
         painter.drawEllipse(ptMid[i], radius / scaleValue, radius / scaleValue);
     }
     //绘制旋转符号
-    painter.translate(mPtCenter + (bound_polygon[0] - bound_polygon[3]) / 2.0);
+    painter.translate(ptMid[0]);
     painter.rotate(mdRotateAngle);
     painter.scale(1.0 / scaleValue, 1.0 / scaleValue);
+    painter.translate(0, ROTATE_ICON_CENTER_Y);
 
     QSvgRenderer rotate_icon(QString(":/WidgetIcon/WidgetIcon/rotate.svg"));
 
@@ -65,7 +66,7 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     //绘制一条链接线（上边中点到旋转符号）
     pen.setWidth(BOUND_RECT_PEN_WIDTH);
     painter.setPen(pen);
-    painter.drawLine(0, -BOUND_RECT_CORNER_RADIUS, 0, -ROTATE_ICON_HOVER_DISTANCE);
+    painter.drawLine(0, ROTATE_ICON_RADIUS, 0, - ROTATE_ICON_CENTER_Y - radius);
     //------------绘图-------------//
 
     //还原样式
@@ -86,20 +87,18 @@ void SObject::translate(const QPointF &pt)
     mPtCenter += pt;
 }
 
-void SObject::rotate(double angle)
+void SObject::rotate(double angle, bool doReCalc)
 {
-    mdRotateAngle += angle;
-    _reCalcTransfrom();
-    _applyTransform();
+    mdRotateAngle = fmod(mdRotateAngle + angle, 360.0);
+    if(doReCalc) reCalcTransfrom();
 }
 
-void SObject::scale(double sx, double sy)
+void SObject::scale(double sx, double sy, bool doReCalc)
 {
-    Q_ASSERT(sx > 0 && sy > 0);
+    Q_ASSERT(sx != 0 && sy != 0);
     mdSx *= sx;
     mdSy *= sy;
-    _reCalcTransfrom();
-    _applyTransform();
+    if(doReCalc) reCalcTransfrom();
 }
 
 QIcon SObject::icon()const
@@ -135,15 +134,19 @@ bool SObject::isSelected() const
     return mbSelected;
 }
 
-bool SObject::rotateAngle() const
+double SObject::rotateAngle() const
 {
     return mdRotateAngle;
 }
 
-void SObject::scaleFactor(double &sx, double &sy) const
+double SObject::scaleFactorX() const
 {
-    sx = this->mdSx;
-    sy = this->mdSy;
+    return mdSx;
+}
+
+double SObject::scaleFactorY() const
+{
+    return mdSy;
 }
 
 const QPointF SObject::centerPoint() const
@@ -171,6 +174,11 @@ PaintObject SObject::getType()
     return type;
 }
 
+const QTransform &SObject::transform() const
+{
+    return mTransform;
+}
+
 void SObject::setVisible(bool visible)
 {
     this->mbVisible = visible;
@@ -186,14 +194,17 @@ void SObject::setSelected(bool select)
     mbSelected = select;
 }
 
-void SObject::setRotateAngle(double angle)
+void SObject::setRotateAngle(double angle, bool doReCalc)
 {
-    this->rotate(angle - mdRotateAngle);
+    mdRotateAngle = fmod(angle, 360.0);
+    if(doReCalc) reCalcTransfrom();
 }
 
-void SObject::setScaleFactor(double sx, double sy)
+void SObject::setScaleFactor(double sx, double sy, bool doReCalc)
 {
-    this->scale(sx / mdSx, sy / mdSy);
+    mdSx = sx;
+    mdSy = sy;
+    if(doReCalc) reCalcTransfrom();
 }
 
 void SObject::setCenterPoint(const QPointF &newCenterPt)
@@ -216,11 +227,12 @@ void SObject::setLayerColor(const QColor &color)
     mLayerColor = color;
 }
 
-void SObject::_reCalcTransfrom()
+void SObject::reCalcTransfrom()
 {
     mTransform.reset();
     mTransform.rotate(mdRotateAngle);
     mTransform.scale(mdSx, mdSy);
+    _applyTransform();
 }
 
 void SObject::_initializeWith(const SObject &theObj)

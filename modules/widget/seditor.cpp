@@ -56,7 +56,7 @@ void SEditor::onActionLoadImageTriggered()
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
         SImage* pImg = new SImage(pathList[i], true, QPoint(x, y));
-        pImg->rotate(30);
+        pImg->rotate(60);
 
         mpCurDoc->getLayerManager().addLayer(pImg);
     }

@@ -76,7 +76,7 @@ protected:
     bool mbLocked{false};
     //是否被选中
     bool mbSelected{true};
-    //应用在对象中的变换
+    //应用在对象中的变换:该变换不包含平移
     QTransform mTransform{};
     //旋转角（顺时针）单位为度
     double mdRotateAngle{0};
@@ -103,36 +103,39 @@ public:
     bool isVisible()const;
     bool isLocked()const;
     bool isSelected()const;
-    bool rotateAngle()const;
-    void scaleFactor(double &sx, double&sy)const;
+    double rotateAngle()const;
+    double scaleFactorX()const;
+    double scaleFactorY()const;
     const QPointF centerPoint()const;
     const QString& layerName()const;
     const QString& layerDiscription()const;
     const QColor& layerColor()const;
     PaintObject getType();
+    const QTransform &transform()const;
 
     //[修改函数]
     //变换
     void translate(double dx, double dy);
     void translate(const QPointF& pt);
-    void rotate(double angle);
-    void scale(double sx, double sy);
+    //参数doReCalc为True时,重新计算变换并应用变换到子类成员变量中
+    void rotate(double angle, bool doReCalc = true);
+    void scale(double sx, double sy, bool doReCalc = true);
 
     void setVisible(bool visible);
     void setLocked(bool lock);
     void setSelected(bool select);
-    //设置旋转角：顺时针(?)，单位为度
-    void setRotateAngle(double angle);
-    void setScaleFactor(double sx, double sy);
+    //设置旋转角：顺时针，单位为度
+    void setRotateAngle(double angle, bool doReCalc = true);
+    void setScaleFactor(double sx, double sy, bool doReCalc = true);
     void setCenterPoint(const QPointF& newCenterPt);
     void setLayerName(const QString& name);
     void setLayerDiscription(const QString& discription);
     void setLayerColor(const QColor& color);
 
     //[功能函数]
-    //按旋转和缩放重新计算变换
-private:
-    void _reCalcTransfrom();
+public:
+    //按旋转和缩放重新计算变换，并且应用变换
+    void reCalcTransfrom();
 
 public:
     //中心坐标转实际坐标（控件坐标系）
