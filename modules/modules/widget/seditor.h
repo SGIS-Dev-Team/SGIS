@@ -42,21 +42,18 @@ private slots:
     void onCanvasScaled(double value);
     //[图层事件响应]
     void onLayersUpdated(SLayerManager* which);
-    //画布前后移动
+
     void onActionBringForwardTriggered();
+
     void onActionSendBackwardTriggered();
     void onActionBringtoFrontTriggered();
     void onActionSendtoBackTriggered();
-    //绘图对象移动
     void onActionAlignLeftTriggered();
     void onActionAlignMiddleTriggered();
     void onActionAlignRightTriggered();
     void onActionAlignTopTriggered();
     void onActionAlignCenterTriggered();
     void onActionAlignBottomTriggered();
-    //多个绘图对象等间距操作
-    void onActionDistributeHorizentallyTriggered();
-    void onActionDistributeVerticallyTriggered();
 
     /*-----虚函数重载-----*/
 public:

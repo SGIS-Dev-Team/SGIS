@@ -173,18 +173,6 @@ void SEditor::onActionAlignBottomTriggered()
     mpCurCanvasArea->canvas()->moveSelectObject("AlignBottom");
 }
 
-void SEditor::onActionDistributeHorizentallyTriggered()
-{
-    mpCurCanvasArea->canvas()->distributeSelectObject("Horizentally");
-}
-
-
-void SEditor::onActionDistributeVerticallyTriggered()
-{
-    mpCurCanvasArea->canvas()->distributeSelectObject("Vertically");
-}
-
-
 
 
 void SEditor::initializeConnections()
@@ -200,7 +188,6 @@ void SEditor::initializeConnections()
     connect(ui->mActionSendBackward,&QAction::triggered,this,&SEditor::onActionSendBackwardTriggered);
     connect(ui->mActionBringtoFront,&QAction::triggered,this,&SEditor::onActionBringtoFrontTriggered);
     connect(ui->mActionSendtoBack,&QAction::triggered,this,&SEditor::onActionSendtoBackTriggered);
-
     connect(ui->mActionAlignLeft,&QAction::triggered,this,&SEditor::onActionAlignLeftTriggered);
     connect(ui->mActionAlignMiddle,&QAction::triggered,this,&SEditor::onActionAlignMiddleTriggered);
     connect(ui->mActionAlignRight,&QAction::triggered,this,&SEditor::onActionAlignRightTriggered);
@@ -208,8 +195,6 @@ void SEditor::initializeConnections()
     connect(ui->mActionAlignCenter,&QAction::triggered,this,&SEditor::onActionAlignCenterTriggered);
     connect(ui->mActionAlignBottom,&QAction::triggered,this,&SEditor::onActionAlignBottomTriggered);
 
-    connect(ui->mActionDistributeHorizentally,&QAction::triggered,this,&SEditor::onActionDistributeHorizentallyTriggered);
-    connect(ui->mActionDistributeVertically,&QAction::triggered,this,&SEditor::onActionDistributeVerticallyTriggered);
 }
 
 void SEditor::createWorkspace(const QSize &CanvasSize)

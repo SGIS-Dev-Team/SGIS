@@ -35,14 +35,11 @@ public:
     void mouseReleaseEvent(QMouseEvent* event)override;
     //画布鼠标滚轮事件
     void wheelEvent(QWheelEvent* event)override;
-
-
     //画布层次改变操作
     void changeSelectLayerInList(QString order);
     //绘图对象移动操作
     void moveSelectObject(QString order);
-    //多个绘图对象间距相等操作
-    void distributeSelectObject(QString order);
+
 
 
     /*-----信号-----*/
