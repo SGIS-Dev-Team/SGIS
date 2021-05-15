@@ -57,7 +57,16 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     painter.translate(ptMid[0]);
     painter.rotate(mdRotateAngle);
     painter.scale(1.0 / scaleValue, 1.0 / scaleValue);
-    painter.translate(0, ROTATE_ICON_CENTER_Y);
+
+    //保证旋转符号在包围矩形的外侧，且方向合理
+    if(mdSy > 0)
+        painter.translate(0, ROTATE_ICON_CENTER_Y);
+    else
+        painter.translate(0, -ROTATE_ICON_CENTER_Y);
+
+    if(mdSx < 0)
+        painter.scale(-1, 1);
+
 
     QSvgRenderer rotate_icon(QString(":/WidgetIcon/WidgetIcon/rotate.svg"));
 
@@ -66,7 +75,10 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     //绘制一条链接线（上边中点到旋转符号）
     pen.setWidth(BOUND_RECT_PEN_WIDTH);
     painter.setPen(pen);
-    painter.drawLine(0, ROTATE_ICON_RADIUS, 0, - ROTATE_ICON_CENTER_Y - radius);
+    if(mdSy > 0)
+        painter.drawLine(0, ROTATE_ICON_RADIUS, 0, - ROTATE_ICON_CENTER_Y - radius);
+    else
+        painter.drawLine(0, -ROTATE_ICON_RADIUS, 0, + ROTATE_ICON_CENTER_Y + radius);
     //------------绘图-------------//
 
     //还原样式

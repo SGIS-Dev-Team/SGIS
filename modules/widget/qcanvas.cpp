@@ -81,7 +81,8 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     QPointF lgcPos = AtoL(actPos);
     emit mouseMoved(lgcPos);
 
-    mbCursorOnCtrlPoint = mbCursorOnRotateIcon = mbCursorOnSelectedLayer = false;
+    mnCursorOnCornerCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx = -1;
+    mbCursorOnRotateIcon = mbCursorOnSelectedLayer = false;
 
     if(!mbLeftPressed)
     {
@@ -92,42 +93,48 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
         for(const auto& iter : mpDoc->getLayerManager().getSelectedLayerIterList())
         {
             SObject* pObj = mpDstObj = *iter;
+            bool isCursorOnCtrlPt{false};
 
             //判断鼠标点在外接矩形角点中哪个点圆内
             QPointF nearest_pt;
             QPolygonF bound_rect = pObj->boundingRect();
 
-            for(auto& corner : bound_rect)
-                if((this->LtoA(corner) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+            for(int i = 0; i < bound_rect.size(); ++i)
+                if((this->LtoA(bound_rect[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
                 {
-                    nearest_pt = corner;
-                    mbCursorOnCtrlPoint = true;
+                    nearest_pt = bound_rect[i];
+                    isCursorOnCtrlPt = true;
+                    mnCursorOnCornerCtrlPointIdx = i;
                     break;
                 }
 
             //计算外接矩形边中点并判断是否在点圆内
             QPointF ptMid[4];
-            if(!mbCursorOnCtrlPoint)
+            if(!isCursorOnCtrlPt)
                 for(int i = 0; i < 4; ++i)
                 {
                     ptMid[i] = (bound_rect[i] + bound_rect[(i + 1) % 4]) / 2.0;
                     if((this->LtoA(ptMid[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
                     {
-                        mbCursorOnCtrlPoint = true;
                         nearest_pt = ptMid[i];
+                        isCursorOnCtrlPt = true;
+                        mnCursorOnMiddleCtrlPointIdx = i;
                         break;
                     }
                 }
 
             //判断鼠标点是否在旋转图标上
-            if(!mbCursorOnCtrlPoint)
+            if(!isCursorOnCtrlPt)
             {
                 //设置变换:我打赌Qt写这个类的人用了Lazy Evaluation
                 QTransform transform;
                 QPointF ptMid0_act = this->LtoA(ptMid[0]);
                 transform.translate(ptMid0_act.x(), ptMid0_act.y());
                 transform.rotate(pObj->rotateAngle());
-                transform.translate(0, ROTATE_ICON_CENTER_Y);
+                if(pObj->scaleFactorY() > 0)
+                    transform.translate(0, ROTATE_ICON_CENTER_Y);
+                else
+                    transform.translate(0, -ROTATE_ICON_CENTER_Y);
 
                 if(transform.inverted().map(actPos).manhattanLength() < ROTATE_ICON_RADIUS * 2)
                 {
@@ -138,7 +145,7 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
             }
 
             //选择最合适的鼠标图标
-            if(mbCursorOnCtrlPoint)
+            if(isCursorOnCtrlPt)
             {
                 double x = nearest_pt.x() - pObj->centerPoint().x();
                 double y = nearest_pt.y() - pObj->centerPoint().y();
@@ -167,7 +174,7 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
         }
 
         this->setCursor(QCursor(cursor_shape));
-        if(!(mbCursorOnCtrlPoint || mbCursorOnSelectedLayer || mbCursorOnRotateIcon))
+        if(!(mnCursorOnCornerCtrlPointIdx != -1 || mnCursorOnMiddleCtrlPointIdx != -1 || mbCursorOnSelectedLayer || mbCursorOnRotateIcon))
             mpDstObj = nullptr;
     }
     else
@@ -184,7 +191,7 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 //拖动选中图层
                 ptTranslated = lgcPos - mPtLgcLastPos;
             }
-            else if(mbLeftPressedOnCtrlPoint)
+            else if(mnLeftPressedOnCornerCtrlPointIdx != -1 || mnLeftPressedOnMiddleCtrlPointIdx != -1)
             {
                 switch (event->modifiers())
                 {
@@ -192,11 +199,23 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 case Qt::KeyboardModifier::ControlModifier:
                 {
                     const QPointF &centerPt = this->LtoA(mpDstObj->centerPoint());
+                    //变换到mpDstObj的旋转后坐标系再计算缩放
                     QTransform rotater;
+                    rotater.translate(centerPt.x(), centerPt.y());
                     rotater.rotate(mdOriginalRotateAngle);
-                    xScaled = (actPos.x() - centerPt.x()) / (mPtLgcLeftPressPos.x() * mdScale - centerPt.x());
-                    yScaled = (actPos.y() - centerPt.y()) / (mPtLgcLeftPressPos.y() * mdScale - centerPt.y());
-                    rotater.map(xScaled, yScaled, &xScaled, &yScaled);
+                    rotater = rotater.inverted();
+                    //执行变换
+                    QPointF curPt = rotater.map(actPos);
+                    QPointF startPt = rotater.map(mPtLgcLeftPressPos * mdScale);
+                    //计算旋转后坐标系的缩放量
+                    xScaled = curPt.x() / startPt.x();
+                    yScaled = curPt.y() / startPt.y();
+                    //对控制点为中点的情况单独考虑
+                    if(mnLeftPressedOnMiddleCtrlPointIdx == 0 || mnLeftPressedOnMiddleCtrlPointIdx == 2)
+                        xScaled = 1;
+                    if(mnLeftPressedOnMiddleCtrlPointIdx == 1 || mnLeftPressedOnMiddleCtrlPointIdx == 3)
+                        yScaled = 1;
+
                     break;
                 }
                 //矩形缩放，还需要几个变量确定鼠标按在哪个控制点上面了
@@ -228,8 +247,8 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 pObj->rotate(angleRotated, false);
                 pObj->setScaleFactor(mdOriginalScaleX * xScaled, mdOriginalScaleY * yScaled, false);
                 pObj->reCalcTransfrom();
-                qDebug() << S3DBG(pObj->rotateAngle(), pObj->scaleFactorX(), pObj->scaleFactorY());
-                qDebug() << S3DBG(mdOriginalRotateAngle, mdOriginalScaleX, mdOriginalScaleY);
+                //qDebug() << S3DBG(pObj->rotateAngle(), pObj->scaleFactorX(), pObj->scaleFactorY());
+                //qDebug() << S3DBG(mdOriginalRotateAngle, mdOriginalScaleX, mdOriginalScaleY);
             }
 
             //更新视图区
@@ -257,10 +276,15 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
             cursor_shape = Qt::SizeAllCursor;
             mbLeftPressedOnSelectedLayer = true;
         }
-        else if(mbCursorOnCtrlPoint)
+        else if(mnCursorOnCornerCtrlPointIdx != -1)
         {
             cursor_shape = Qt::CrossCursor;
-            mbLeftPressedOnCtrlPoint = true;
+            mnLeftPressedOnCornerCtrlPointIdx = mnCursorOnCornerCtrlPointIdx;
+        }
+        else if(mnCursorOnMiddleCtrlPointIdx != -1)
+        {
+            cursor_shape = Qt::CrossCursor;
+            mnLeftPressedOnMiddleCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx;
         }
         else if(mbCursorOnRotateIcon)
         {
@@ -319,7 +343,8 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
             }
 
         //清空控制标记
-        mbLeftPressed = mbLeftPressedOnCtrlPoint = mbLeftPressedOnRotateIcon = mbLeftPressedOnSelectedLayer = false;
+        mbLeftPressed = mbLeftPressedOnRotateIcon = mbLeftPressedOnSelectedLayer = false;
+        mnLeftPressedOnCornerCtrlPointIdx = mnLeftPressedOnMiddleCtrlPointIdx = -1;
         mdOriginalRotateAngle = 0, mdOriginalScaleX = mdOriginalScaleY = 1;
         break;
     }

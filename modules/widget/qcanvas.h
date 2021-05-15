@@ -59,12 +59,14 @@ private:
 
     //鼠标是否在某些特殊位置
     bool mbCursorOnSelectedLayer{false};
-    bool mbCursorOnCtrlPoint{false};
+    int mnCursorOnCornerCtrlPointIdx{-1};
+    int mnCursorOnMiddleCtrlPointIdx{-1};
     bool mbCursorOnRotateIcon{false};
 
     //鼠标左键是否按在某些特殊位置而还没有释放
     bool mbLeftPressedOnSelectedLayer{false};
-    bool mbLeftPressedOnCtrlPoint{false};
+    int mnLeftPressedOnCornerCtrlPointIdx{-1};
+    int mnLeftPressedOnMiddleCtrlPointIdx{-1};
     bool mbLeftPressedOnRotateIcon{false};
 
     //控制目标
