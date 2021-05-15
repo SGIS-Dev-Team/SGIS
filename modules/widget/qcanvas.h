@@ -50,10 +50,31 @@ private slots:
 
     /*-----控制标记-----*/
 private:
-    QPointF mPtLogicalPressPos{};
-    QPointF mPtLastLogicalPos{};
-    bool mbPressed{false};
-    bool mbCursorOnLayer{false};
+    //鼠标点的位置
+    QPointF mPtLgcLeftPressPos{};
+    QPointF mPtLgcLastPos{};
+
+    //左键是否按下
+    bool mbLeftPressed{false};
+
+    //鼠标是否在某些特殊位置
+    bool mbCursorOnSelectedLayer{false};
+    int mnCursorOnCornerCtrlPointIdx{-1};
+    int mnCursorOnMiddleCtrlPointIdx{-1};
+    bool mbCursorOnRotateIcon{false};
+
+    //鼠标左键是否按在某些特殊位置而还没有释放
+    bool mbLeftPressedOnSelectedLayer{false};
+    int mnLeftPressedOnCornerCtrlPointIdx{-1};
+    int mnLeftPressedOnMiddleCtrlPointIdx{-1};
+    bool mbLeftPressedOnRotateIcon{false};
+
+    //控制目标
+    SObject* mpDstObj{nullptr};
+    //控制目标在鼠标左键按下时的变换参数
+    double mdOriginalRotateAngle{0};
+    double mdOriginalScaleX{1}, mdOriginalScaleY{1};
+
 
     /*-----属性-----*/
 private:
