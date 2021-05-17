@@ -181,6 +181,50 @@ void SLayerManager::clearSelection()
     emit selectStateChanged();
 }
 
+void SLayerManager::bringForward()
+{
+    size_t sltListSize = mSelectedLayerIterList.size();
+    if(sltListSize == 0)
+        return;
+    //先按层序排序
+    _sortSelectList();
+    //所有选中图层插入到其中最高层的上一层
+    list_iterator fronterOneLayerIt = mSelectedLayerIterList.back();
+    if(++fronterOneLayerIt != mLayerList.end())
+        ++fronterOneLayerIt;
+    for(auto& iter : mSelectedLayerIterList)
+    {
+        //将选中的图层按图层顺序插入
+        mLayerList.insert(fronterOneLayerIt, *iter);
+        //接下来的操作会导致iter非法化
+        mLayerList.erase(iter);
+    }
+    //清空已经非法化的迭代器
+    mSelectedLayerIterList.clear();
+    //重新赋值
+    while (sltListSize != 0)
+    {
+        mSelectedLayerIterList.push_front(--fronterOneLayerIt);
+        --sltListSize;
+    }
+
+}
+
+void SLayerManager::sendBackward()
+{
+
+}
+
+void SLayerManager::bringToFront()
+{
+
+}
+
+void SLayerManager::sendToBack()
+{
+
+}
+
 list_iterator SLayerManager::_iterAt(size_t pos)
 {
     Q_ASSERT(pos < mLayerList.size());
@@ -215,4 +259,16 @@ QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
     QList<QStandardItem *> rowData;
     rowData << itemCheck << itemLayerIcon;
     return rowData;
+}
+
+void SLayerManager::_sortSelectList()
+{
+    std::map<int, list_iterator> sltIterMap;
+    for(auto& iter : mSelectedLayerIterList)
+        sltIterMap[_posOf(iter)] = iter;
+
+    mSelectedLayerIterList.clear();
+
+    for(auto& value : sltIterMap)
+        mSelectedLayerIterList.push_back(value.second);
 }
