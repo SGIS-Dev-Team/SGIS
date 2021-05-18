@@ -20,7 +20,7 @@ class SDocument;
 //单个文件最大日志条目数
 #define LOG_MAX_ENTRY_COUNT 1000
 //默认画布大小
-#define DEFAULT_CANVAS_SIZE QSize(10000,10000)
+#define DEFAULT_CANVAS_SIZE QSize(10*15200,10*10200)
 //图层预览图标大小
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
@@ -41,6 +41,15 @@ class SDocument;
 
 //拖动触发的最小曼哈顿距离（像素）
 #define DRAG_TRIGGERING_DISTANCE 3
+
+//旋转图标矩形
+#define ROTATE_ICON_RADIUS 12
+#define ROTATE_ICON_RECT QRect(-ROTATE_ICON_RADIUS, -ROTATE_ICON_RADIUS, ROTATE_ICON_RADIUS * 2, ROTATE_ICON_RADIUS * 2)
+#define ROTATE_ICON_HOVER_DISTANCE 27
+#define ROTATE_ICON_CENTER_Y -(ROTATE_ICON_HOVER_DISTANCE + ROTATE_ICON_RADIUS)         //27+24/2   中心是相对于包围矩形第一个中点的
+
+//圆周率，懂得都懂
+#define PI 3.141592653589793
 
 //绘图对象类名
 namespace sgis

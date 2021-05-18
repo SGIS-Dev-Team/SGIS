@@ -36,7 +36,7 @@ class SObject
     friend class SObjectFactory;
     /*-----构造函数与析构函数-----*/
 protected:
-    explicit SObject(PaintObject _type, bool _selected = true, QPointF _center = QPointF(),
+    explicit SObject(PaintObject _type, bool _selected = false, QPointF _center = QPointF(),
                      const QString& _layerName = "",
                      const QString& _layerDiscription = "",
                      const QColor& _layerColor = "");
@@ -48,8 +48,8 @@ public:
     virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const = 0;
-    //是否包含某点(画布坐标系)
-    virtual bool contains(const QPointF& pt)const = 0;
+    //是否包含某点(画布坐标系)，若参数2为True,则只判断包围矩形是否包含某点
+    virtual bool contains(const QPointF& pt, bool isInBoundRect = false)const = 0;
     //变换后包围矩形是否与目标矩形有交集
     virtual bool intersect(const QRectF& rect)const;
     //输出与输入
@@ -61,7 +61,10 @@ public:
     virtual QIcon icon()const;
 
 private:
+    //应用变换的方法
     virtual void _applyTransform() = 0;
+    //变换前的原始矩形，用于绘制选框矩形
+    virtual QRectF _originalRect() = 0;
 
     /*-----属性-----*/
 protected:
@@ -73,7 +76,7 @@ protected:
     bool mbLocked{false};
     //是否被选中
     bool mbSelected{true};
-    //应用在对象中的变换
+    //应用在对象中的变换:该变换不包含平移
     QTransform mTransform{};
     //旋转角（顺时针）单位为度
     double mdRotateAngle{0};
@@ -89,7 +92,6 @@ protected:
     //图层标识颜色
     QColor mLayerColor = QColor(255, 255, 255);
 
-
     /*-----成员变量-----*/
 private:
     //[Me]
@@ -101,36 +103,39 @@ public:
     bool isVisible()const;
     bool isLocked()const;
     bool isSelected()const;
-    bool rotateAngle()const;
-    void scaleFactor(double &sx, double&sy)const;
+    double rotateAngle()const;
+    double scaleFactorX()const;
+    double scaleFactorY()const;
     const QPointF centerPoint()const;
     const QString& layerName()const;
     const QString& layerDiscription()const;
     const QColor& layerColor()const;
     PaintObject getType();
+    const QTransform &transform()const;
 
     //[修改函数]
     //变换
     void translate(double dx, double dy);
     void translate(const QPointF& pt);
-    void rotate(double angle);
-    void scale(double sx, double sy);
+    //参数doReCalc为True时,重新计算变换并应用变换到子类成员变量中
+    void rotate(double angle, bool doReCalc = true);
+    void scale(double sx, double sy, bool doReCalc = true);
 
     void setVisible(bool visible);
     void setLocked(bool lock);
     void setSelected(bool select);
-    //设置旋转角：顺时针(?)，单位为度
-    void setRotateAngle(double angle);
-    void setScaleFactor(double sx, double sy);
+    //设置旋转角：顺时针，单位为度
+    void setRotateAngle(double angle, bool doReCalc = true);
+    void setScaleFactor(double sx, double sy, bool doReCalc = true);
     void setCenterPoint(const QPointF& newCenterPt);
     void setLayerName(const QString& name);
     void setLayerDiscription(const QString& discription);
     void setLayerColor(const QColor& color);
 
     //[功能函数]
-    //按旋转和缩放重新计算变换
-private:
-    void _reCalcTransfrom();
+public:
+    //按旋转和缩放重新计算变换，并且应用变换
+    void reCalcTransfrom();
 
 public:
     //中心坐标转实际坐标（控件坐标系）
