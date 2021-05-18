@@ -13,7 +13,7 @@
 //  注意：SObject对象在类外构造时，对象资源由该类接管，
 //不要在类外释放其内存。
 //
-//
+//  该类使用逻辑坐标系
 //
 //------------------------------------------
 
@@ -42,7 +42,7 @@ private:
 
     //图层链表
     layer_list mLayerList;
-    //选中的图层在链表中的迭代器组成的链表：[待定]可能vector更加适合
+    //选中的图层在链表中的迭代器组成的链表
     std::list<list_iterator> mSelectedLayerIterList;
 
     //图层数据模型
@@ -75,8 +75,10 @@ public:
     const std::list<list_iterator> &getSelectedLayerIterList()const;
     //获取图层数据模型
     const QStandardItemModel *getLayerModel()const;
+    //获取鼠标位置所在图层,若参数2为True,只获取被选中的图层，若参数3为True
+    SObject *getTopLayerOn(const QPointF& pt, bool onlySelected = false, bool inBoundRect = false)const;
     //按位置（从下往上数）获取图层
-    SObject &layerAt(size_t pos);
+    SObject *layerAt(size_t pos);
 
     //链表长度
     inline size_t layerListSize();
@@ -85,38 +87,10 @@ public:
     //按对象类型获取图层
 
     //选择图层(函数会将鼠标位置的最顶层图层加入选择，若已加入则剔除选择)
-    void clickSelect(const QPoint& pt, bool doMultiSelect = false);
+    void clickSelect(const QPointF& pt, bool doMultiSelect = false);
 
     //清空选择
     void clearSelection();
-
-    //选中图层上移
-    /*  移动逻辑
-     *   选中的所有图层将被移至连续，并置于原来选中
-     *图层中最高层的上一层
-     */
-    void bringForward();
-
-    //选中图层下移
-    /*  移动逻辑
-     *   选中的所有图层将被移至连续，并置于原来选中
-     *图层中最低层的下一层
-     */
-    void sendBackward();
-
-    //选中图层置顶
-    /*  移动逻辑
-     *   选中的所有图层将被移至连续，并置于所有图层
-     *的最顶层
-     */
-    void bringToFront();
-
-    //选中图层置底
-    /*  移动逻辑
-     *   选中的所有图层将被移至连续，并置于所有图层
-     *的最底层
-     */
-    void sendToBack();
 
     //[功能函数]
 private:
@@ -128,10 +102,6 @@ private:
     inline size_t _posSwitch(size_t pos);
     //使用SObject*初始化图层数据项
     QList<QStandardItem *> _createRowItem(SObject* obj);
-    //按图层顺序排序选择链表
-    void _sortSelectList();
-    //图层顺序调整辅助函数
-    void _reOrderLayerList(list_iterator (*getInsertPos)(SLayerManager*));
 };
 
 size_t SLayerManager::layerListSize()

@@ -73,12 +73,12 @@ void QCanvas::paintEvent(QPaintEvent *event)
 
 void QCanvas::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
-    //------坐标显示-----//
-    if(pos.x() < 0 || pos.x() >= mSzActual.width() || pos.y() < 0 || pos.y() >= mSzActual.height())
+    QPointF actPos = event->pos();
+    //------坐标显示------//
+    if(actPos.x() < 0 || actPos.x() >= mSzActual.width() || actPos.y() < 0 || actPos.y() >= mSzActual.height())
         return;
     //显示逻辑坐标
-    QPoint lgcPos = AtoL(pos);
+    QPointF lgcPos = AtoL(actPos);
     emit mouseMoved(lgcPos);
 
     mnCursorOnCornerCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx = -1;
@@ -338,7 +338,8 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
                     doMultiSelect = true;
 
                 mgr.clickSelect(lgcPos, doMultiSelect);
-                updateViewArea();
+
+                update(this->LtoA(mViewArea.toRect()));
             }
 
         //清空控制标记
@@ -440,13 +441,7 @@ bool QCanvas::setScaleLevelDown()
     return setScaleLevel(level);
 }
 
-void QCanvas::setViewArea(const QRectF &rect)
+void QCanvas::setViewArea(const QRectF & rect)
 {
     mViewArea = rect;
 }
-
-void QCanvas::updateViewArea()
-{
-    update(this->LtoA(mViewArea.toRect()));
-}
-

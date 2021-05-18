@@ -29,7 +29,7 @@ class SShape : public SObject
     /*-----构造函数与析构函数-----*/
     //仅可使用形状工厂创建
 protected:
-    explicit SShape(bool _selected = true, QPointF center = QPointF(),
+    explicit SShape(bool _selected = false, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
                     const QColor& _layerColor = "");
@@ -41,13 +41,17 @@ public:
     virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const;
     //获取包围矩形
     virtual QPolygonF boundingRect()const;
-    //是否包含某点(画布坐标系)
-    virtual bool contains(const QPointF& pt)const;
+    //是否包含某点(画布坐标系)，若参数2为True,则只判断包围矩形是否包含某点
+    virtual bool contains(const QPointF& pt, bool isInBoundRect = false)const;
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const;
     virtual void readBinaryData(QDataStream& stream);
+
+private:
     //应用变换
     virtual void _applyTransform();
+    //变换前的原始矩形，用于绘制选框矩形
+    virtual QRectF _originalRect();
 
     /*-----属性-----*/
 protected:

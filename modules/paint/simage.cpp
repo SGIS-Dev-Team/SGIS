@@ -32,6 +32,8 @@ void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, 
     if(!mpImage)
         return;
 
+    QTransform oldTransform = painter.transform();
+
     //平移到中心点
     if(doTranslate)
         painter.translate(mPtCenter);
@@ -42,12 +44,7 @@ void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, 
     if(mpImage)
         painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
 
-    //执行逆变换
-    painter.setTransform(mTransform.inverted() * painter.transform());
-
-    //返回原点
-    if(doTranslate)
-        painter.translate(-mPtCenter);
+    painter.setTransform(oldTransform);
 }
 
 QPolygonF SImage::boundingRect() const
@@ -57,16 +54,9 @@ QPolygonF SImage::boundingRect() const
     .translated(mPtCenter);
 }
 
-bool SImage::contains(const QPointF &pt) const
+bool SImage::contains(const QPointF &pt, bool isInBoundRect) const
 {
-    QPainterPath path;
-    path.moveTo(mpBoundPt[0]);
-    path.lineTo(mpBoundPt[1]);
-    path.lineTo(mpBoundPt[2]);
-    path.lineTo(mpBoundPt[3]);
-    path.closeSubpath();
-
-    return path.contains(this->AtoC(pt));
+    return this->boundingRect().containsPoint(pt, Qt::WindingFill);
 }
 
 void SImage::writeBinaryData(QDataStream &stream) const
@@ -85,6 +75,11 @@ void SImage::_applyTransform()
     mpBoundPt[1] = mTransform.map(mImageRect.topRight());
     mpBoundPt[2] = mTransform.map(mImageRect.bottomRight());
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
+}
+
+QRectF SImage::_originalRect()
+{
+    return mImageRect;
 }
 
 void SImage::load(const QString &_imagePath)
