@@ -226,3 +226,4 @@ QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
     rowData << itemCheck << itemLayerIcon;
     return rowData;
 }
+
