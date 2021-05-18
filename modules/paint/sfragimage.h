@@ -12,7 +12,6 @@
 //
 //----------------------------------------
 
-
 #include "modules/paint/sobject.h"
 #include "modules/paint/sfragmatrix.h"
 #include "modules/paint/sfragloader.h"

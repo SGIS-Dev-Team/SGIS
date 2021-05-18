@@ -42,6 +42,15 @@ class SDocument;
 //拖动触发的最小曼哈顿距离（像素）
 #define DRAG_TRIGGERING_DISTANCE 3
 
+//旋转图标矩形
+#define ROTATE_ICON_RADIUS 12
+#define ROTATE_ICON_RECT QRect(-ROTATE_ICON_RADIUS, -ROTATE_ICON_RADIUS, ROTATE_ICON_RADIUS * 2, ROTATE_ICON_RADIUS * 2)
+#define ROTATE_ICON_HOVER_DISTANCE 27
+#define ROTATE_ICON_CENTER_Y -(ROTATE_ICON_HOVER_DISTANCE + ROTATE_ICON_RADIUS)         //27+24/2   中心是相对于包围矩形第一个中点的
+
+//圆周率，懂得都懂
+#define PI 3.141592653589793
+
 //绘图对象类名
 namespace sgis
 {

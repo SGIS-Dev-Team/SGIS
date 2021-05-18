@@ -28,6 +28,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
 
     /*-----画布内容绘制-----*/
     //缩放绘制画笔
+
     painter.scale(mdScale, mdScale);
 
     if(mpDoc)
@@ -80,57 +81,280 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     QPoint lgcPos = AtoL(pos);
     emit mouseMoved(lgcPos);
 
-    //------拖动选中图层------//
-    if(mbDragging)
+    mnCursorOnCornerCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx = -1;
+    mbCursorOnRotateIcon = mbCursorOnSelectedLayer = false;
+
+    if(!mbLeftPressed)
     {
-        const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
-        for(const list_iterator& iter : selectedIterList)
+        //------鼠标位置判断与鼠标悬浮图标显示------//
+        Qt::CursorShape cursor_shape{};
+
+        //对每个已选中图层的外接矩形进行判断
+        for(const auto& iter : mpDoc->getLayerManager().getSelectedLayerIterList())
         {
-            (*iter)->translate(lgcPos - mPtLastLogicalPos);
+            SObject* pObj = mpDstObj = *iter;
+            bool isCursorOnCtrlPt{false};
+
+            //判断鼠标点在外接矩形角点中哪个点圆内
+            QPointF nearest_pt;
+            QPolygonF bound_rect = pObj->boundingRect();
+
+            for(int i = 0; i < bound_rect.size(); ++i)
+                if((this->LtoA(bound_rect[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+                {
+                    nearest_pt = bound_rect[i];
+                    isCursorOnCtrlPt = true;
+                    mnCursorOnCornerCtrlPointIdx = i;
+                    break;
+                }
+
+            //计算外接矩形边中点并判断是否在点圆内
+            QPointF ptMid[4];
+            if(!isCursorOnCtrlPt)
+                for(int i = 0; i < 4; ++i)
+                {
+                    ptMid[i] = (bound_rect[i] + bound_rect[(i + 1) % 4]) / 2.0;
+                    if((this->LtoA(ptMid[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+                    {
+                        nearest_pt = ptMid[i];
+                        isCursorOnCtrlPt = true;
+                        mnCursorOnMiddleCtrlPointIdx = i;
+                        break;
+                    }
+                }
+
+            //判断鼠标点是否在旋转图标上
+            if(!isCursorOnCtrlPt)
+            {
+                //设置变换:我打赌Qt写这个类的人用了Lazy Evaluation
+                QTransform transform;
+                QPointF ptMid0_act = this->LtoA(ptMid[0]);
+                transform.translate(ptMid0_act.x(), ptMid0_act.y());
+                transform.rotate(pObj->rotateAngle());
+                if(pObj->scaleFactorY() > 0)
+                    transform.translate(0, ROTATE_ICON_CENTER_Y);
+                else
+                    transform.translate(0, -ROTATE_ICON_CENTER_Y);
+
+                if(transform.inverted().map(actPos).manhattanLength() < ROTATE_ICON_RADIUS * 2)
+                {
+                    mbCursorOnRotateIcon = true;
+                    cursor_shape = Qt::OpenHandCursor;
+                    break;
+                }
+            }
+
+            //选择最合适的鼠标图标
+            if(isCursorOnCtrlPt)
+            {
+                double x = nearest_pt.x() - pObj->centerPoint().x();
+                double y = nearest_pt.y() - pObj->centerPoint().y();
+
+                if(x == 0)
+                    cursor_shape = Qt::SizeVerCursor;
+                else
+                {
+                    const double tan_22_5 = 0.414213562373095;
+                    const double tan_67_5 = 2.414213562373095;
+                    double tan_sita = abs(y / x);
+                    if(tan_sita < tan_22_5)
+                        cursor_shape = Qt::SizeHorCursor;
+                    else if(tan_sita < tan_67_5)
+                        cursor_shape = x * y < 0 ? Qt::SizeBDiagCursor : Qt::SizeFDiagCursor;
+                    else
+                        cursor_shape = Qt::SizeVerCursor;
+                }
+                break;
+            }
+
+            //最后再判断鼠标点是否在已选中的图层上
+            mbCursorOnSelectedLayer = pObj->contains(lgcPos);
+            if(mbCursorOnSelectedLayer)
+                cursor_shape = Qt::DragMoveCursor;
         }
-        updateViewArea();
+
+        this->setCursor(QCursor(cursor_shape));
+        if(!(mnCursorOnCornerCtrlPointIdx != -1 || mnCursorOnMiddleCtrlPointIdx != -1 || mbCursorOnSelectedLayer || mbCursorOnRotateIcon))
+            mpDstObj = nullptr;
     }
-    this->mPtLastLogicalPos = lgcPos;
+    else
+    {
+        if(mpDstObj)
+        {
+            //鼠标左键按下时事件
+            QPointF ptTranslated(0, 0);
+            double angleRotated{0};
+            double xScaled{1}, yScaled{1};
+
+            if(mbLeftPressedOnSelectedLayer)
+            {
+                //拖动选中图层
+                ptTranslated = lgcPos - mPtLgcLastPos;
+            }
+            else if(mnLeftPressedOnCornerCtrlPointIdx != -1 || mnLeftPressedOnMiddleCtrlPointIdx != -1)
+            {
+                switch (event->modifiers())
+                {
+                //中心缩放
+                case Qt::KeyboardModifier::ControlModifier:
+                {
+                    const QPointF &centerPt = this->LtoA(mpDstObj->centerPoint());
+                    //变换到mpDstObj的旋转后坐标系再计算缩放
+                    QTransform rotater;
+                    rotater.translate(centerPt.x(), centerPt.y());
+                    rotater.rotate(mdOriginalRotateAngle);
+                    rotater = rotater.inverted();
+                    //执行变换
+                    QPointF curPt = rotater.map(actPos);
+                    QPointF startPt = rotater.map(mPtLgcLeftPressPos * mdScale);
+                    //计算旋转后坐标系的缩放量
+                    xScaled = curPt.x() / startPt.x();
+                    yScaled = curPt.y() / startPt.y();
+                    //对控制点为中点的情况单独考虑
+                    if(mnLeftPressedOnMiddleCtrlPointIdx == 0 || mnLeftPressedOnMiddleCtrlPointIdx == 2)
+                        xScaled = 1;
+                    if(mnLeftPressedOnMiddleCtrlPointIdx == 1 || mnLeftPressedOnMiddleCtrlPointIdx == 3)
+                        yScaled = 1;
+
+                    break;
+                }
+                //矩形缩放，还需要几个变量确定鼠标按在哪个控制点上面了
+                case Qt::KeyboardModifier::NoModifier:
+                {
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            else if(mbLeftPressedOnRotateIcon)
+            {
+                //计算偏角
+                const QPointF &centerPt = this->LtoA(mpDstObj->centerPoint());
+                double x1 = mPtLgcLastPos.x() * mdScale - centerPt.x(), x2 = actPos.x() - centerPt.x();
+                double y1 = mPtLgcLastPos.y() * mdScale - centerPt.y(), y2 = actPos.y() - centerPt.y();
+                angleRotated = acos((x1 * x2 + y1 * y2) / sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))) / PI * 180;
+                if(x1 * y2 - x2 * y1 < 0)
+                    angleRotated = -angleRotated;
+            }
+
+            //应用变换
+            const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
+            for(const list_iterator& iter : selectedIterList)
+            {
+                SObject* pObj = *iter;
+                pObj->translate(ptTranslated);
+                pObj->rotate(angleRotated, false);
+                pObj->setScaleFactor(mdOriginalScaleX * xScaled, mdOriginalScaleY * yScaled, false);
+                pObj->reCalcTransfrom();
+                //qDebug() << S3DBG(pObj->rotateAngle(), pObj->scaleFactorX(), pObj->scaleFactorY());
+                //qDebug() << S3DBG(mdOriginalRotateAngle, mdOriginalScaleX, mdOriginalScaleY);
+            }
+
+            //更新视图区
+            update(this->LtoA(viewArea()).toRect());
+        }
+    }
+    this->mPtLgcLastPos = lgcPos;
 }
 
 void QCanvas::mousePressEvent(QMouseEvent * event)
 {
-    //判断鼠标点是否在某个已经选中的对象内
-    QPoint lgcPos = AtoL(event->pos());
-    const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
-    for(const list_iterator& iter : selectedIterList)
+    QPointF lgcPos = AtoL(QPointF(event->pos()));
+
+    switch (event->button())
     {
-        if((*iter)->contains(lgcPos))
+    //判断鼠标点是否在某个已经选中的对象内
+    case Qt::LeftButton:
+    {
+        mbLeftPressed = true;
+        //根据按下的位置改变图标
+        Qt::CursorShape cursor_shape{};
+
+        if(mbCursorOnSelectedLayer)
         {
-            mbDragging = true;
-            break;
+            cursor_shape = Qt::SizeAllCursor;
+            mbLeftPressedOnSelectedLayer = true;
         }
+        else if(mnCursorOnCornerCtrlPointIdx != -1)
+        {
+            cursor_shape = Qt::CrossCursor;
+            mnLeftPressedOnCornerCtrlPointIdx = mnCursorOnCornerCtrlPointIdx;
+        }
+        else if(mnCursorOnMiddleCtrlPointIdx != -1)
+        {
+            cursor_shape = Qt::CrossCursor;
+            mnLeftPressedOnMiddleCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx;
+        }
+        else if(mbCursorOnRotateIcon)
+        {
+            cursor_shape = Qt::ClosedHandCursor;
+            mbLeftPressedOnRotateIcon = true;
+        }
+
+        //记录变换前参数
+        if(mpDstObj)
+        {
+            mdOriginalScaleX = mpDstObj->scaleFactorX();
+            mdOriginalScaleY = mpDstObj->scaleFactorY();
+            mdOriginalRotateAngle = mpDstObj->rotateAngle();
+        }
+        //改变鼠标图标
+        this->setCursor(QCursor(cursor_shape));
+
+        break;
     }
+    case Qt::RightButton:
+    {
+
+        break;
+    }
+    default:
+        break;
+    }
+
     //记录鼠标点位置
-    this->mPtLogicalPressPos = lgcPos;
-    this->mPtLastLogicalPos = lgcPos;
+    this->mPtLgcLeftPressPos = lgcPos;
 }
 void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 {
-    QPoint lgcPos = AtoL(event->pos());
-    //判断是否有拖动发生
-    int dragDistance = abs((this->LtoA(mPtLogicalPressPos) - event->pos()).manhattanLength());
-    if(dragDistance < DRAG_TRIGGERING_DISTANCE)
-        if(mpDoc)
-        {
-            //选中顶层对象
-            SLayerManager& mgr = mpDoc->getLayerManager();
+    switch (event->button())
+    {
+    case Qt::LeftButton:
+    {
+        //判断是否有拖动发生
+        QPointF lgcPos = AtoL(QPointF(event->pos()));
+        int dragDistance = (this->LtoA(mPtLgcLeftPressPos) - event->pos()).manhattanLength();
 
-            bool doMultiSelect{false};
-            //多重选择
-            if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
-                doMultiSelect = true;
+        if(dragDistance < DRAG_TRIGGERING_DISTANCE)
+            if(mpDoc)
+            {
+                //选中顶层对象
+                SLayerManager& mgr = mpDoc->getLayerManager();
 
-            mgr.clickSelect(lgcPos, doMultiSelect);
+                bool doMultiSelect{false};
+                //多重选择
+                if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+                    doMultiSelect = true;
 
-            updateViewArea();
-        }
-    mbDragging = false;
+                mgr.clickSelect(lgcPos, doMultiSelect);
+                updateViewArea();
+            }
+
+        //清空控制标记
+        mbLeftPressed = mbLeftPressedOnRotateIcon = mbLeftPressedOnSelectedLayer = false;
+        mnLeftPressedOnCornerCtrlPointIdx = mnLeftPressedOnMiddleCtrlPointIdx = -1;
+        mdOriginalRotateAngle = 0, mdOriginalScaleX = mdOriginalScaleY = 1;
+        break;
+    }
+    case Qt::RightButton:
+
+        break;
+    default:
+        break;
+    }
+
+    this->setCursor(QCursor());
 }
 
 void QCanvas::wheelEvent(QWheelEvent * event)
