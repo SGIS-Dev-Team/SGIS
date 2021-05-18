@@ -445,3 +445,9 @@ void QCanvas::setViewArea(const QRectF & rect)
 {
     mViewArea = rect;
 }
+
+void QCanvas::updateViewArea()
+{
+    update(this->LtoA(mViewArea.toRect()));
+}
+

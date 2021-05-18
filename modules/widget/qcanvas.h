@@ -132,6 +132,8 @@ public:
     //设置绘制区域
     void setViewArea(const QRectF& rect);
 
+    void updateViewArea();
+
     //[功能函数]
 
     //逻辑坐标转实际坐标
