@@ -68,6 +68,7 @@ private:
 
     /*-----属性-----*/
 protected:
+
     //[类型]
     const PaintObject type;
     //是否可见
