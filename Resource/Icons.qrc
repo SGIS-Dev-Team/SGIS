@@ -13,4 +13,7 @@
         <file>TrayActionIcon/sleep.png</file>
         <file>TrayActionIcon/hide.png</file>
     </qresource>
+    <qresource prefix="/WidgetIcon">
+        <file>WidgetIcon/rotate.svg</file>
+    </qresource>
 </RCC>

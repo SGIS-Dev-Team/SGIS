@@ -1,5 +1,5 @@
 ﻿#include "sobject.h"
-
+#include <QSvgRenderer>
 
 SObject::SObject(PaintObject _type, bool _selected, QPointF _center,
                  const QString &_layerName,
@@ -22,6 +22,7 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     //保存原来的样式
     const QPen& oldPen = painter.pen();
     const QBrush& oldBrush = painter.brush();
+    QTransform oldTransform = painter.transform();
     //定义外界矩形样式
     QPen pen;
     QBrush brush;
@@ -46,10 +47,11 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     for(auto& pt : bound_polygon)
         painter.drawEllipse(pt, radius / scaleValue, radius / scaleValue);
     //四个边中点
+    QPointF ptMid[4] {};
     for(int i = 0; i < 4; ++i)
     {
-        QPointF center = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
-        painter.drawEllipse(center, radius / scaleValue, radius / scaleValue);
+        ptMid[i] = (bound_polygon[i] + bound_polygon[(i + 1) % 4]) / 2.0;
+        painter.drawEllipse(ptMid[i], radius / scaleValue, radius / scaleValue);
     }
     //绘制旋转符号
     painter.translate(ptMid[0]);
@@ -82,6 +84,7 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
     //还原样式
     painter.setPen(oldPen);
     painter.setBrush(oldBrush);
+    painter.setTransform(oldTransform);
 }
 
 
