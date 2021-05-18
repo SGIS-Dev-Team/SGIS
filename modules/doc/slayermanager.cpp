@@ -227,3 +227,68 @@ QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
     return rowData;
 }
 
+void SLayerManager::bringForward()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator
+    {
+        list_iterator insertPos = mgr->mSelectedLayerIterList.back();
+        if(++insertPos != mgr->mLayerList.end())
+            ++insertPos;
+        return insertPos;
+    });
+}
+
+void SLayerManager::sendBackward()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator
+    {
+        list_iterator insertPos = mgr->mSelectedLayerIterList.front();
+        if(insertPos != mgr->mLayerList.begin())
+            --insertPos;
+        return insertPos;
+    });
+}
+
+void SLayerManager::bringToFront()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator{return mgr->mLayerList.end();});
+}
+
+void SLayerManager::sendToBack()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator{return mgr->mLayerList.begin();});
+}
+
+void SLayerManager::_sortSelectList()
+{
+    std::map<int, list_iterator> sltIterMap;
+    for(auto& iter : mSelectedLayerIterList)
+        sltIterMap[_posOf(iter)] = iter;
+
+    mSelectedLayerIterList.clear();
+
+    for(auto& value : sltIterMap)
+        mSelectedLayerIterList.push_back(value.second);
+}
+
+void SLayerManager::_reOrderLayerList(list_iterator(*getInsertPos)(SLayerManager*))
+{
+    if(mSelectedLayerIterList.empty()) return;
+    //先按层序排序
+    _sortSelectList();
+    //找到目标层的迭代器
+    list_iterator insertPosIt = getInsertPos(this);
+    //缓存链表
+    std::list<list_iterator> sltIterTmpList;
+    //执行插入操作，并保存迭代器在缓存链表中
+    for(auto &iter : mSelectedLayerIterList)
+        sltIterTmpList.push_back(mLayerList.insert(insertPosIt, *iter));
+    //清除原来的图层：和上面的语句合写会导致迭代器非法化，影响图层下移两个函数的实现
+    for(auto &iter : mSelectedLayerIterList)
+        mLayerList.erase(iter);
+    mSelectedLayerIterList = sltIterTmpList;
+}

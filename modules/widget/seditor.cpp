@@ -82,6 +82,63 @@ void SEditor::onActionLoadFragmentsTriggered()
         }
 }
 
+void SEditor::onActionBringForwardTriggered()
+{
+    mpCurDoc->getLayerManager().bringForward();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionSendBackwardTriggered()
+{
+    mpCurDoc->getLayerManager().sendBackward();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionBringtoFrontTriggered()
+{
+    mpCurDoc->getLayerManager().bringToFront();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionSendtoBackTriggered()
+{
+    mpCurDoc->getLayerManager().sendToBack();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionAlignLeftTriggered()
+{
+}
+
+void SEditor::onActionAlignMiddleTriggered()
+{
+}
+
+void SEditor::onActionAlignRightTriggered()
+{
+}
+
+void SEditor::onActionAlignTopTriggered()
+{
+}
+
+void SEditor::onActionAlignCenterTriggered()
+{
+}
+
+void SEditor::onActionAlignBottomTriggered()
+{
+}
+
+void SEditor::onActionDistributeHorizentallyTriggered()
+{
+}
+
+
+void SEditor::onActionDistributeVerticallyTriggered()
+{
+}
+
 void SEditor::onTabSwitched()
 {
 
@@ -130,6 +187,22 @@ void SEditor::initializeConnections()
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
+
+    connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
+    connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
+    connect(ui->mActionBringtoFront, &QAction::triggered, this, &SEditor::onActionBringtoFrontTriggered);
+    connect(ui->mActionSendtoBack, &QAction::triggered, this, &SEditor::onActionSendtoBackTriggered);
+
+    connect(ui->mActionAlignLeft, &QAction::triggered, this, &SEditor::onActionAlignLeftTriggered);
+    connect(ui->mActionAlignMiddle, &QAction::triggered, this, &SEditor::onActionAlignMiddleTriggered);
+    connect(ui->mActionAlignRight, &QAction::triggered, this, &SEditor::onActionAlignRightTriggered);
+    connect(ui->mActionAlignTop, &QAction::triggered, this, &SEditor::onActionAlignTopTriggered);
+    connect(ui->mActionAlignCenter, &QAction::triggered, this, &SEditor::onActionAlignCenterTriggered);
+    connect(ui->mActionAlignBottom, &QAction::triggered, this, &SEditor::onActionAlignBottomTriggered);
+
+    connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
+    connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
+
 
 }
 

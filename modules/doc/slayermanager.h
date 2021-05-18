@@ -42,7 +42,7 @@ private:
 
     //图层链表
     layer_list mLayerList;
-    //选中的图层在链表中的迭代器组成的链表
+    //选中的图层在链表中的迭代器组成的链表：[待定]可能vector更加适合
     std::list<list_iterator> mSelectedLayerIterList;
 
     //图层数据模型
@@ -92,6 +92,35 @@ public:
     //清空选择
     void clearSelection();
 
+    //选中图层上移
+    /*  移动逻辑
+     *   选中的所有图层将被移至连续，并置于原来选中
+     *图层中最高层的上一层
+     */
+    void bringForward();
+
+    //选中图层下移
+    /*  移动逻辑
+     *   选中的所有图层将被移至连续，并置于原来选中
+     *图层中最低层的下一层
+     */
+    void sendBackward();
+
+    //选中图层置顶
+    /*  移动逻辑
+     *   选中的所有图层将被移至连续，并置于所有图层
+     *的最顶层
+     */
+    void bringToFront();
+
+    //选中图层置底
+    /*  移动逻辑
+     *   选中的所有图层将被移至连续，并置于所有图层
+     *的最底层
+     */
+    void sendToBack();
+
+
     //[功能函数]
 private:
     //使用位置索引链表迭代器：O(n),尽量单次使用
@@ -102,6 +131,11 @@ private:
     inline size_t _posSwitch(size_t pos);
     //使用SObject*初始化图层数据项
     QList<QStandardItem *> _createRowItem(SObject* obj);
+    //按图层顺序排序选择链表
+    void _sortSelectList();
+    //图层顺序调整辅助函数
+    void _reOrderLayerList(list_iterator (*getInsertPos)(SLayerManager*));
+
 };
 
 size_t SLayerManager::layerListSize()
