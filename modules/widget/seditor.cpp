@@ -48,18 +48,19 @@ void SEditor::onActionCreateRectTriggered()
 void SEditor::onActionLoadImageTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
-    QString path = QFileDialog::getOpenFileName(this);
-    if(path.isEmpty())
+    QStringList pathList = QFileDialog::getOpenFileNames(this);
+    if(pathList.isEmpty())
         return;
 
-    quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
-    quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
+    for(auto& path : pathList)
+    {
+        quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
+        quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SImage* pImg = new SImage(path, true, QPoint(x, y));
+        SImage* pImg = new SImage(path, true, QPoint(x, y));
 
-    pImg->scale(2, 3);
-    pImg->rotate(30);
-    mpCurDoc->getLayerManager().addLayer(pImg);
+        mpCurDoc->getLayerManager().addLayer(pImg);
+    }
 
 }
 
@@ -131,15 +132,20 @@ void SEditor::onActionBringForwardTriggered()
 
 void SEditor::onActionSendBackwardTriggered()
 {
+    mpCurDoc->getLayerManager().sendBackward();
+    mpCurCanvasArea->canvas()->updateViewArea();
 }
 
 void SEditor::onActionBringtoFrontTriggered()
 {
+    mpCurDoc->getLayerManager().bringToFront();
+    mpCurCanvasArea->canvas()->updateViewArea();
 }
 
 void SEditor::onActionSendtoBackTriggered()
 {
-
+    mpCurDoc->getLayerManager().sendToBack();
+    mpCurCanvasArea->canvas()->updateViewArea();
 }
 
 void SEditor::onActionAlignLeftTriggered()

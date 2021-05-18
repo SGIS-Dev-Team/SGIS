@@ -130,6 +130,8 @@ private:
     QList<QStandardItem *> _createRowItem(SObject* obj);
     //按图层顺序排序选择链表
     void _sortSelectList();
+    //图层顺序调整辅助函数
+    void _reOrderLayerList(list_iterator (*getInsertPos)(SLayerManager*));
 };
 
 size_t SLayerManager::layerListSize()
