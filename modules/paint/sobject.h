@@ -36,7 +36,7 @@ class SObject
     friend class SObjectFactory;
     /*-----构造函数与析构函数-----*/
 protected:
-    explicit SObject(PaintObject _type, bool _selected = false, QPointF _center = QPointF(),
+    explicit SObject(PaintObject _type, bool _selected = true, QPointF _center = QPointF(),
                      const QString& _layerName = "",
                      const QString& _layerDiscription = "",
                      const QColor& _layerColor = "");
@@ -48,8 +48,8 @@ public:
     virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const = 0;
-    //是否包含某点(画布坐标系)，若参数2为True,则只判断包围矩形是否包含某点
-    virtual bool contains(const QPointF& pt, bool isInBoundRect = false)const = 0;
+    //是否包含某点(画布坐标系)
+    virtual bool contains(const QPointF& pt)const = 0;
     //变换后包围矩形是否与目标矩形有交集
     virtual bool intersect(const QRectF& rect)const;
     //输出与输入
@@ -61,10 +61,7 @@ public:
     virtual QIcon icon()const;
 
 private:
-    //应用变换的方法
     virtual void _applyTransform() = 0;
-    //变换前的原始矩形，用于绘制选框矩形
-    virtual QRectF _originalRect() = 0;
 
     /*-----属性-----*/
 protected:
@@ -91,6 +88,7 @@ protected:
     QString mStrLayerDiscription = "";
     //图层标识颜色
     QColor mLayerColor = QColor(255, 255, 255);
+
 
     /*-----成员变量-----*/
 private:

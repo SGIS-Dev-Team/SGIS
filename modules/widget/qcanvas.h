@@ -39,7 +39,7 @@ public:
     /*-----信号-----*/
 signals:
     //鼠标移动
-    void mouseMoved(QPointF pos);
+    void mouseMoved(QPoint pos);
     //缩放激活信号
     void scaling(QPointF pos, int delta);
     //缩放成功信号
@@ -131,6 +131,9 @@ public:
 
     //设置绘制区域
     void setViewArea(const QRectF& rect);
+
+    //更新绘制区域
+    void updateViewArea();
 
     //[功能函数]
 

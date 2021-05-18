@@ -49,14 +49,15 @@ void SEditor::onActionLoadImageTriggered()
 {
     mpCurDoc->getLayerManager().clearSelection();
     QStringList pathList = QFileDialog::getOpenFileNames(this);
+    if(pathList.isEmpty())
+        return;
 
-    for(int i = 0; i < pathList.size(); ++i)
+    for(auto& path : pathList)
     {
         quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-        SImage* pImg = new SImage(pathList[i], true, QPoint(x, y));
-        pImg->rotate(60);
+        SImage* pImg = new SImage(path, true, QPoint(x, y));
 
         mpCurDoc->getLayerManager().addLayer(pImg);
     }
@@ -87,7 +88,7 @@ void SEditor::onTabSwitched()
 
 }
 
-void SEditor::onCanvasMouseMoved(QPointF Log_pos)
+void SEditor::onCanvasMouseMoved(QPoint Log_pos)
 {
     mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
 }
@@ -123,6 +124,64 @@ void SEditor::initialize()
     initializeConnections();
 }
 
+void SEditor::onActionBringForwardTriggered()
+{
+    mpCurDoc->getLayerManager().bringForward();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionSendBackwardTriggered()
+{
+    mpCurDoc->getLayerManager().sendBackward();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionBringtoFrontTriggered()
+{
+    mpCurDoc->getLayerManager().bringToFront();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionSendtoBackTriggered()
+{
+    mpCurDoc->getLayerManager().sendToBack();
+    mpCurCanvasArea->canvas()->updateViewArea();
+}
+
+void SEditor::onActionAlignLeftTriggered()
+{
+}
+
+void SEditor::onActionAlignMiddleTriggered()
+{
+}
+
+void SEditor::onActionAlignRightTriggered()
+{
+}
+
+void SEditor::onActionAlignTopTriggered()
+{
+}
+
+void SEditor::onActionAlignCenterTriggered()
+{
+}
+
+void SEditor::onActionAlignBottomTriggered()
+{
+}
+
+void SEditor::onActionDistributeHorizentallyTriggered()
+{
+}
+
+
+void SEditor::onActionDistributeVerticallyTriggered()
+{
+}
+
+
 void SEditor::initializeConnections()
 {
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
@@ -131,6 +190,21 @@ void SEditor::initializeConnections()
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
 
+
+    connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
+    connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
+    connect(ui->mActionBringtoFront, &QAction::triggered, this, &SEditor::onActionBringtoFrontTriggered);
+    connect(ui->mActionSendtoBack, &QAction::triggered, this, &SEditor::onActionSendtoBackTriggered);
+
+    connect(ui->mActionAlignLeft, &QAction::triggered, this, &SEditor::onActionAlignLeftTriggered);
+    connect(ui->mActionAlignMiddle, &QAction::triggered, this, &SEditor::onActionAlignMiddleTriggered);
+    connect(ui->mActionAlignRight, &QAction::triggered, this, &SEditor::onActionAlignRightTriggered);
+    connect(ui->mActionAlignTop, &QAction::triggered, this, &SEditor::onActionAlignTopTriggered);
+    connect(ui->mActionAlignCenter, &QAction::triggered, this, &SEditor::onActionAlignCenterTriggered);
+    connect(ui->mActionAlignBottom, &QAction::triggered, this, &SEditor::onActionAlignBottomTriggered);
+
+    connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
+    connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
 }
 
 void SEditor::createWorkspace(const QSize &CanvasSize)

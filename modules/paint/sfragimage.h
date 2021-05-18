@@ -31,8 +31,8 @@ public:
     virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const;
-    //是否包含某点，若参数2为True,则只判断包围矩形是否包含某点
-    virtual bool contains(const QPointF& pt, bool isInBoundRect = false)const;
+    //是否包含某点
+    virtual bool contains(const QPointF& pt)const;
     //输出与输入
     virtual void writeBinaryData(QDataStream& stream)const;
     virtual void readBinaryData(QDataStream& stream);
@@ -40,10 +40,7 @@ public:
     virtual QIcon icon()const;
 
 private:
-    //应用变换的方法
     virtual void _applyTransform();
-    //变换前的原始矩形，用于绘制选框矩形
-    virtual QRectF _originalRect();
 
     /*-----信号-----*/
 signals:

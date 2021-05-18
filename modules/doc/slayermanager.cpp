@@ -119,24 +119,13 @@ const QStandardItemModel *SLayerManager::getLayerModel()const
     return &mLayerModel;
 }
 
-SObject *SLayerManager::getTopLayerOn(const QPointF &pt, bool onlySelected, bool inBoundRect) const
+SObject &SLayerManager::layerAt(size_t pos)
 {
-    layer_list::const_reverse_iterator riter;
-
-    for(riter =  mLayerList.crbegin(); riter != mLayerList.crend(); ++riter)
-        if((!onlySelected || (*riter)->isSelected()) && (*riter)->contains(QPointF(pt), inBoundRect))
-            return *riter;
-
-    return nullptr;
-}
-
-SObject *SLayerManager::layerAt(size_t pos)
-{
-    return *_iterAt(pos);
+    return *(*_iterAt(pos));
 }
 
 
-void SLayerManager::clickSelect(const QPointF &pt, bool doMultiSelect)
+void SLayerManager::clickSelect(const QPoint & pt, bool doMultiSelect)
 {
     layer_list::reverse_iterator iter;
     bool isPtInObject{false};
@@ -173,6 +162,7 @@ void SLayerManager::clickSelect(const QPointF &pt, bool doMultiSelect)
                 mSelectedLayerIterList.push_back(--iter.base());
                 (*iter)->setSelected(true);
             }
+
             break;
         }
     }
@@ -189,6 +179,42 @@ void SLayerManager::clearSelection()
 {
     this->mSelectedLayerIterList.clear();
     emit selectStateChanged();
+}
+
+void SLayerManager::bringForward()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator
+    {
+        list_iterator insertPos = mgr->mSelectedLayerIterList.back();
+        if(++insertPos != mgr->mLayerList.end())
+            ++insertPos;
+        return insertPos;
+    });
+}
+
+void SLayerManager::sendBackward()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator
+    {
+        list_iterator insertPos = mgr->mSelectedLayerIterList.front();
+        if(insertPos != mgr->mLayerList.begin())
+            --insertPos;
+        return insertPos;
+    });
+}
+
+void SLayerManager::bringToFront()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator{return mgr->mLayerList.end();});
+}
+
+void SLayerManager::sendToBack()
+{
+    _reOrderLayerList(
+        [](SLayerManager * mgr)->list_iterator{return mgr->mLayerList.begin();});
 }
 
 list_iterator SLayerManager::_iterAt(size_t pos)
@@ -212,7 +238,7 @@ size_t SLayerManager::_posOf(list_iterator it)
     return pos;
 }
 
-QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
+QList<QStandardItem *> SLayerManager::_createRowItem(SObject * obj)
 {
     Q_ASSERT(obj != nullptr);
 
@@ -226,3 +252,40 @@ QList<QStandardItem *> SLayerManager::_createRowItem(SObject *obj)
     rowData << itemCheck << itemLayerIcon;
     return rowData;
 }
+
+void SLayerManager::_sortSelectList()
+{
+    std::map<int, list_iterator> sltIterMap;
+    for(auto& iter : mSelectedLayerIterList)
+        sltIterMap[_posOf(iter)] = iter;
+
+    mSelectedLayerIterList.clear();
+
+    for(auto& value : sltIterMap)
+        mSelectedLayerIterList.push_back(value.second);
+}
+
+void SLayerManager::_reOrderLayerList(list_iterator(*getInsertPos)(SLayerManager*))
+{
+    if(mSelectedLayerIterList.empty()) return;
+    //先按层序排序
+    _sortSelectList();
+    //找到目标层的迭代器
+    list_iterator insertPosIt = getInsertPos(this);
+    //缓存链表
+    std::list<list_iterator> sltIterTmpList;
+    //执行插入操作，并保存迭代器在缓存链表中
+    for(auto &iter : mSelectedLayerIterList)
+        sltIterTmpList.push_back(mLayerList.insert(insertPosIt, *iter));
+    //清除原来的图层：和上面的语句合写会导致迭代器非法化，影响图层下移两个函数的实现
+    for(auto &iter : mSelectedLayerIterList)
+        mLayerList.erase(iter);
+    mSelectedLayerIterList = sltIterTmpList;
+}
+
+
+
+
+
+
+
