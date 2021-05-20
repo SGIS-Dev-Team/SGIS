@@ -161,6 +161,7 @@
      </property>
      <addaction name="mActionCreateRect"/>
      <addaction name="mActionLoadImage"/>
+     <addaction name="mActionLoadFragments"/>
     </widget>
     <addaction name="mActionSelectTool"/>
     <addaction name="mActionCombineTool"/>
@@ -607,6 +608,11 @@
   <action name="mActionLoadImage">
    <property name="text">
     <string>[Test] Load Image</string>
+   </property>
+  </action>
+  <action name="mActionLoadFragments">
+   <property name="text">
+    <string>[Test] Load Fragments</string>
    </property>
   </action>
  </widget>
