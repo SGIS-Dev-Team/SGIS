@@ -15,6 +15,7 @@ class SImage : public SObject
 {
     /*-----构造函数与析构函数-----*/
 public:
+
     explicit SImage(const QString& _imagePath = "", bool _selected = false, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
