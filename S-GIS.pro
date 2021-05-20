@@ -56,5 +56,11 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+INCLUDEPATH += \
+    E:/study/GDAL1928/release-1928-x64/include
+
+LIBS += \
+    E:/study/GDAL1928/release-1928-x64/lib/gdal_i.lib
+
 RESOURCES += \
     Resource/Icons.qrc

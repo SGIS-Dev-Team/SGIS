@@ -39,15 +39,15 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
 
     //构建元数据文本文件
     //qstrBaseName是影像的无后缀文件名
-    QString qstrBaseName=fileInfo.baseName();
+    QString qstrCompleteBaseName=fileInfo.completeBaseName();
     QDir qdirOutFile(fileInfo.path());
-    if(!qdirOutFile.exists(qstrBaseName)){
-        qdirOutFile.mkdir(qstrBaseName);
+    if(!qdirOutFile.exists(qstrCompleteBaseName)){
+        qdirOutFile.mkdir(qstrCompleteBaseName);
     }
     //这是输出文件夹路径
-    QString qstrOutPath = qdirOutFile.filePath(qstrBaseName);
+    QString qstrOutPath = qdirOutFile.filePath(qstrCompleteBaseName);
     //元数据
-    QString temp=qstrOutPath+"/"+qstrBaseName+"_Meta.txt";
+    QString temp=qstrOutPath+"/"+qstrCompleteBaseName+"_Meta.txt";
     QFile qfMeta(temp);
     qfMeta.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&qfMeta);
@@ -97,6 +97,8 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
         //达到尺寸要求结束
         if(iCurMax<=SLICE_SIZE*2)
         {
+            iPreColCount=iCurColCount;
+            iPreRowCount=iCurRowCount;
             iCurColCount=1;
             iCurRowCount=1;
             iFrgW=iCurX;
@@ -115,7 +117,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                 //当前级的文件夹路径
                 qstrCurLevel = qdirLevelFile.filePath(QString::number(pow(2,i-1)));
                 //当前级的创建切片文件路径
-                qstrCurSlice = qstrCurLevel+ "/"+qstrBaseName+"_1.tif";
+                qstrCurSlice = qstrCurLevel+ "/"+qstrCompleteBaseName+"_1.tif";
 
 
                 //QString->char*
@@ -124,13 +126,14 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                 pDsWrite = pDriver->Create(ch, iCurX, iCurY, iBandCount, GDT_Byte, NULL);
                 //根据切片的原理要合并3*3=9 ~ 4*4=16张图像
                 //默认切片是对齐的，这很重要
+                iYOff=0;
                 for(int y=0;y<iPreRowCount;++y)
                 {
                     iXOff=0;
                     for(int x=0;x<iPreColCount;++x)
                     {
                         //TODO:这个地方直接用.tif后缀感觉有些不太保险,以后可以考虑改一下
-                        qstrPreSlice=qstrPreLevel+"/"+qstrBaseName+"_"+QString::number(iPreColCount*y+x+1)+".tif";
+                        qstrPreSlice=qstrPreLevel+"/"+qstrCompleteBaseName+"_"+QString::number(iPreColCount*y+x+1)+".tif";
 
                         //读图像
                         //含中文QString->char*
@@ -227,7 +230,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                     //当前级的文件夹路径
                     qstrCurLevel = qdirLevelFile.filePath(QString::number(pow(2,i-1)));
                     //当前级的创建切片文件路径
-                    qstrCurSlice = qstrCurLevel+ "/"+qstrBaseName+"_"+QString::number(iCount)+".tif";
+                    qstrCurSlice = qstrCurLevel+ "/"+qstrCompleteBaseName+"_"+QString::number(iCount)+".tif";
 
                     qbarr = qstrCurSlice.toUtf8();// 不能两句合起来写
                     ch= qbarr.constData();
@@ -285,7 +288,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                     }
                     //写图像
                     //当前级的创建切片文件路径
-                    qstrCurSlice = qstrCurLevel+ "/"+qstrBaseName+"_"+QString::number(iCount)+".tif";
+                    qstrCurSlice = qstrCurLevel+ "/"+qstrCompleteBaseName+"_"+QString::number(iCount)+".tif";
                     qbarr = qstrCurSlice.toUtf8();// 不能两句合起来写
                     ch= qbarr.constData();
                     pDsWrite = pDriver->Create(ch, iX, iY, iBandCount, GDT_Byte, NULL);
@@ -299,7 +302,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                         for(int n=0,px=2*x;px<iPreColCount&&n<2;++n,++px)
                         {
                             //TODO:这个地方直接用.tif后缀感觉有些不太保险,以后可以考虑改一下
-                            qstrPreSlice=qstrPreLevel+"/"+qstrBaseName+"_"+QString::number(iPreColCount*py+px+1)+".tif";
+                            qstrPreSlice=qstrPreLevel+"/"+qstrCompleteBaseName+"_"+QString::number(iPreColCount*py+px+1)+".tif";
 
 
                             //读图像
