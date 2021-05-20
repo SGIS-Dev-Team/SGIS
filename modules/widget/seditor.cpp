@@ -1,6 +1,7 @@
 ﻿#include "seditor.h"
 #include "ui_seditor.h"
 #include <modules/paint/sshapefactory.h>
+#include <QDir>
 
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
@@ -69,17 +70,18 @@ void SEditor::onActionLoadFragmentsTriggered()
     mpCurDoc->getLayerManager().clearSelection();
 
     QString path = QFileDialog::getExistingDirectory(this);
+
+    QFileInfo file_info(path);
+
     if(path.isEmpty())
         return;
-    for(int i = 0; i < 10; ++i)
-        for(int j = 0; j < 10; ++j)
-        {
-            SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader(), true);
 
-            pFragImg->setFragmentPath(path + '/' + QString::number(i * 10 + j), "H50E00060001");
-            pFragImg->setCenterPoint(QPointF((i + 0.5) * pFragImg->width(), (j + 0.5) * pFragImg->height()));
-            mpCurDoc->getLayerManager().addLayer(pFragImg);
-        }
+    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
+
+    pFragImg->setFragmentPath(path, file_info.completeBaseName());
+    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
+
 }
 
 void SEditor::onActionBringForwardTriggered()

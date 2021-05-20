@@ -95,7 +95,7 @@ void SFragImage::_loadMeta()
         QStringList fragPathList;
         QString levelFolderPath = mStrFolderPath + '/' + QString::number(level) + '/' + mStrFileName;
         for(size_t i = 0; i < fragRows * fragCols; ++i)
-            fragPathList << levelFolderPath + '_' + QString::number(i + 1) + ".jpg";
+            fragPathList << levelFolderPath + '_' + QString::number(i + 1) + ".tif";
 
         SFragMatrix mat(fragRows, fragCols, fragPathList);
         mat.setLevelMeta(originalWidth, originalHeight, level, levelWidth, levelHeight, fragWidth, fragHeight);
