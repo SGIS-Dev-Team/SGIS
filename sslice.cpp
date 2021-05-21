@@ -4,7 +4,6 @@
 SSlice::SSlice()
 {
 }
-
 SSlice::~SSlice()
 {
 }
@@ -25,24 +24,16 @@ GDALDataset* SSlice::CreateDataset(GDALDriver* pDriver, QString qstrInPath, int 
     return pDriver->Create(ch, nXSize, nYSize, nBands, eType, papszOptions);
 }
 
-
-
-//pDsWrite = pDriver->Create(ch, iX, iY, iBandCount, GDT_Byte, NULL);
-
-
 QString SSlice::getOverviewsSlice(QString qstrInPath)
 {
+    /*--------准备工作--------*/
+    //顶层图像的最大尺寸
     int iSliceMaxSize = 2 * SLICE_SIZE;
-
-    QByteArray qbarr = qstrInPath.toUtf8();// 不能两句合起来写
-    const char* ch = qbarr.constData();
-
-
     //获取图像路径，设置相应的输出路径
     QFileInfo fileInfo(qstrInPath);
     //注册所有支持的数据格式驱动
     GDALAllRegister();
-
+    //读图像
     GDALDataset* pDataset = GetDataset(qstrInPath);
     //打开失败
     if (!pDataset)
@@ -67,7 +58,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
     }
 
     //构建元数据文本文件
-    //qstrBaseName是影像的无后缀文件名
+    //qstrCompleteBaseName是影像的无后缀文件名
     QString qstrCompleteBaseName = fileInfo.completeBaseName();
     QDir qdirOutFile(fileInfo.path());
     if (!qdirOutFile.exists(qstrCompleteBaseName))
@@ -85,13 +76,9 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
     out << QStringLiteral("PYRAMID_COUNT= %1\n").arg(iPyCount)
         << QStringLiteral("ORIGINAL_WIDTH= %1\n").arg(iOriX)
         << QStringLiteral("ORIGINAL_HEIGHT= %1\n\n").arg(iOriY);
-
-
-    //注意
     GDALClose(pDataset);
 
-
-    //逐层构建
+    /*--------逐层构建---------*/
     QDir qdirLevelFile(qstrOutPath);
     //分块大小和数量
     int iFrgW = SLICE_SIZE, iFrgH = SLICE_SIZE;
@@ -100,7 +87,6 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
     int iXOff = 0, iYOff = 0; //偏移量
     int iX = 0, iY = 0; //暂时存储一个图像的宽高
     int iPreX = 0, iPreY = 0; //记录上一级拼图像的大小
-
     //相应路径
     QString qstrPreLevel = "";
     QString qstrPreSlice = "";
@@ -122,8 +108,6 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
         iCurY = iOriY / pow(2, i - 1);
         iFrgW = SLICE_SIZE;
         iFrgH = SLICE_SIZE;
-
-        /*-------------------------------*/
         //达到尺寸要求结束
         if (iCurMax <= iSliceMaxSize)
         {
@@ -152,7 +136,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
             if (iPyCount > 1)
             {
                 //根据切片的原理要合并3*3=9 ~ 4*4=16张图像
-                //默认切片是对齐的，这很重要
+                //默认切片是对齐的，这很重要（只要是这个函数生成的切片，就不会有没对齐的问题）
                 iYOff = 0;
                 for (int y = 0; y < iPreRowCount; ++y)
                 {
@@ -173,15 +157,13 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                         pDataset->RasterIO(GF_Read, 0, 0, iX, iY, pBuf, iX, iY, GDT_Byte, iBandCount, NULL, 0, 0, 0);
                         GDALClose(pDataset);
 
-
                         pDsWrite->RasterIO(GF_Write, iXOff, iYOff, iX / 2, iY / 2, pBuf, iX, iY, GDT_Byte, iBandCount, NULL, 0, 0, 0);
                         iXOff += iX / 2;
                     }
                     iYOff += iY / 2;
                 }
             }
-            //直接将原图复制
-            else
+            else //直接复制原图
             {
                 //读图像
                 pDataset = GetDataset(qstrInPath);
@@ -203,9 +185,7 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
             GDALClose(pDsWrite);
 
         }
-        /*-------------------------------*/
-        //第一级直接分割
-        else if (i == 1)
+        else if (i == 1)//若是第一级直接分割
         {
             //从原图开始分割
             //读图像
@@ -252,21 +232,17 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                     qstrCurLevel = qdirLevelFile.filePath(QString::number(pow(2, i - 1)));
                     //当前级的创建切片文件路径
                     qstrCurSlice = qstrCurLevel + "/" + qstrCompleteBaseName + "_" + QString::number(iCount) + ".tif";
-
                     //TODO:进度条以后可能要用
                     pDsWrite = CreateDataset(pDriver, qstrCurSlice, iX, iY, iBandCount, GDT_Byte, NULL);
                     pDsWrite -> RasterIO(GF_Write, 0, 0, iX, iY, pBuf, iX, iY, GDT_Byte, iBandCount, NULL, 0, 0, 0);
 
-
                     GDALClose(pDsWrite);
                     ++iCount;
-                    //写图像
                 }
             }
             GDALClose(pDataset);
         }
-        //其他情况从上一级文件夹中读取
-        else
+        else  //其他情况从上一级文件夹中读取
         {
             iPreColCount = iCurColCount;
             iCurColCount = ceil(iCurX / double(SLICE_SIZE));
@@ -311,8 +287,6 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                     qstrCurSlice = qstrCurLevel + "/" + qstrCompleteBaseName + "_" + QString::number(iCount) + ".tif";
                     pDsWrite = CreateDataset(pDriver, qstrCurSlice, iX, iY, iBandCount, GDT_Byte, NULL);
 
-
-                    iPreX = 0, iPreY = 0;
                     iYOff = 0;
                     for (int m = 0, py = 2 * y; py < iPreRowCount && m < 2; ++m, ++py)
                     {
@@ -324,7 +298,6 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
 
 
                             //读图像
-                            ch = qbarr.constData();
                             pDataset = GetDataset(qstrPreSlice);
                             if (!pDataset)
                             {
@@ -335,10 +308,8 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
                             pDataset->RasterIO(GF_Read, 0, 0, iPreX, iPreY, pBuf, iPreX, iPreY, GDT_Byte, iBandCount, NULL, 0, 0, 0);
                             GDALClose(pDataset);
 
-
                             pDsWrite -> RasterIO(GF_Write, iXOff, iYOff, iPreX / 2, iPreY / 2, pBuf, iPreX, iPreY, GDT_Byte, iBandCount, NULL, 0, 0, 0);
                             iXOff += iPreX / 2;
-
                         }
                         iYOff += iPreY / 2;
                     }
@@ -357,7 +328,6 @@ QString SSlice::getOverviewsSlice(QString qstrInPath)
             << QStringLiteral("FRAG_ROWS= %1\n").arg(iCurColCount)
             << QStringLiteral("FRAG_COLS= %1\n\n").arg(iCurRowCount);
     }
-
     delete[] pBuf;
     return qstrOutPath;
 }
