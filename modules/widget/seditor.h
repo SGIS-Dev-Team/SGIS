@@ -49,6 +49,7 @@ private slots:
     void onActionCreateRectTriggered();
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
+    void onActionLoadHugeImageTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]

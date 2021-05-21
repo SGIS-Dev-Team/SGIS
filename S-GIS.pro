@@ -23,12 +23,13 @@ SOURCES += \
     modules/paint/sshapefactory.cpp \
     modules/slogger.cpp \
     modules/widget/mainwindow.cpp \
+    modules/widget/qbandselectdialog.cpp \
     modules/widget/qcanvas.cpp \
-    sslice.cpp \
     modules/widget/qcanvasarea.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
     modules/widget/straymgr.cpp \
+    modules/widget/qbandselectdialog.cpp
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
@@ -46,16 +47,18 @@ HEADERS += \
     modules/paint/sshapefactory.h \
     modules/slogger.h \
     modules/widget/mainwindow.h \
+    modules/widget/qbandselectdialog.h \
     modules/widget/qcanvas.h \
-    sslice.h \
     modules/widget/qcanvasarea.h \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
     modules/widget/straymgr.h \
+    modules/widget/qbandselectdialog.h
 
 FORMS += \
-    mainwindow.ui \
-    seditor.ui
+    modules/widget/mainwindow.ui \
+    modules/widget/qbandselectdialog.ui \
+    modules/widget/seditor.ui \
 
 TRANSLATIONS += \
     S-GIS_zh_CN.ts
@@ -67,10 +70,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 INCLUDEPATH += \
-    E:/study/GDAL1928/release-1928-x64/include
+    D:/GDAL/release-1928-x64/include
 
 LIBS += \
-    E:/study/GDAL1928/release-1928-x64/lib/gdal_i.lib
+    D:/GDAL/release-1928-x64/lib/gdal_i.lib
 
 RESOURCES += \
     Resource/Icons.qrc

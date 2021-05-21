@@ -1,4 +1,4 @@
-#ifndef SSLICE_H
+﻿#ifndef SSLICE_H
 #define SSLICE_H
 
 #include <QString>
@@ -36,6 +36,11 @@ protected:
     /*-----成员变量-----*/
 private:
     /*-----成员函数-----*/
+    //（为了解决中文路径问题）输入要读取的影像路径，返回数据集指针，
+    static GDALDataset* GetDataset(QString qstrInPath);
+    //（为了解决中文路径问题）输入将要写入的影像路径以及相关参数(GDALDataset.create的参数)，返回数据集指针
+    static GDALDataset* CreateDataset(GDALDriver* pDriver, QString qstrInPath, int nXSize, int nYSize, int nBands,
+                                      GDALDataType eType, char** papszOptions);
 
 public:
     //[访问函数]

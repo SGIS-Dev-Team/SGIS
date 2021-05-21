@@ -84,6 +84,19 @@ void SEditor::onActionLoadFragmentsTriggered()
 
 }
 
+#include "qbandselectdialog.h"
+void SEditor::onActionLoadHugeImageTriggered()
+{
+    //获取要读取的文件路径
+    QString strImagePath = QFileDialog::getOpenFileName(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+    if(strImagePath.isEmpty())
+        return;
+
+    //打开波段预览对话框
+    QBandSelectDialog dialog(strImagePath, this);
+    dialog.exec();
+}
+
 void SEditor::onActionBringForwardTriggered()
 {
     mpCurDoc->getLayerManager().bringForward();
@@ -187,8 +200,10 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
+
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
+    connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
 
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
