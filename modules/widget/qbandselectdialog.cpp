@@ -111,7 +111,9 @@ void QBandSelectDialog::onComboBoxIndexChanged(int idx)
 
     if(!this->mbUpdatePreviewImg)
         return;
+
     //------根据三个组合框选择的波段更新图像------//
+
     int pBandforRGB[3];
     this->bandIdices(pBandforRGB);
 
@@ -121,7 +123,6 @@ void QBandSelectDialog::onComboBoxIndexChanged(int idx)
     for(int i = 0; i < mnWidth * mnHeight; ++i)
         for(int band = 0; band < 3; ++band)
             pRGBData[i * 3 + band] = mpImageData[pBandforRGB[band] - 1][i];
-
 
     //创建QPixmap用于显示
     QImage previewImg(pRGBData, mnWidth, mnHeight, mnWidth * 3, QImage::Format_RGB888,
