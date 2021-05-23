@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QtCore/qmath.h>
+#include <QStandardPaths>
 #include "gdal_priv.h"
 
 //分片大小
@@ -16,14 +17,14 @@
 //------------------------------------------
 //  SSlice类
 //  切片和金字塔
-//  该类是一个静态的类，不能实例化和继承，
-//  直接调用静态函数即可
+//  直接调用getOverviewsSlice函数即可
 //------------------------------------------
 
 
-class SSlice
+class SSlice: public QObject
 {
-private:
+    Q_OBJECT
+public:
     explicit SSlice();
     ~SSlice();
 
@@ -33,14 +34,26 @@ public:
     /*-----属性-----*/
 protected:
 
+    /*-----信号-----*/
+signals:
+    //进度和提示信息
+    void progressUpdated(int progress, QString info);
+    //“输出文件夹”的路径
+    void overviewsBuilt(QString qstrOut);
+
+    /*-----槽-----*/
+public slots:
+    //将输入路径对应的图片切片后，返回输出文件夹路径
+    QString getOverviewsSlice(QString qstrInPath);
+
     /*-----成员变量-----*/
 private:
     /*-----成员函数-----*/
     //（为了解决中文路径问题）输入要读取的影像路径，返回数据集指针，
-    static GDALDataset* GetDataset(QString qstrInPath);
+    GDALDataset* GetDataset(QString qstrInPath);
     //（为了解决中文路径问题）输入将要写入的影像路径以及相关参数(GDALDataset.create的参数)，返回数据集指针
-    static GDALDataset* CreateDataset(GDALDriver* pDriver, QString qstrInPath, int nXSize, int nYSize, int nBands,
-                                      GDALDataType eType, char** papszOptions);
+    GDALDataset* CreateDataset(GDALDriver* pDriver, QString qstrInPath, int nXSize, int nYSize, int nBands,
+                               GDALDataType eType, char** papszOptions);
 
 public:
     //[访问函数]
@@ -50,8 +63,6 @@ public:
 
 
     //[功能函数]
-    //将输入路径对应的图片切片后，返回输出文件夹路径
-    static QString getOverviewsSlice(QString qstrInPath);
 
 };
 #endif // SSLICE_H

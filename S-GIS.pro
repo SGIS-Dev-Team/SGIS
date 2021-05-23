@@ -33,6 +33,7 @@ SOURCES += \
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
+    modules/algorithm/sequalizehist.h \
     modules/algorithm/sslice.h \
     modules/doc/sdocument.h \
     modules/doc/slayermanager.h \

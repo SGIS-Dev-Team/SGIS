@@ -3,6 +3,7 @@
 
 #include "modules/paint/sshape.h"
 #include "QImage"
+#include "gdal_priv.h"
 
 //------------------------
 //      SImage类
@@ -16,6 +17,7 @@ class SImage : public SObject
     /*-----构造函数与析构函数-----*/
 public:
 
+    //注意：该构造函数不会加载影像
     explicit SImage(const QString& _imagePath = "", bool _selected = false, QPointF center = QPointF(),
                     const QString& _layerName = "",
                     const QString& _layerDiscription = "",
@@ -45,6 +47,12 @@ private:
 
     /*-----属性-----*/
 private:
+    //波段数
+    int mnBands{0};
+    //加载的波段
+    int mnRedBandIdx{1};
+    int mnGreenBandIdx{1};
+    int mnBlueBandIdx{1};
 
     /*-----成员变量-----*/
 private:
@@ -52,35 +60,68 @@ private:
     //图像文件路径
     QString mStrImagePath{};
     //图像
-    QPixmap *mpImage{nullptr};
+    QImage *mpImage{nullptr};
     //图像在无缩放无旋转下的包围矩形
     QRectF mImageRect;
     //图像的包围控制点（变换后）
     QPointF mpBoundPt[4] {};
+    //均衡化函数(三个波段的)
+    std::shared_ptr<void> mpEqualizeFunc[3] {nullptr};
 
     /*-----成员函数-----*/
 public:
+
     //[访问函数]
-    inline const QPixmap& getPixmap();
+
+    inline const QImage& getImage();
     inline const QString& getImagePath();
     inline bool isNull()const;
+    int redBandIdx() const;
+    int greenBandIdx() const;
+    int blueBandIdx() const;
+    bool isMultiBand()const;
+    void getHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    int getBandCount() const;
+
+    void getBandIdices(int *pRGBIdx) const;
 
     //[修改函数]
+
     //加载图片
     void load(const QString& _imagePath = "");
+    bool save(const QString& _savePath);
     //设置路径（不加载图片）
     inline void setImagePath(const QString& imagePath);
-    inline void setPixmap(const QPixmap& pixmap);
+    inline void setImage(const QImage& image);
     //释放图片内存
     inline void releaseImage();
+    //改变波段
+    void setRedBandIdx(int value);
+    void setGreenBandIdx(int value);
+    void setBlueBandIdx(int value);
+    //设置波段：从1开始
+    void setBandIndices(int r, int g, int b);
+    //设置波段为默认值
+    void setDefaultedBands();
+    //设置均衡化函数
+    void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
 
     //[功能函数]
 
+public:
+    //获取直方图均衡化函数
+    static std::shared_ptr<void> calcHistEqFunc(GDALDataType type, void* pBandData, size_t count);
+    //对波段执行直方图均衡化
+    static void histEqualize(GDALDataType type, void* pBandData, size_t count, std::shared_ptr<void> pEqFunc);
+    //对波段进行8位转换;算法:按数值范围比例缩放
+    static uchar *to8bit(GDALDataType type, void* pBandData, size_t count);
+
 private:
     void _initializeWith(const SImage& theImage);
+
 };
 
-const QPixmap &SImage::getPixmap()
+const QImage &SImage::getImage()
 {
     return *mpImage;
 }
@@ -95,10 +136,10 @@ void SImage::setImagePath(const QString &imagePath)
     mStrImagePath = imagePath;
 }
 
-void SImage::setPixmap(const QPixmap &pixmap)
+void SImage::setImage(const QImage &image)
 {
-    if(!pixmap.isNull())
-        mpImage = new QPixmap(pixmap);
+    if(!image.isNull())
+        mpImage = new QImage(image);
     mStrImagePath = nullptr;
 }
 

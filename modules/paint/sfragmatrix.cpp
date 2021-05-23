@@ -104,6 +104,18 @@ void SFragMatrix::loadAll()const
         data[i].load();
 }
 
+void SFragMatrix::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
+{
+    for(size_t i = 0; i < rows * cols; ++i)
+        data[i].setHistEqFunc(pEqFunc);
+}
+
+void SFragMatrix::setBandIndices(int r, int g, int b)
+{
+    for(size_t i = 0; i < rows * cols; ++i)
+        data[i].setBandIndices(r, g, b);
+}
+
 QPointF SFragMatrix::_centerAt(size_t row, size_t col)
 {
     QPointF center(scaledFragWidth * col - ptLevelCenter.x(), scaledFragHeight * row - ptLevelCenter.y());

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <gdal_priv.h>
 #include <QComboBox>
+#include <modules/paint/simage.h>
 
 QBandSelectDialog::QBandSelectDialog(QWidget *parent) :
     QDialog(parent),
@@ -22,19 +23,20 @@ QBandSelectDialog::QBandSelectDialog(const QString &imagePath, QWidget *parent):
 
 QBandSelectDialog::~QBandSelectDialog()
 {
+    mSlicerThread.quit();
     _releaseAll();
     delete ui;
 }
 
 void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
 {
+    this->mStrFragPath = strFragPath;
     if(mStrFragPath.isEmpty())
     {
         QMessageBox::critical(this, tr("Fragment images path invalid"), tr(""));
         return;
     }
 
-    this->mStrFragPath = strFragPath;
     //提示可以操作
     ui->mLabelStatus->setText(tr("Choose three bands to preview"));
     ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
@@ -57,25 +59,8 @@ void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
 
     //------读入影像------//
 
-    GDALAllRegister();
-
-    QByteArray strTopImgPath_byte = strTopImgPath.toUtf8();
-    GDALDataset* pDataSet = static_cast<GDALDataset*>(GDALOpen(strTopImgPath_byte.constData(), GA_ReadOnly));
-
-    //获取数据集信息
-    mnWidth = pDataSet->GetRasterXSize();
-    mnHeight = pDataSet->GetRasterYSize();
-    mnBands = pDataSet->GetRasterCount();
-
-    //分配内存、读入各波段
-    mpImageData = new UCHAR* [mnBands];
-    for(int i = 0; i < mnBands; ++i)
-    {
-        mpImageData[i] = new UCHAR[mnWidth * mnHeight];
-        pDataSet->GetRasterBand(i + 1)->RasterIO(GF_Read, 0, 0, mnWidth, mnHeight, mpImageData[i], mnWidth, mnHeight, GDT_Byte, 0, 0, 0);
-    }
-
-    GDALClose(pDataSet);
+    mImage.load(strTopImgPath);
+    mnBands = mImage.getBandCount();
 
     //------更新组合框-----//
 
@@ -84,11 +69,21 @@ void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
         bandStrList.push_back("Band " + QString::number(i + 1));
 
     ui->mComboRed->addItems(bandStrList);
-    ui->mComboBlue->addItems(bandStrList);
     ui->mComboGreen->addItems(bandStrList);
-    ui->mComboRed->setCurrentIndex(0);
-    ui->mComboGreen->setCurrentIndex(1);
-    ui->mComboBlue->setCurrentIndex(2);
+    ui->mComboBlue->addItems(bandStrList);
+
+    if(mnBands == 1 || mnBands == 2)
+    {
+        ui->mComboRed->setCurrentIndex(0);
+        ui->mComboGreen->setCurrentIndex(0);
+        ui->mComboBlue->setCurrentIndex(0);
+    }
+    else
+    {
+        ui->mComboRed->setCurrentIndex(0);
+        ui->mComboGreen->setCurrentIndex(1);
+        ui->mComboBlue->setCurrentIndex(2);
+    }
 
     //------更新图像显示------//
     mbUpdatePreviewImg = true;
@@ -114,43 +109,57 @@ void QBandSelectDialog::onComboBoxIndexChanged(int idx)
 
     //------根据三个组合框选择的波段更新图像------//
 
-    int pBandforRGB[3];
-    this->bandIdices(pBandforRGB);
+    mImage.setBandIndices(mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx);
+    mImage.load();
 
-    UCHAR* pRGBData = new UCHAR[mnWidth * mnHeight * 3 * sizeof(UCHAR)] {0};
-
-    //拷贝图像数据
-    for(int i = 0; i < mnWidth * mnHeight; ++i)
-        for(int band = 0; band < 3; ++band)
-            pRGBData[i * 3 + band] = mpImageData[pBandforRGB[band] - 1][i];
-
-    //创建QPixmap用于显示
-    QImage previewImg(pRGBData, mnWidth, mnHeight, mnWidth * 3, QImage::Format_RGB888,
-                      [](void* pData)->void{delete [] static_cast<uchar*>(pData); pData = nullptr;});
-
-    ui->mLabelPreviewImage->setPixmap(QPixmap::fromImage(previewImg));
+    ui->mLabelPreviewImage->setPixmap(QPixmap::fromImage(mImage.getImage()));
 }
 
-QString QBandSelectDialog::OriImgPath() const
+void QBandSelectDialog::onButtonOkClicked()
+{
+    mSlicerThread.quit();
+}
+
+void QBandSelectDialog::onButtonCancelClicked()
+{
+    mnBands = 0;
+    mnRedBandIdx = mnGreenBandIdx = mnBlueBandIdx = 0;
+    mStrFragPath = "";
+
+    mSlicerThread.quit();
+}
+
+QString QBandSelectDialog::getFragPath() const
+{
+    return mStrFragPath;
+}
+
+QString QBandSelectDialog::getOriginalImagePath() const
 {
     return mStrOriImgPath;
 }
 
-void QBandSelectDialog::setOriImgPath(const QString &strOriImgPath)
+void QBandSelectDialog::setOriginalImagePath(const QString & strOriImgPath)
 {
     mStrOriImgPath = strOriImgPath;
 }
 
-int QBandSelectDialog::blueBandIdx() const
+int QBandSelectDialog::getBlueBandIdx() const
 {
     return mnBlueBandIdx;
 }
 
-void QBandSelectDialog::bandIdices(int *pRGBIdx) const
+void QBandSelectDialog::getBandIdices(int *pRGBIdx) const
 {
     pRGBIdx[0] = mnRedBandIdx;
     pRGBIdx[1] = mnGreenBandIdx;
     pRGBIdx[2] = mnBlueBandIdx;
+}
+
+void QBandSelectDialog::getHistEqFunc(std::shared_ptr<void> pEqFunc[])
+{
+    if(!mImage.isNull())
+        mImage.getHistEqFunc(pEqFunc);
 }
 
 void QBandSelectDialog::_initialize()
@@ -159,14 +168,16 @@ void QBandSelectDialog::_initialize()
     ui->mLabelStatus->setText(tr("Please wait while building overview images."));
     ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-#ifdef MULTI_THREAD_BUILDING
-    QThread ovrBuildingThread;
     SSlice* slicer = new SSlice();
-    slicer->moveToThread(ovrBuildingThread);
-#else
-    mStrFragPath = SSlice::getOverviewsSlice(mStrOriImgPath);
-    onOverviewBuilt(mStrFragPath);
-#endif
+    slicer->moveToThread(&mSlicerThread);
+    connect(slicer, &SSlice::progressUpdated, this, &QBandSelectDialog::onProgressUpdated);
+    connect(slicer, &SSlice::overviewsBuilt, this, &QBandSelectDialog::onOverviewBuilt);
+    connect(this, &QBandSelectDialog::startBuildingThread, slicer, &SSlice::getOverviewsSlice);
+    connect(&mSlicerThread, &QThread::finished, slicer, &QObject::deleteLater);
+
+    mSlicerThread.start(QThread::HighestPriority);
+
+    emit startBuildingThread(mStrOriImgPath);
 
     _initializeConnections();
 }
@@ -180,32 +191,26 @@ void QBandSelectDialog::_initializeConnections()
             this, &QBandSelectDialog::onComboBoxIndexChanged);
     connect(ui->mComboBlue, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &QBandSelectDialog::onComboBoxIndexChanged);
-    //链接读取完成事件
+
+    //链接按钮响应
+    connect(ui->mButtonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked,
+            this, &QBandSelectDialog::onButtonOkClicked);
+    connect(ui->mButtonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked,
+            this, &QBandSelectDialog::onButtonCancelClicked);
 }
 
 void QBandSelectDialog::_releaseAll()
 {
-    if(mpImageData)
-    {
-        for(int i = 0; i < mnBands; ++i)
-            delete [] mpImageData[i];
-        delete[] mpImageData;
-    }
-    mpImageData = nullptr;
 }
 
-int QBandSelectDialog::greenBandIdx() const
+int QBandSelectDialog::getGreenBandIdx() const
 {
     return mnGreenBandIdx;
 }
 
-int QBandSelectDialog::redBandIdx() const
+int QBandSelectDialog::getRedBandIdx() const
 {
     return mnRedBandIdx;
 }
 
-QString QBandSelectDialog::fragPath() const
-{
-    return mStrFragPath;
-}
 

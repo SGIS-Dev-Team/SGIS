@@ -74,6 +74,10 @@ public:
                       size_t _frag_width, size_t _frag_height);
     //加载全部影像数据
     void loadAll()const;
+    //设置均衡化函数
+    void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    //设置波段
+    void setBandIndices(int r, int g, int b);
 
     //[功能函数]
 private:

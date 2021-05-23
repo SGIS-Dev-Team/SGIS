@@ -59,10 +59,32 @@ void SFragImage::setFragmentPath(const QString &folder, const QString &imageFile
 {
     this->mStrFolderPath = folder;
     this->mStrFileName = imageFileName;
-    _loadMeta();
 }
 
-void SFragImage::_loadMeta()
+void SFragImage::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
+{
+    for(auto& mat : mFragMatVec)
+        mat.setHistEqFunc(pEqFunc);
+}
+
+void SFragImage::setBandIndices(int r, int g, int b)
+{
+    for(auto& mat : mFragMatVec)
+        mat.setBandIndices(r, g, b);
+}
+
+void SFragImage::setHoldTopPyramidEnabled(bool hold)
+{
+    mbHoldTopPyramid = hold;
+    if(mFragMatVec.empty())
+        return;
+    if(hold)
+        this->mFragMatVec.back().loadAll();
+    else
+        this->mFragMatVec.back().getData()->releaseImage();
+}
+
+void SFragImage::loadMeta()
 {
     QFile file(mStrFolderPath + '/' + mStrFileName + "_Meta.txt");
     if(!file.open(QFile::ReadOnly))
@@ -101,9 +123,6 @@ void SFragImage::_loadMeta()
         mat.setLevelMeta(originalWidth, originalHeight, level, levelWidth, levelHeight, fragWidth, fragHeight);
         mFragMatVec.push_back(mat);
     }
-
-    //加载顶层的金字塔影像
-    mFragMatVec.back().loadAll();
 
     QPointF topLeft(-originalWidth / 2, -originalHeight / 2);
     QPointF topRight(originalWidth / 2, -originalHeight / 2);
@@ -164,9 +183,15 @@ QIcon SFragImage::icon() const
     SFragMatrix fragMat = mFragMatVec.back();
     //-----绘图-----//
     SImage* pFragImage = fragMat.getData();
-    size_t imgCount = fragMat.Rows() * fragMat.Cols();
-    for(size_t i = 0; i < imgCount; ++i)
-        pFragImage[i].paint(iconPainter);
+
+    if(pFragImage->isNull())
+        pFragImage->load();
+
+    pFragImage->paint(iconPainter);
+
+    if(!mbHoldTopPyramid)
+        pFragImage->releaseImage();
+
     //-----绘图-----//
 
     //执行逆变换

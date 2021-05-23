@@ -59,6 +59,8 @@ protected:
     QRectF mImageRect{};
     //图像大小（变换后）
     QSize mImageSize{};
+    //是否常驻顶层缩略图
+    bool mbHoldTopPyramid{false};
 
     /*-----成员变量-----*/
 protected:
@@ -82,10 +84,15 @@ public:
     //[修改函数]
     //设置影像金字塔文件路径，影像文件名（不要带格式后缀）
     void setFragmentPath(const QString& folder, const QString& imageFileName);
+    void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    void setBandIndices(int r, int g, int b);
+    //常驻顶层金字塔图像
+    void setHoldTopPyramidEnabled(bool hold);
 
     //[功能函数]
+public:
     //读取元数据
-    void _loadMeta();
+    void loadMeta();
 };
 
 int SFragImage::width() const

@@ -2,6 +2,7 @@
 #include "ui_seditor.h"
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
+#include <QMessageBox>
 
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
@@ -57,6 +58,7 @@ void SEditor::onActionLoadImageTriggered()
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
         SImage* pImg = new SImage(pathList[i], true, QPoint(x, y));
+        pImg->load();
         pImg->rotate(60);
 
         mpCurDoc->getLayerManager().addLayer(pImg);
@@ -78,10 +80,16 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setFragmentPath(path, file_info.completeBaseName());
-    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-    mpCurDoc->getLayerManager().addLayer(pFragImg);
+    pFragImg->setFragmentPath(file_info.filePath(), file_info.fileName());
+    pFragImg->loadMeta();
 
+    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+
+    pFragImg->setBandIndices(1, 2, 3);
+
+    pFragImg->setHoldTopPyramidEnabled(true);
+
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
 }
 
 #include "qbandselectdialog.h"
@@ -95,6 +103,33 @@ void SEditor::onActionLoadHugeImageTriggered()
     //打开波段预览对话框
     QBandSelectDialog dialog(strImagePath, this);
     dialog.exec();
+
+    if(dialog.getFragPath().isEmpty())
+    {
+        QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
+        return;
+    }
+
+    //选择完成：将影像读入
+    mpCurDoc->getLayerManager().clearSelection();
+
+    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
+
+    QFileInfo file_info(dialog.getFragPath());
+    pFragImg->setFragmentPath(file_info.filePath(), file_info.fileName());
+    pFragImg->loadMeta();
+
+    std::shared_ptr<void> pHistEqFunc[3];
+    dialog.getHistEqFunc(pHistEqFunc);
+    pFragImg->setHistEqFunc(pHistEqFunc);
+
+    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+
+    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
+
+    pFragImg->setHoldTopPyramidEnabled(true);
+
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
 }
 
 void SEditor::onActionBringForwardTriggered()
