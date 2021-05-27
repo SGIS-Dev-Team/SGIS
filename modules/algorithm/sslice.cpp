@@ -1,5 +1,6 @@
 ﻿#include "sslice.h"
-
+#include <QDebug>
+#include <QThread>
 
 SSlice::SSlice()
 {
@@ -10,6 +11,8 @@ SSlice::~SSlice()
 
 GDALDataset* SSlice::GetDataset(QString qstrInPath)
 {
+    qDebug() << qstrInPath << " OPENED by SImage on Thread " << QThread::currentThreadId();
+
     //含中文QString->char*
     QByteArray qbarr = qstrInPath.toUtf8();// 不能两句合起来写
     const char* ch = qbarr.constData();

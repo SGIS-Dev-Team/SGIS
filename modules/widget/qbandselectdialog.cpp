@@ -28,68 +28,6 @@ QBandSelectDialog::~QBandSelectDialog()
     delete ui;
 }
 
-void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
-{
-    this->mStrFragPath = strFragPath;
-    if(mStrFragPath.isEmpty())
-    {
-        QMessageBox::critical(this, tr("Fragment images path invalid"), tr(""));
-        return;
-    }
-
-    //提示可以操作
-    ui->mLabelStatus->setText(tr("Choose three bands to preview"));
-    ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-
-    //------获取到顶层图像位置------//
-
-    QString strImageName = QFileInfo(strFragPath).fileName();
-    //读入金字塔元数据（金字塔层数）
-    QFile metaFile(strFragPath + '/' + strImageName + "_Meta.txt");
-    metaFile.open(QFile::ReadOnly);
-    QTextStream metaStream(&metaFile);
-    int pyramidCount{};
-    QString buf{};
-    metaStream >> buf >> pyramidCount;
-    //合成顶层图像路径
-    QString strTopImgPath = mStrFragPath + '/' +
-                            QString::number(static_cast<int>(pow(2, pyramidCount - 1))) + '/' +
-                            strImageName + "_1.tif";
-    metaFile.close();
-
-    //------读入影像------//
-
-    mImage.load(strTopImgPath);
-    mnBands = mImage.getBandCount();
-
-    //------更新组合框-----//
-
-    QStringList bandStrList{};
-    for(int i = 0; i < mnBands; ++i)
-        bandStrList.push_back("Band " + QString::number(i + 1));
-
-    ui->mComboRed->addItems(bandStrList);
-    ui->mComboGreen->addItems(bandStrList);
-    ui->mComboBlue->addItems(bandStrList);
-
-    if(mnBands == 1 || mnBands == 2)
-    {
-        ui->mComboRed->setCurrentIndex(0);
-        ui->mComboGreen->setCurrentIndex(0);
-        ui->mComboBlue->setCurrentIndex(0);
-    }
-    else
-    {
-        ui->mComboRed->setCurrentIndex(0);
-        ui->mComboGreen->setCurrentIndex(1);
-        ui->mComboBlue->setCurrentIndex(2);
-    }
-
-    //------更新图像显示------//
-    mbUpdatePreviewImg = true;
-    onComboBoxIndexChanged(0);
-}
-
 void QBandSelectDialog::onProgressUpdated(int progress, QString info)
 {
     ui->mProgressBarBuildOverview->setValue(progress);
@@ -98,19 +36,21 @@ void QBandSelectDialog::onProgressUpdated(int progress, QString info)
 
 void QBandSelectDialog::onComboBoxIndexChanged(int idx)
 {
-    Q_UNUSED(idx);
     //更新选择
-    mnRedBandIdx = ui->mComboRed->currentIndex() + 1;
-    mnGreenBandIdx = ui->mComboGreen->currentIndex() + 1;
-    mnBlueBandIdx = ui->mComboBlue->currentIndex() + 1;
+    int channel = -1;
+    if(mnRedBandIdx != ui->mComboRed->currentIndex() + 1)
+        mnRedBandIdx = ui->mComboRed->currentIndex() + 1, channel = 0;
+    if(mnGreenBandIdx != ui->mComboGreen->currentIndex() + 1)
+        mnGreenBandIdx = ui->mComboGreen->currentIndex() + 1, channel = 1;
+    if(mnBlueBandIdx != ui->mComboBlue->currentIndex() + 1)
+        mnBlueBandIdx = ui->mComboBlue->currentIndex() + 1, channel = 2;
 
     if(!this->mbUpdatePreviewImg)
         return;
 
     //------根据三个组合框选择的波段更新图像------//
-
-    mImage.setBandIndices(mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx);
-    mImage.load();
+    if(channel != -1)
+        mImage.setBandIndex(channel, idx + 1, true);
 
     ui->mLabelPreviewImage->setPixmap(QPixmap::fromImage(mImage.getImage()));
 }
@@ -168,6 +108,51 @@ void QBandSelectDialog::_initialize()
     ui->mLabelStatus->setText(tr("Please wait while building overview images."));
     ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
+    //-----获取影像信息-----//
+
+    SImageMeta meta = SImage::getMetaOf(mStrOriImgPath);
+    int maxWH = meta.width() > meta.height() ? meta.width() : meta.height();
+    mnBands = meta.bandCount();
+    //计算降采样倍率，使得其尽量为2的倍数
+    int downSamplingTimes{0};
+    while(maxWH > TOP_PYRAMID_SIZE)
+        ++downSamplingTimes, maxWH = maxWH / 2;
+    mDownSamplingRatio = pow(2, downSamplingTimes);
+
+    //------更新组合框-----//
+
+    QStringList bandStrList{};
+    for(int i = 0; i < mnBands; ++i)
+        bandStrList.push_back("Band " + QString::number(i + 1));
+
+    ui->mComboRed->addItems(bandStrList);
+    ui->mComboGreen->addItems(bandStrList);
+    ui->mComboBlue->addItems(bandStrList);
+
+    if(mnBands == 1 || mnBands == 2)
+    {
+        ui->mComboRed->setCurrentIndex(0);
+        ui->mComboGreen->setCurrentIndex(0);
+        ui->mComboBlue->setCurrentIndex(0);
+        mnRedBandIdx = mnGreenBandIdx = mnBlueBandIdx = 1;
+    }
+    else
+    {
+        ui->mComboRed->setCurrentIndex(0);
+        ui->mComboGreen->setCurrentIndex(1);
+        ui->mComboBlue->setCurrentIndex(2);
+        mnRedBandIdx = 1, mnGreenBandIdx = 2, mnBlueBandIdx = 3;
+    }
+
+    //------更新图像显示------//
+    mbUpdatePreviewImg = true;
+    //加载缩略图
+    mImage.setBandIndices(mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx, false);
+    mImage.load(QRect(0, 0, 0, 0), mDownSamplingRatio, mStrOriImgPath);
+
+    onComboBoxIndexChanged(0);
+
+    //------开启金字塔构建线程------//
     SSlice* slicer = new SSlice();
     slicer->moveToThread(&mSlicerThread);
     connect(slicer, &SSlice::progressUpdated, this, &QBandSelectDialog::onProgressUpdated);
@@ -175,10 +160,10 @@ void QBandSelectDialog::_initialize()
     connect(this, &QBandSelectDialog::startBuildingThread, slicer, &SSlice::getOverviewsSlice);
     connect(&mSlicerThread, &QThread::finished, slicer, &QObject::deleteLater);
 
-    mSlicerThread.start(QThread::HighestPriority);
+    mSlicerThread.start();
 
     emit startBuildingThread(mStrOriImgPath);
-
+    //初始化链接
     _initializeConnections();
 }
 
@@ -213,4 +198,7 @@ int QBandSelectDialog::getRedBandIdx() const
     return mnRedBandIdx;
 }
 
+void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
+{
+}
 

@@ -38,11 +38,6 @@ QRectF QCanvasArea::viewArea() const
                   this->verticalScrollBar()->pageStep() / scaleValue);
 }
 
-void QCanvasArea::keyPressEvent(QKeyEvent *event)
-{
-
-}
-
 void QCanvasArea::wheelEvent(QWheelEvent *event)
 {
     //Ctrl+滚轮   缩放画布
@@ -67,9 +62,6 @@ void QCanvasArea::wheelEvent(QWheelEvent *event)
 
 }
 
-void QCanvasArea::mouseMoveEvent(QMouseEvent *event)
-{
-}
 
 void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
 {

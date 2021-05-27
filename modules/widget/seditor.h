@@ -2,8 +2,8 @@
 #define SEDITOR_H
 
 #include <QMainWindow>
+#include <modules/global.h>
 #include "modules/widget/qcanvasarea.h"
-#include"modules/slogger.h"
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
 

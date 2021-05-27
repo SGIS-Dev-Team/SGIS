@@ -5,6 +5,7 @@
 #include <modules/global.h>
 #include <modules/doc/sdocument.h>
 
+
 class SDocument;
 class QCanvas : public QWidget
 {

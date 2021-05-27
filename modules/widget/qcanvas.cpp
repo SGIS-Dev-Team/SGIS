@@ -24,6 +24,7 @@ QCanvas::~QCanvas()
 
 void QCanvas::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter painter(this);
 
     /*-----画布内容绘制-----*/

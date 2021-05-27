@@ -1,24 +1,9 @@
 ﻿#include "sfragmatrix.h"
 
-SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, QStringList _dataPath): SFragMatrix(_rows, _cols)
+SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, const QString &_dataPath): SFragMatrix(_rows, _cols)
 {
-    Q_ASSERT((size_t)_dataPath.size() >= _rows * _cols);
     for(size_t i = 0; i < _rows * _cols; ++i)
-        data[i].setImagePath(_dataPath[i]);
-}
-
-SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, QString *_dataPath, size_t _count): SFragMatrix(_rows, _cols)
-{
-    Q_ASSERT(_count >= _rows * _cols);
-    for(size_t i = 0; i < _rows * _cols; ++i)
-        data[i].setImagePath(_dataPath[i]);
-}
-
-SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, std::vector<QString> &_dataPath): SFragMatrix(_rows, _cols)
-{
-    Q_ASSERT(_dataPath.size() >= _rows * _cols);
-    for(size_t i = 0; i < _rows * _cols; ++i)
-        data[i].setImagePath(_dataPath[i]);
+        data[i].setImagePath(_dataPath);
 }
 
 SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, SImage *_data, size_t _count): SFragMatrix(_rows, _cols)
@@ -37,7 +22,6 @@ SFragMatrix::SFragMatrix(size_t _rows, size_t _cols, std::vector<SImage> &_data)
 
 SFragMatrix::SFragMatrix(size_t _rows, size_t _cols): rows(_rows), cols(_cols)
 {
-    //Q_ASSERT(_rows > 0 && _cols > 0);
     _allocAll();
 }
 
@@ -113,7 +97,16 @@ void SFragMatrix::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 void SFragMatrix::setBandIndices(int r, int g, int b)
 {
     for(size_t i = 0; i < rows * cols; ++i)
-        data[i].setBandIndices(r, g, b);
+        data[i].setBandIndices(r, g, b, false);
+}
+
+void SFragMatrix::setLevelPath(const QString &path)
+{
+    strLevelPath = path;
+
+    if(data)
+        for(size_t i = 0; i < rows * cols; ++i)
+            data[i].setImagePath(path);
 }
 
 QPointF SFragMatrix::_centerAt(size_t row, size_t col)
@@ -133,9 +126,20 @@ QPointF SFragMatrix::_centerAt(size_t row, size_t col)
     return center;
 }
 
+QRect SFragMatrix::_fragAt(size_t row, size_t col)
+{
+    int left = fragWidth * col;
+    int top = fragHeight * row;
+    int width = (col == cols - 1 ? edgeFragWidth : fragWidth);
+    int height = (row == rows - 1 ? edgeFragHeight : fragHeight);
+    return QRect(left, top, width, height);
+}
+
 void SFragMatrix::_releaseAll()
 {
-    delete []data;
+    if(data)
+        delete []data;
+    data = nullptr;
 }
 
 void SFragMatrix::setLevelMeta(size_t _original_width, size_t _original_height,
@@ -150,13 +154,15 @@ void SFragMatrix::setLevelMeta(size_t _original_width, size_t _original_height,
     levelHeight = _level_height;
     fragWidth = _frag_width;
     fragHeight = _frag_height;
-
+    //计算边缘分片大小
+    edgeFragWidth = levelWidth - fragWidth * (cols - 1);
+    edgeFragHeight = levelHeight - fragHeight * (rows - 1);
     //计算标准分片缩放后大小
     scaledFragWidth = fragWidth * level;
     scaledFragHeight = fragHeight * level;
     //计算边缘分片缩放后大小(全部为标准分片时，即为标准分片缩放后大小)
-    scaledEdgeFragWidth = originalWidth - scaledFragWidth * (cols - 1);
-    scaledEdgeFragHeight = originalHeight - scaledFragHeight * (rows - 1);
+    scaledEdgeFragWidth = edgeFragWidth * level;
+    scaledEdgeFragHeight = edgeFragHeight * level;
     //计算图像中心坐标
     ptLevelCenter.setX(static_cast<double>(originalWidth) / 2.0);
     ptLevelCenter.setY(static_cast<double>(originalHeight) / 2.0);
@@ -165,9 +171,13 @@ void SFragMatrix::setLevelMeta(size_t _original_width, size_t _original_height,
     for(size_t i = 0; i < rows; ++i)
         for(size_t j = 0; j < cols; ++j)
         {
-            size_t index = i * cols + j;
-            data[index].setCenterPoint(_centerAt(i, j));
-            data[index].setScaleFactor(level, level);
+            SImage &rImg = data[i * cols + j];
+            rImg.setCenterPoint(_centerAt(i, j));
+            rImg.setScaleFactor(level, level);
+            rImg.setLoadRegionRect(_fragAt(i, j));
+            rImg.setLoadRegionResampledSize(QSize(fragWidth, fragHeight));
         }
-
 }
+
+
+

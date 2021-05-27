@@ -7,9 +7,7 @@ class SFragMatrix
 {
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SFragMatrix(size_t _rows, size_t _cols, QStringList _dataPath);
-    explicit SFragMatrix(size_t _rows, size_t _cols, QString *_dataPath, size_t _count);
-    explicit SFragMatrix(size_t _rows, size_t _cols, std::vector<QString> &_dataPath);
+    explicit SFragMatrix(size_t _rows, size_t _cols, const QString &_dataPath);
     explicit SFragMatrix(size_t _rows, size_t _cols, SImage *_data, size_t _count);
     explicit SFragMatrix(size_t _rows, size_t _cols, std::vector<SImage> &_data);
     explicit SFragMatrix(size_t _rows, size_t _cols);
@@ -24,13 +22,18 @@ public:
 private:
     //数据
     SImage *data{};
+    //金字塔图像路径
+    QString strLevelPath{};
     //行列数
     size_t rows{}, cols{};
     //用来存放金字塔层级参数
     size_t originalWidth{}, originalHeight{};
     size_t level{};
     size_t levelWidth{}, levelHeight{};
+    //标准分片尺寸
     size_t fragWidth{}, fragHeight{};
+    //边缘分片尺寸
+    size_t edgeFragWidth{}, edgeFragHeight;
 
     //计算得到的该层的实际标准分片大小（缩放至level倍）
     size_t scaledFragWidth{};
@@ -54,6 +57,8 @@ public:
     inline SImage *getData()const;
     //是否为空
     inline bool isEmpty()const;
+    //获取金字塔图像路径
+    inline const QString &getLevelPath()const;
 
     //元数据
     inline size_t Rows()const;
@@ -78,17 +83,22 @@ public:
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
     //设置波段
     void setBandIndices(int r, int g, int b);
+    //设置金字塔图像路径
+    void setLevelPath(const QString &path);
 
     //[功能函数]
 private:
-    //根据元数据计算第row行第col列的分片影像的中心坐标
+    //根据元数据计算第row行第col列的分片影像的中心坐标(金字塔对应原图像的)
     QPointF _centerAt(size_t row, size_t col);
+    //根据元数据计算第row行第col列的分片区域(该层金字塔图像的)
+    QRect _fragAt(size_t row, size_t col);
     //分配内存
     inline void _allocAll();
     //使用已有对象初始化
     inline void _initializeWith(const SFragMatrix& mat);
     //释放所有资源
     void _releaseAll();
+
 };
 
 SImage &SFragMatrix::operator()(size_t row, size_t col)
@@ -168,6 +178,11 @@ void SFragMatrix::_initializeWith(const SFragMatrix &mat)
 bool SFragMatrix::isEmpty()const
 {
     return rows * cols == 0 ? true : false;
+}
+
+const QString &SFragMatrix::getLevelPath() const
+{
+    return strLevelPath;
 }
 
 #endif // SFRAGMATRIX_H

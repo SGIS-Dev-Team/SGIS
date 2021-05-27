@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include "modules/global.h"
-#include "modules/slogger.h"
 #include "modules/widget/straymgr.h"
 #include "modules/widget/seditor.h"
 QT_BEGIN_NAMESPACE

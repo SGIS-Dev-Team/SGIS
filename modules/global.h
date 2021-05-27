@@ -1,7 +1,7 @@
 ﻿#ifndef GLOBAL_H
 #define GLOBAL_H
 
-class SDocument;
+#include"slogger.h"
 
 #include <QDebug>
 #include <cassert>
@@ -50,6 +50,9 @@ class SDocument;
 
 //圆周率，懂得都懂
 #define PI 3.141592653589793
+
+//缩略图（顶层金字塔限制大小）
+#define TOP_PYRAMID_SIZE 1600
 
 //绘图对象类名
 namespace sgis

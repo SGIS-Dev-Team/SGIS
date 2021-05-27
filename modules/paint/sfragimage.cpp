@@ -71,6 +71,11 @@ void SFragImage::setBandIndices(int r, int g, int b)
 {
     for(auto& mat : mFragMatVec)
         mat.setBandIndices(r, g, b);
+    if(mFragMatVec.empty())
+        return;
+    //计算顶层金字塔均衡化函数
+    SImage *pImage = mFragMatVec.back().getData();
+    pImage->load();
 }
 
 void SFragImage::setHoldTopPyramidEnabled(bool hold)

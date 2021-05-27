@@ -22,12 +22,8 @@ public:
 
     /*-----虚函数重载-----*/
 public:
-    //画布区域快捷键事件
-    void keyPressEvent(QKeyEvent* event)override;
     //画布区域鼠标滚轮事件
     void wheelEvent(QWheelEvent* event)override;
-    //画布区域鼠标移动事件
-    void mouseMoveEvent(QMouseEvent* event)override;
 
     /*-----信号-----*/
 signals:

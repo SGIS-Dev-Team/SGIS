@@ -212,6 +212,7 @@ void SEditor::onLayersUpdated(SLayerManager *which)
 
 void SEditor::closeEvent(QCloseEvent *event)
 {
+    Q_UNUSED(event);
     emit closed();
 }
 

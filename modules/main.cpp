@@ -1,11 +1,8 @@
 ﻿#include "modules/widget/mainwindow.h"
 #include "modules/global.h"
-#include "modules/slogger.h"
 #include "gdal_priv.h"
 #include <QApplication>
 #include <QFileDialog>
-
-
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +12,8 @@ int main(int argc, char *argv[])
 
     //启动主程序
     MainWindow wnd;
+
+    GDALAllRegister();
 
     return app.exec();
 }

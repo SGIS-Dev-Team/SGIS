@@ -22,6 +22,7 @@ SDocument::~SDocument()
 
 void SDocument::onImageLoaded(SImage *pImage)
 {
+    Q_UNUSED(pImage);
     const QRectF& viewAreaRect = mpCanvas->viewArea();
     double scaleValue = mpCanvas->scaleValue();
     mpCanvas->repaint(viewAreaRect.left() * scaleValue,

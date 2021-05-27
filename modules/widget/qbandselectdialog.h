@@ -61,6 +61,7 @@ protected:
     //顶层图像预览数据
     SImage mImage{nullptr};
     int mnBands{0};
+    int mDownSamplingRatio{1};
 
     //是否根据选择框更新预览图像
     bool mbUpdatePreviewImg{false};
