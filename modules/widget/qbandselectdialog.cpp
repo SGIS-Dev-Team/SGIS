@@ -1,7 +1,6 @@
 ﻿#include "qbandselectdialog.h"
 #include "ui_qbandselectdialog.h"
 #include <QThread>
-#include "modules/algorithm/sslice.h"
 #include <QPushButton>
 #include <QMessageBox>
 #include <gdal_priv.h>
@@ -111,13 +110,9 @@ void QBandSelectDialog::_initialize()
     //-----获取影像信息-----//
 
     SImageMeta meta = SImage::getMetaOf(mStrOriImgPath);
-    int maxWH = meta.width() > meta.height() ? meta.width() : meta.height();
     mnBands = meta.bandCount();
-    //计算降采样倍率，使得其尽量为2的倍数
-    int downSamplingTimes{0};
-    while(maxWH > TOP_PYRAMID_SIZE)
-        ++downSamplingTimes, maxWH = maxWH / 2;
-    mDownSamplingRatio = pow(2, downSamplingTimes);
+    //计算降采样倍率
+    mDownSamplingRatio = pow(2, SOverviewBuilder::calcPyramidLevelCount(meta) - 1);
 
     //------更新组合框-----//
 
@@ -153,16 +148,17 @@ void QBandSelectDialog::_initialize()
     onComboBoxIndexChanged(0);
 
     //------开启金字塔构建线程------//
-    SSlice* slicer = new SSlice();
-    slicer->moveToThread(&mSlicerThread);
-    connect(slicer, &SSlice::progressUpdated, this, &QBandSelectDialog::onProgressUpdated);
-    connect(slicer, &SSlice::overviewsBuilt, this, &QBandSelectDialog::onOverviewBuilt);
-    connect(this, &QBandSelectDialog::startBuildingThread, slicer, &SSlice::getOverviewsSlice);
-    connect(&mSlicerThread, &QThread::finished, slicer, &QObject::deleteLater);
+    SOverviewBuilder* builder = new SOverviewBuilder();
+    builder->moveToThread(&mSlicerThread);
+    connect(builder, &SOverviewBuilder::progressUpdated, this, &QBandSelectDialog::onProgressUpdated);
+    connect(builder, &SOverviewBuilder::overviewsBuilt, this, &QBandSelectDialog::onOverviewBuilt);
+    connect(this, &QBandSelectDialog::startBuildingThread, builder, &SOverviewBuilder::buildOverviews);
+    connect(&mSlicerThread, &QThread::finished, builder, &QObject::deleteLater);
 
     mSlicerThread.start();
 
-    emit startBuildingThread(mStrOriImgPath);
+    QString savePath = SGIS_DOCUMENT_FOLDER + PYRAMID_FOLDER_NAME;
+    emit startBuildingThread(mStrOriImgPath, savePath, SOverviewBuilder::TIFF);
     //初始化链接
     _initializeConnections();
 }

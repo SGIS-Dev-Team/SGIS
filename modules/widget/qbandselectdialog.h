@@ -4,6 +4,7 @@
 #include "modules/global.h"
 #include <QDialog>
 #include <modules/paint/simage.h>
+#include "modules/algorithm/soverviewbuilder.h"
 #include <QThread>
 
 namespace Ui
@@ -27,7 +28,7 @@ public:
 
     /*-----信号-----*/
 signals:
-    void startBuildingThread(QString imgPath);
+    void startBuildingThread(QString imgPath, QString savePath, SOverviewBuilder::Format format = SOverviewBuilder::TIFF);
 
     /*-----槽函数-----*/
 private slots:

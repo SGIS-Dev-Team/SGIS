@@ -2,7 +2,7 @@
 #define GLOBAL_H
 
 #include"slogger.h"
-
+#include <QStandardPaths>
 #include <QDebug>
 #include <cassert>
 //配置文件开头
@@ -53,6 +53,12 @@
 
 //缩略图（顶层金字塔限制大小）
 #define TOP_PYRAMID_SIZE 1600
+
+//文档位置
+#define SGIS_DOCUMENT_FOLDER QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis"
+
+//金字塔缓存文件夹
+#define PYRAMID_FOLDER_NAME "/pyramid"
 
 //绘图对象类名
 namespace sgis

@@ -1,8 +1,7 @@
-﻿#ifndef CLASSANOTATIONTEMPLATE_H
-#define CLASSANOTATIONTEMPLATE_H
+﻿#ifndef CLASSANNOTATIONTEMPLATE_H
+#define CLASSANNOTATIONTEMPLATE_H
+
 //  CLASS
-//  绘图区
-//  由滚动区域和内置画布组成
 
 class CLASS : public //QObject
 {
@@ -37,4 +36,4 @@ public:
 
     //[功能函数]
 };
-#endif // CLASSANOTATIONTEMPLATE_H
+#endif // CLASSANNOTATIONTEMPLATE_H

@@ -148,7 +148,7 @@ const QRect &SImage::getLoadRegionRect() const
     return mLoadRect;
 }
 
-const QSize &SImage::getLoadDownSampledSize() const
+const QSize &SImage::getLoadResampledSize() const
 {
     return mImageSize;
 }

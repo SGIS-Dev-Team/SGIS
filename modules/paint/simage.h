@@ -8,7 +8,6 @@
 //------------------------
 //      SImage类
 //      多波段图像类
-//
 //------------------------
 
 class SImageMeta
@@ -26,9 +25,9 @@ public:
     SImageMeta() = default;
 public:
     inline int width() const {return Width;}
-    inline int height()const {return Height;}
-    inline int bandCount()const {return BandCount;}
-    inline GDALDataType dataType()const {return DataType;}
+    inline int height() const {return Height;}
+    inline int bandCount() const {return BandCount;}
+    inline GDALDataType dataType() const {return DataType;}
 };
 
 class SImage : public SObject
@@ -116,12 +115,12 @@ public:
     bool isMultiBand()const;
 
     const QRect &getLoadRegionRect()const;
-    const QSize &getLoadDownSampledSize()const;
+    const QSize &getLoadResampledSize()const;
 
     //[修改函数]
 
     // 区域读取函数：使用set后的参数读取
-    void load(const QString& imagePath = "");
+    void load(const QString &imagePath = "");
 
     /* 区域读取函数
      * @param   x_off       读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
@@ -136,7 +135,7 @@ public:
      * @param   rect        读取的图像区域
      * @param   imagePath   图像文件完整路径（包含扩展名）
      */
-    void load(const QRect& rect, const QString &imagePath = "");
+    void load(const QRect &rect, const QString &imagePath = "");
 
     /* 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
      * @param   x_off           读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
@@ -169,7 +168,7 @@ public:
      * @param   sampling_ratio  图像采样倍数
      * @param   imagePath       图像文件完整路径（包含扩展名）
      */
-    void load(const QRect& rect, int down_sampling_ratio, const QString &imagePath = "");
+    void load(const QRect &rect, int down_sampling_ratio, const QString &imagePath = "");
 
     bool save(const QString& _savePath);
     //设置路径（不加载图片）
