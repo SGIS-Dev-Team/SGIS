@@ -60,7 +60,9 @@ HEADERS += \
 
 FORMS += \
     modules/widget/mainwindow.ui \
+    modules/widget/mainwindow.ui \
     modules/widget/qbandselectdialog.ui \
+    modules/widget/seditor.ui \
     modules/widget/seditor.ui \
 
 TRANSLATIONS += \
