@@ -33,7 +33,7 @@ signals:
     /*-----槽函数-----*/
 private slots:
     //金字塔、分片处理完毕
-    void onOverviewBuilt(QString strFragPath);
+    void onOverviewBuilt(QString pyramidDirPath);
     //进度条
     void onProgressUpdated(int progress, QString info);
     //组合框选项变化
@@ -43,16 +43,12 @@ private slots:
     //按下取消按钮
     void onButtonCancelClicked();
 
-
-    /*-----属性-----*/
-protected:
-
     /*-----成员变量-----*/
 protected:
     //原始图像路径
     QString mStrOriImgPath{};
     //分片图像的路径
-    QString mStrFragPath{};
+    QString mStrPyramidDirPath{};
 
     //选中的波段:波段序号从1开始
     int mnRedBandIdx{0};
@@ -68,12 +64,12 @@ protected:
     bool mbUpdatePreviewImg{false};
 
     //构建器线程
-    QThread mSlicerThread{};
+    QThread mBuilderThread{};
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    QString getFragPath() const;
+    QString getPyramidDirPath() const;
 
     int getRedBandIdx() const;
     int getGreenBandIdx() const;
@@ -84,13 +80,10 @@ public:
     //获取RGB对应被选中的波段（波段从1开始）
     void getBandIdices(int* pRGBIdx)const;
 
-    //获取均衡化函数
-    void getHistEqFunc(std::shared_ptr<void> pEqFunc[]);
-
     //[修改函数]
     void setOriginalImagePath(const QString &strOriImgPath);
-    //[功能函数]
 
+    //[功能函数]
 
 private:
     void _initialize();

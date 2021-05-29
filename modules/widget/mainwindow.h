@@ -47,7 +47,7 @@ private:
     //托盘配置文件路径
     QString mStrTrayConfigDir;
     //托盘图标
-    STrayMgr* mpTrayIconMgr;
+    STrayManager* mpTrayIconMgr;
     //[Me]
     QString Me = "Main_Window";
 

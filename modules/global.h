@@ -51,8 +51,10 @@
 //圆周率，懂得都懂
 #define PI 3.141592653589793
 
-//缩略图（顶层金字塔限制大小）
-#define TOP_PYRAMID_SIZE 1600
+//缩略图大小（顶层金字塔限制大小）
+#define DEFAULT_TOP_PYRAMID_SIZE 1600
+//默认逻辑分片尺寸(长和宽)
+#define DEFAULT_LOGICAL_FRAGMENT_SIZE 1600
 
 //文档位置
 #define SGIS_DOCUMENT_FOLDER QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis"

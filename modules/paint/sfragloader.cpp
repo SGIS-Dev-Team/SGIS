@@ -21,8 +21,8 @@ void SFragLoader::run()
         if(pImage->isNull())
         {
             pImage->load();
-
             emit imageLoaded(pImage);
+
             //缓存队列超出则清除队首元素
             if(mFragTempQueue.size() == muMaxFragCount)
             {

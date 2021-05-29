@@ -20,14 +20,14 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     //隐藏主窗口
-    emit mpTrayIconMgr->getActionPtr(STrayMgr::MainWnd)->triggered();
+    emit mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->triggered();
     event->ignore();
 }
 
 void MainWindow::setVisible(bool visible)
 {
     //在窗口显示状态改变时改变托盘菜单选项可用性
-    mpTrayIconMgr->getActionPtr(STrayMgr::Maximize)->setEnabled(!isMaximized() || !visible);
+    mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(!isMaximized() || !visible);
 
     QWidget::setVisible(visible);
 }
@@ -36,7 +36,7 @@ void MainWindow::changeEvent(QEvent *event)
 {
     //判断窗口是否最大化
     if(event->type() == QEvent::WindowStateChange)
-        mpTrayIconMgr->getActionPtr(STrayMgr::Maximize)->setEnabled(!isMaximized());
+        mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(!isMaximized());
 }
 
 void MainWindow::onTrayMenuActionMainWndTriggered()
@@ -57,9 +57,9 @@ void MainWindow::onButtonEditorClicked()
 
     this->hide();
     //停用托盘菜单
-    mpTrayIconMgr->getActionPtr(STrayMgr::MainWnd)->setEnabled(false);
-    mpTrayIconMgr->getActionPtr(STrayMgr::Maximize)->setEnabled(false);
-    mpTrayIconMgr->getActionPtr(STrayMgr::Switch)->setEnabled(false);
+    mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->setEnabled(false);
+    mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(false);
+    mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(false);
 }
 
 void MainWindow::onEditorClosed()
@@ -67,9 +67,9 @@ void MainWindow::onEditorClosed()
     //显示主窗口
     this->show();
     //启用托盘菜单
-    mpTrayIconMgr->getActionPtr(STrayMgr::MainWnd)->setEnabled(true);
-    mpTrayIconMgr->getActionPtr(STrayMgr::Maximize)->setEnabled(true);
-    mpTrayIconMgr->getActionPtr(STrayMgr::Switch)->setEnabled(true);
+    mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->setEnabled(true);
+    mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(true);
+    mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(true);
 }
 
 void MainWindow::initialize()
@@ -80,11 +80,11 @@ void MainWindow::initialize()
 
     /*-----初始化托盘图标-----*/
     mStrTrayConfigDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgif";
-    mpTrayIconMgr = new STrayMgr(mStrTrayConfigDir);
+    mpTrayIconMgr = new STrayManager(mStrTrayConfigDir);
     //链接响应事件
-    connect(mpTrayIconMgr->getActionPtr(STrayMgr::Quit), &QAction::triggered, qApp, &QApplication::quit);
-    connect(mpTrayIconMgr->getActionPtr(STrayMgr::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
-    connect(mpTrayIconMgr->getActionPtr(STrayMgr::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Quit), &QAction::triggered, qApp, &QApplication::quit);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
     //启动完成，打开主窗口或通知用户
     if(mpTrayIconMgr->isShowingMainWnd())
         this->show();

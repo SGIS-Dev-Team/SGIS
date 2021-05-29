@@ -248,8 +248,6 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 pObj->rotate(angleRotated, false);
                 pObj->setScaleFactor(mdOriginalScaleX * xScaled, mdOriginalScaleY * yScaled, false);
                 pObj->reCalcTransfrom();
-                //qDebug() << S3DBG(pObj->rotateAngle(), pObj->scaleFactorX(), pObj->scaleFactorY());
-                //qDebug() << S3DBG(mdOriginalRotateAngle, mdOriginalScaleX, mdOriginalScaleY);
             }
 
             //更新视图区
@@ -398,9 +396,24 @@ bool QCanvas::isRefLineOn() const
     return mbRefLineOn;
 }
 
+SObject::PaintTrigger QCanvas::currentPaintTrigger() const
+{
+    return mTrigger;
+}
+
 void QCanvas::setDocument(SDocument * pDoc)
 {
     this->mpDoc = pDoc;
+}
+
+void QCanvas::setPaintTrigger(SObject::PaintTrigger trigger)
+{
+    mTrigger = trigger;
+}
+
+void QCanvas::resetPaintTrigger()
+{
+    mTrigger = SObject::User_Trigger;
 }
 
 bool QCanvas::setScaleValue(double value)

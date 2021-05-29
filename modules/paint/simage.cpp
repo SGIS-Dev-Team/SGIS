@@ -28,10 +28,11 @@ SImage &SImage::operator=(const SImage &theImage)
     return *this;
 }
 
-void SImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue)const
+void SImage::paint(QPainter &painter, bool doTranslate, const QRectF & viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
     Q_UNUSED(viewLogicalArea);
     Q_UNUSED(scaleValue);
+    Q_UNUSED(trigger);
 
     if(!mpImage)
         return;
@@ -82,7 +83,7 @@ void SImage::releaseImage()
 
 bool SImage::isNull()const
 {
-    return !mpImage;
+    return mpImage == nullptr;
 }
 
 QPolygonF SImage::boundingRect() const
@@ -159,8 +160,6 @@ void SImage::getHistEqFunc(std::shared_ptr<void> pEqFunc[])
         pEqFunc[i] = mpEqualizeFunc[i];
 }
 
-
-
 void SImage::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 {
     for(int i = 0; i < 3; ++i)
@@ -202,7 +201,7 @@ uchar *SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
 #ifndef QT_NO_DEBUG
     SImageMeta meta = SImage::getMetaOf(pDataSet);
     Q_ASSERT(image_width >= 0 && image_height >= 0);
-    Q_ASSERT(image_width < x_span && image_height < y_span);
+
     Q_ASSERT(x_off >= 0 && y_off >= 0);
     Q_ASSERT(x_span >= 0 && y_span >= 0);
     Q_ASSERT(x_off + x_span <= meta.width() && y_off + y_span <= meta.height());
@@ -215,6 +214,7 @@ uchar *SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
     uchar* pBandData {nullptr};
 
     pBandData = new uchar[nPixels * GDALGetDataTypeSizeBytes(dataType)] {};
+
     pDataSet->GetRasterBand(bandIdx)->RasterIO(
         GF_Read,
         x_off, y_off, x_span, y_span,
@@ -353,7 +353,7 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
     if(image_width == 0 || image_height == 0)
         image_width = x_span, image_height = y_span;
 
-    GDALDataset *pDataSet = SImage::_getOpenDataSet(imagePath);
+    GDALDataset *pDataSet = SImage::_getOpenDataSet(mStrImagePath);
     load(x_off, y_off, x_span, y_span, image_width, image_height, pDataSet);
     GDALClose(pDataSet);
 }
@@ -400,15 +400,8 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
                              image_width * 3,
                              QImage::Format_RGB888);
     }
+    _updateImageRect();
 
-    //------画布显示区域初始化------//
-    QPointF topLeft(-mpImage->width() / 2, -mpImage->height() / 2);
-    QPointF topRight(mpImage->width() / 2, -mpImage->height() / 2);
-    QPointF bottomLeft(-mpImage->width() / 2, mpImage->height() / 2);
-    QPointF bottomRight(mpImage->width() / 2, mpImage->height() / 2);
-    //确定初始包围矩形
-    this->mImageRect.setTopLeft(topLeft);
-    this->mImageRect.setBottomRight(bottomRight);
     //应用变换
     _applyTransform();
 
@@ -466,15 +459,25 @@ void SImage::_initializeWith(const SImage &theImage)
     mnDataType = theImage.mnDataType;
 
     for(int i = 0; i < 3; ++i)
-        memcpy_s(mpBandData[i].get(),
-                 mImageSize.width() * mImageSize.height(),
-                 theImage.mpBandData[i].get(),
-                 theImage.mImageSize.width() * theImage.mImageSize.height());
+        if(theImage.mpBandData[i].get())
+        {
+            mpBandData[i].reset(new uchar[mImageSize.width()*mImageSize.height()]);
 
-    memcpy_s(mpImageData.get(),
-             mImageSize.width() * mImageSize.height(),
-             theImage.mpImageData.get(),
-             theImage.mImageSize.width() * theImage.mImageSize.height());
+            memcpy_s(mpBandData[i].get(),
+                     mImageSize.width() * mImageSize.height(),
+                     theImage.mpBandData[i].get(),
+                     theImage.mImageSize.width() * theImage.mImageSize.height());
+        }
+
+    if(theImage.mpImageData.get())
+    {
+        mpImageData.reset(new uchar[mImageSize.width()*mImageSize.height() * 3]);
+
+        memcpy_s(mpImageData.get(),
+                 mImageSize.width() * mImageSize.height(),
+                 theImage.mpImageData.get(),
+                 theImage.mImageSize.width() * theImage.mImageSize.height());
+    }
 }
 
 GDALDataset *SImage::_getOpenDataSet(const QString &imagePath, GDALAccess access)
@@ -517,6 +520,14 @@ void SImage::_reloadChannel(int channel, int newBandIdx, std::shared_ptr<void> p
         * pm = *pb;
 
     delete [] pBand8bit;
+}
+
+void SImage::_updateImageRect()
+{
+    this->mImageRect.setRect(-mpImage->width() / 2.0,
+                             -mpImage->height() / 2.0,
+                             mpImage->width(),
+                             mpImage->height());
 }
 
 std::shared_ptr<void> SImage::calcHistEqFunc(GDALDataType type, const uchar *pBandData, size_t count)

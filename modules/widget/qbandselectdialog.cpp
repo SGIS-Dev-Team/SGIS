@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <gdal_priv.h>
 #include <QComboBox>
+#include <QFileInfo>
 #include <modules/paint/simage.h>
 
 QBandSelectDialog::QBandSelectDialog(QWidget *parent) :
@@ -22,7 +23,7 @@ QBandSelectDialog::QBandSelectDialog(const QString &imagePath, QWidget *parent):
 
 QBandSelectDialog::~QBandSelectDialog()
 {
-    mSlicerThread.quit();
+    mBuilderThread.quit();
     _releaseAll();
     delete ui;
 }
@@ -56,21 +57,21 @@ void QBandSelectDialog::onComboBoxIndexChanged(int idx)
 
 void QBandSelectDialog::onButtonOkClicked()
 {
-    mSlicerThread.quit();
+    mBuilderThread.quit();
 }
 
 void QBandSelectDialog::onButtonCancelClicked()
 {
     mnBands = 0;
     mnRedBandIdx = mnGreenBandIdx = mnBlueBandIdx = 0;
-    mStrFragPath = "";
+    mStrPyramidDirPath = "";
 
-    mSlicerThread.quit();
+    mBuilderThread.quit();
 }
 
-QString QBandSelectDialog::getFragPath() const
+QString QBandSelectDialog::getPyramidDirPath() const
 {
-    return mStrFragPath;
+    return mStrPyramidDirPath;
 }
 
 QString QBandSelectDialog::getOriginalImagePath() const
@@ -93,12 +94,6 @@ void QBandSelectDialog::getBandIdices(int *pRGBIdx) const
     pRGBIdx[0] = mnRedBandIdx;
     pRGBIdx[1] = mnGreenBandIdx;
     pRGBIdx[2] = mnBlueBandIdx;
-}
-
-void QBandSelectDialog::getHistEqFunc(std::shared_ptr<void> pEqFunc[])
-{
-    if(!mImage.isNull())
-        mImage.getHistEqFunc(pEqFunc);
 }
 
 void QBandSelectDialog::_initialize()
@@ -147,18 +142,44 @@ void QBandSelectDialog::_initialize()
 
     onComboBoxIndexChanged(0);
 
-    //------开启金字塔构建线程------//
+    //------准备金字塔构建线程------//
     SOverviewBuilder* builder = new SOverviewBuilder();
-    builder->moveToThread(&mSlicerThread);
+    builder->moveToThread(&mBuilderThread);
     connect(builder, &SOverviewBuilder::progressUpdated, this, &QBandSelectDialog::onProgressUpdated);
     connect(builder, &SOverviewBuilder::overviewsBuilt, this, &QBandSelectDialog::onOverviewBuilt);
+    qRegisterMetaType<SOverviewBuilder::Format>("Format");
     connect(this, &QBandSelectDialog::startBuildingThread, builder, &SOverviewBuilder::buildOverviews);
-    connect(&mSlicerThread, &QThread::finished, builder, &QObject::deleteLater);
-
-    mSlicerThread.start();
+    connect(&mBuilderThread, &QThread::finished, builder, &QObject::deleteLater);
 
     QString savePath = SGIS_DOCUMENT_FOLDER + PYRAMID_FOLDER_NAME;
-    emit startBuildingThread(mStrOriImgPath, savePath, SOverviewBuilder::TIFF);
+
+    //判断金字塔是否已经构建
+    bool buildPyramid{false};
+    if(SOverviewBuilder::varifyPyramid(mStrOriImgPath, savePath + '/' + QFileInfo(mStrOriImgPath).completeBaseName()))
+    {
+        QMessageBox::Button choice = QMessageBox::information(this,
+                                     tr("Existing pyramid"),
+                                     tr("Found existing pyramid for the image.\nWould you like to rebuild?"),
+                                     QMessageBox::Yes,
+                                     QMessageBox::No);
+        if(choice == QMessageBox::Yes)
+            buildPyramid = true;
+    }
+    else
+    {
+        buildPyramid = true;
+    }
+
+    if(buildPyramid)
+    {
+        mBuilderThread.start();
+        emit startBuildingThread(mStrOriImgPath, savePath, SOverviewBuilder::TIFF);
+    }
+    else
+    {
+        onOverviewBuilt(savePath + '/' + QFileInfo(mStrOriImgPath).completeBaseName());
+    }
+
     //初始化链接
     _initializeConnections();
 }
@@ -194,7 +215,9 @@ int QBandSelectDialog::getRedBandIdx() const
     return mnRedBandIdx;
 }
 
-void QBandSelectDialog::onOverviewBuilt(QString strFragPath)
+void QBandSelectDialog::onOverviewBuilt(QString pyramidDirPath)
 {
+    this->mStrPyramidDirPath = pyramidDirPath;
+    ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 

@@ -80,7 +80,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setFragmentPath(file_info.filePath(), file_info.fileName());
+    pFragImg->setFragmentPath(file_info.filePath());
     pFragImg->loadMeta();
 
     pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
@@ -104,7 +104,7 @@ void SEditor::onActionLoadHugeImageTriggered()
     QBandSelectDialog dialog(strImagePath, this);
     dialog.exec();
 
-    if(dialog.getFragPath().isEmpty())
+    if(dialog.getPyramidDirPath().isEmpty())
     {
         QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
         return;
@@ -115,19 +115,13 @@ void SEditor::onActionLoadHugeImageTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    QFileInfo file_info(dialog.getFragPath());
-    pFragImg->setFragmentPath(file_info.filePath(), file_info.fileName());
+    QFileInfo file_info(dialog.getPyramidDirPath());
+    pFragImg->setFragmentPath(file_info.filePath());
     pFragImg->loadMeta();
 
-    std::shared_ptr<void> pHistEqFunc[3];
-    dialog.getHistEqFunc(pHistEqFunc);
-    pFragImg->setHistEqFunc(pHistEqFunc);
-
-    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-
-    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
-
+    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
     pFragImg->setHoldTopPyramidEnabled(true);
+    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
 
     mpCurDoc->getLayerManager().addLayer(pFragImg);
 }

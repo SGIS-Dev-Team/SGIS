@@ -25,10 +25,15 @@ void SDocument::onImageLoaded(SImage *pImage)
     Q_UNUSED(pImage);
     const QRectF& viewAreaRect = mpCanvas->viewArea();
     double scaleValue = mpCanvas->scaleValue();
+    mpCanvas->setPaintTrigger(SObject::Loaded_Trigger);
+
     mpCanvas->repaint(viewAreaRect.left() * scaleValue,
                       viewAreaRect.top() * scaleValue,
                       viewAreaRect.width() * scaleValue,
                       viewAreaRect.height() * scaleValue);
+
+    mpCanvas->resetPaintTrigger();
+
 }
 
 void SDocument::setCanvas(QCanvas *canvas)

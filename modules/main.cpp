@@ -3,6 +3,7 @@
 #include "gdal_priv.h"
 #include <QApplication>
 #include <QFileDialog>
+#include "modules/algorithm/soverviewbuilder.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     MainWindow wnd;
 
     GDALAllRegister();
+    qRegisterMetaType<SOverviewBuilder::Format>("Format");
 
     return app.exec();
 }

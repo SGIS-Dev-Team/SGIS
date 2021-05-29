@@ -11,7 +11,7 @@
 #include "modules/slogger.h"
 #include "modules/global.h"
 
-class STrayMgr:
+class STrayManager:
     public QObject
 {
     Q_OBJECT
@@ -32,9 +32,9 @@ public:
 
     /*-----构造函数与析构函数-----*/
 public:
-    STrayMgr();
-    STrayMgr(const QString& configDir);
-    virtual ~STrayMgr();
+    STrayManager();
+    STrayManager(const QString& configDir);
+    virtual ~STrayManager();
 
     /*-----槽函数-----*/
 private slots:

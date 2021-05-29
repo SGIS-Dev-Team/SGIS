@@ -1,17 +1,17 @@
 ﻿#include "straymgr.h"
 
-STrayMgr::STrayMgr()
+STrayManager::STrayManager()
 {
     loadConfig("");
 }
 
-STrayMgr::STrayMgr(const QString &configDir)
+STrayManager::STrayManager(const QString &configDir)
 {
     mStrConfigDir = configDir;
     loadConfig(configDir);
 }
 
-STrayMgr::~STrayMgr()
+STrayManager::~STrayManager()
 {
     saveConfig(mStrConfigDir);
     delete mpTrayIcon;
@@ -25,7 +25,7 @@ STrayMgr::~STrayMgr()
     delete mpActionSwitch;
 }
 
-void STrayMgr::onActionStatusTriggered()
+void STrayManager::onActionStatusTriggered()
 {
     //更改状态
     mbActive = !mbActive;
@@ -39,7 +39,7 @@ void STrayMgr::onActionStatusTriggered()
     mpTrayIcon->setIcon(trayIcon);
 }
 
-void STrayMgr::onActionNotifyTriggered()
+void STrayManager::onActionNotifyTriggered()
 {
     //更改状态
     mbNotify = !mbNotify;
@@ -50,7 +50,7 @@ void STrayMgr::onActionNotifyTriggered()
     mpActionNotify->setText(text);
 }
 
-void STrayMgr::onActionMainWndTriggered()
+void STrayManager::onActionMainWndTriggered()
 {
     //更改状态
     mbShowMainWnd = !mbShowMainWnd;
@@ -64,14 +64,14 @@ void STrayMgr::onActionMainWndTriggered()
         sendNotification(tr("S-GIS"), tr("The program will keep running in the backgroud."));
 }
 
-void STrayMgr::onActionMaximizeTriggered()
+void STrayManager::onActionMaximizeTriggered()
 
 {
     if(!mbShowMainWnd)
         onActionMainWndTriggered();
 }
 
-void STrayMgr::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+void STrayManager::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     //左键单击————显示主窗口
     //左键双击————激活/睡眠 然后 隐藏主窗口
@@ -89,7 +89,7 @@ void STrayMgr::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void STrayMgr::initialize()
+void STrayManager::initialize()
 {
     //选项初始化
     mpActionQuit = new QAction(QIcon(":/TrayActionIcon/TrayActionIcon/quit.png"), tr("Quit"));
@@ -114,10 +114,10 @@ void STrayMgr::initialize()
         mpActionNotify = new QAction(QIcon(":/TrayActionIcon/TrayActionIcon/notification_on.png"), tr("Turn on Notification"));
 
     //选项事件响应启动
-    connect(mpActionStatus, &QAction::triggered, this, &STrayMgr::onActionStatusTriggered);
-    connect(mpActionNotify, &QAction::triggered, this, &STrayMgr::onActionNotifyTriggered);
-    connect(mpActionMainWnd, &QAction::triggered, this, &STrayMgr::onActionMainWndTriggered);
-    connect(mpActionMaximize, &QAction::triggered, this, &STrayMgr::onActionMaximizeTriggered);
+    connect(mpActionStatus, &QAction::triggered, this, &STrayManager::onActionStatusTriggered);
+    connect(mpActionNotify, &QAction::triggered, this, &STrayManager::onActionNotifyTriggered);
+    connect(mpActionMainWnd, &QAction::triggered, this, &STrayManager::onActionMainWndTriggered);
+    connect(mpActionMaximize, &QAction::triggered, this, &STrayManager::onActionMaximizeTriggered);
 
     //加载菜单
     mpTrayMenu = new QMenu();
@@ -137,11 +137,11 @@ void STrayMgr::initialize()
 
     mpTrayIcon->setContextMenu(mpTrayMenu);
     //托盘图标激活事件响应启动
-    connect(mpTrayIcon, &QSystemTrayIcon::activated, this, &STrayMgr::onTrayIconActivated);
+    connect(mpTrayIcon, &QSystemTrayIcon::activated, this, &STrayManager::onTrayIconActivated);
     mpTrayIcon->show();
 }
 
-void STrayMgr::loadConfig(const QString &dir)
+void STrayManager::loadConfig(const QString &dir)
 {
     QFile cfg(dir + TRAY_MENU_CFG_NAME);
     if(!cfg.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -193,7 +193,7 @@ void STrayMgr::loadConfig(const QString &dir)
     initialize();
 }
 
-void STrayMgr::saveConfig(const QString &dir) const
+void STrayManager::saveConfig(const QString &dir) const
 {
     //打开文件
     QFile cfg(dir + TRAY_MENU_CFG_NAME);
@@ -211,12 +211,12 @@ void STrayMgr::saveConfig(const QString &dir) const
     cfg.close();
 }
 
-bool STrayMgr::isShowingMainWnd() const
+bool STrayManager::isShowingMainWnd() const
 {
     return mbShowMainWnd;
 }
 
-QAction *STrayMgr::getActionPtr(TrayAction ta)
+QAction *STrayManager::getActionPtr(TrayAction ta)
 {
     switch (ta)
     {
@@ -244,27 +244,27 @@ QAction *STrayMgr::getActionPtr(TrayAction ta)
     return nullptr;
 }
 
-bool STrayMgr::isActive() const
+bool STrayManager::isActive() const
 {
     return mbActive;
 }
 
-bool STrayMgr::isNotifOn() const
+bool STrayManager::isNotifOn() const
 {
     return mbNotify;
 }
 
-int STrayMgr::styleCount() const
+int STrayManager::styleCount() const
 {
     return mnStyle;
 }
 
-QIcon STrayMgr::currentIcon() const
+QIcon STrayManager::currentIcon() const
 {
     return mpTrayIcon->icon();
 }
 
-void STrayMgr::sendNotification(const QString &title, const QString &body)const
+void STrayManager::sendNotification(const QString &title, const QString &body)const
 {
     mpTrayIcon->showMessage(title, body, mpTrayIcon->icon());
 }

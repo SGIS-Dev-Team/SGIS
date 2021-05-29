@@ -1,6 +1,8 @@
 ﻿#include "sfragimage.h"
 #include "QFile"
 #include "QTextStream"
+#include <qdir.h>
+#include <ctime>
 
 SFragImage::SFragImage(SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
@@ -13,8 +15,9 @@ SFragImage::~SFragImage()
 
 }
 
-void SFragImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalArea, double scaleValue)const
+void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
+    clock_t calc_start = clock();
     //检测视图显示区域是否与图像区域重合
     if(!intersect(viewLogicalArea))
         return;
@@ -25,14 +28,9 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalAr
     if(level > this->mFragMatVec.size() - 1) level = this->mFragMatVec.size() - 1;
     size_t idx = round(level);
 
-    const SFragMatrix& fragMat = mFragMatVec[idx];
-    //确定需要加载的分块影像
-    std::vector<SImage*> loadBlockVec = fragMat.block(viewLogicalArea.translated(-mPtCenter));
-
-    //调用加载器线程加载图像
-    if(!loadBlockVec.empty())
-        mFragLoader.push_front(loadBlockVec.data(), loadBlockVec.size());
-    mFragLoader.start();
+    //加载当前层区域的分片
+    if(trigger == User_Trigger)
+        mFragMatVec[idx].loadBlockArea(viewLogicalArea.translated(-mPtCenter), mFragLoader);
 
     //保存原来的变换
     QTransform oldTransform = painter.transform();
@@ -45,20 +43,24 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, QRectF viewLogicalAr
     painter.setTransform(mTransform * painter.transform());
 
     //-----绘图-----//
-    SImage* pFragImage = fragMat.getData();
-    size_t imgCount = fragMat.Rows() * fragMat.Cols();
-    for(size_t i = 0; i < imgCount; ++i)
-        pFragImage[i].paint(painter);
+
+    //从下往上绘制各层金字塔影像
+    clock_t paint_start = std::clock();
+
+    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
+        mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
+
+    qDebug() << "Painting Duration: " << std::clock() - paint_start;
+    qDebug() << "Caculation Duration: " << std::clock() - calc_start;
     //-----绘图-----//
 
     //还原变换
     painter.setTransform(oldTransform);
 }
 
-void SFragImage::setFragmentPath(const QString &folder, const QString &imageFileName)
+void SFragImage::setFragmentPath(const QString &dirPath)
 {
-    this->mStrFolderPath = folder;
-    this->mStrFileName = imageFileName;
+    this->mStrDirPath = dirPath;
 }
 
 void SFragImage::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
@@ -73,9 +75,19 @@ void SFragImage::setBandIndices(int r, int g, int b)
         mat.setBandIndices(r, g, b);
     if(mFragMatVec.empty())
         return;
-    //计算顶层金字塔均衡化函数
+
+    //计算并设置顶层金字塔均衡化函数
     SImage *pImage = mFragMatVec.back().getData();
     pImage->load();
+
+    std::shared_ptr<void> pEqFunc[3];
+    pImage->getHistEqFunc(pEqFunc);
+
+    for(auto &mat : mFragMatVec)
+        mat.setHistEqFunc(pEqFunc);
+
+    if(!mbHoldTopPyramid)
+        pImage->releaseImage();
 }
 
 void SFragImage::setHoldTopPyramidEnabled(bool hold)
@@ -91,56 +103,45 @@ void SFragImage::setHoldTopPyramidEnabled(bool hold)
 
 void SFragImage::loadMeta()
 {
-    QFile file(mStrFolderPath + '/' + mStrFileName + "_Meta.txt");
+    //打开元数据文本文件
+    QFile file(mStrDirPath + '/' + QFileInfo(mStrDirPath).fileName() + "_Meta.txt");
     if(!file.open(QFile::ReadOnly))
-        qDebug() << "Cannot Open Meta File\n";
+    {
+        Q_ASSERT(0);
+        SLogger::getLogger()->addEntry(Me, SLogger::LocalError, "Loading meta : meta text not exists.");
+    }
     QString metaString(file.readAll());
     file.close();
 
-    QTextStream stream(&metaString);
-    QString buf;
-
     //读入原始影像数据和金字塔层数
-    int nLevel;
-    int originalWidth, originalHeight;
-    stream >> buf >> nLevel;
-    stream >> buf >> originalWidth;
-    stream >> buf >> originalHeight;
+    QTextStream stream(&metaString);
 
+    QString buf;
+    stream.readLine();  //读掉"#"文件注释
+    stream.readLine();
+
+    int nLevel;
+    int nBaseWidth, nBaseHeight;
+    stream >> buf >> nLevel >> buf >> nBaseWidth >> buf >> nBaseHeight;
+
+    mFragMatVec.reserve(nLevel);
+    stream.readLine();  //将最后一行的换行符读取掉
     for(int i = 0; i < nLevel; ++i)
     {
-        //读入金字塔层描述数据
-        size_t level, levelWidth, levelHeight, fragWidth, fragHeight, fragRows, fragCols;
-        stream >> buf >> level;
-        stream >> buf >> levelWidth;
-        stream >> buf >> levelHeight;
-        stream >> buf >> fragWidth;
-        stream >> buf >> fragHeight;
-        stream >> buf >> fragRows;
-        stream >> buf >> fragCols;
         //生成该层分片影像列表
-        QStringList fragPathList;
-        QString levelFolderPath = mStrFolderPath + '/' + QString::number(level) + '/' + mStrFileName;
-        for(size_t i = 0; i < fragRows * fragCols; ++i)
-            fragPathList << levelFolderPath + '_' + QString::number(i + 1) + ".tif";
+        QString levelPath = stream.readLine();
+        int levelWidth = nBaseWidth / pow(2, i);
+        int levelHeight = nBaseHeight / pow(2, i);
 
-        SFragMatrix mat(fragRows, fragCols, fragPathList);
-        mat.setLevelMeta(originalWidth, originalHeight, level, levelWidth, levelHeight, fragWidth, fragHeight);
-        mFragMatVec.push_back(mat);
+        mFragMatVec.emplace_back(levelPath);
+        mFragMatVec.back().setLevelMeta(nBaseWidth, nBaseHeight, levelWidth, levelHeight);
     }
 
-    QPointF topLeft(-originalWidth / 2, -originalHeight / 2);
-    QPointF topRight(originalWidth / 2, -originalHeight / 2);
-    QPointF bottomLeft(-originalWidth / 2, originalHeight / 2);
-    QPointF bottomRight(originalWidth / 2, originalHeight / 2);
-    //确定包围控制点
-    mpBoundPt[0] = topLeft;
-    mpBoundPt[1] = topRight;
-    mpBoundPt[2] = bottomRight;
-    mpBoundPt[3] = bottomLeft;
-    //确定外围矩形
-    this->mImageRect.setTopLeft(topLeft);
-    this->mImageRect.setBottomRight(bottomRight);
+    if(mbHoldTopPyramid)
+        mFragMatVec.back().loadAll();
+
+    //计算原始图像包围矩形
+    this->mImageRect.setRect(-nBaseWidth / 2.0, -nBaseHeight / 2.0, nBaseWidth, nBaseHeight);
 
     _applyTransform();
 }
@@ -155,6 +156,7 @@ QPolygonF SFragImage::boundingRect() const
 
 bool SFragImage::contains(const QPointF &pt, bool isInBoundRect) const
 {
+    Q_UNUSED(isInBoundRect);
     return this->boundingRect().containsPoint(pt, Qt::WindingFill);
 }
 
@@ -211,9 +213,6 @@ void SFragImage::_applyTransform()
     mpBoundPt[1] = mTransform.map(mImageRect.topRight());
     mpBoundPt[2] = mTransform.map(mImageRect.bottomRight());
     mpBoundPt[3] = mTransform.map(mImageRect.bottomLeft());
-
-    mImageSize.setWidth(mImageRect.width() * mdSx);
-    mImageSize.setHeight(mImageRect.height() * mdSy);
 }
 
 QRectF SFragImage::_originalRect()
