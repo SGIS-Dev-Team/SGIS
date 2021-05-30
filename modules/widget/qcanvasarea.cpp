@@ -4,27 +4,17 @@
 
 QCanvasArea::QCanvasArea(const QSize &CanvasSize, QWidget *parent): QScrollArea(parent)
 {
-    //创建画布
-    mpCanvas = new QCanvas(this, CanvasSize);
-    //链接事件响应
-    connect(mpCanvas, &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
-    connect(this->horizontalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
-    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
-    //调整对齐
-    setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignVCenter));
-    this->setWidget(mpCanvas);
-    mpCanvas->setViewArea(viewArea());
+    mCanvasSize = CanvasSize;
+    _initialize();
 }
 
 QCanvasArea::QCanvasArea(QWidget *parent): QCanvasArea(DEFAULT_CANVAS_SIZE, parent) {}
 
 QCanvasArea::~QCanvasArea()
 {
-    if(mpCanvas)
-        delete mpCanvas;
 }
 
-QCanvas *QCanvasArea::canvas()
+std::shared_ptr<QCanvas> QCanvasArea::canvas()const
 {
     return mpCanvas;
 }
@@ -36,6 +26,20 @@ QRectF QCanvasArea::viewArea() const
                   this->verticalScrollBar()->value() / scaleValue,
                   this->horizontalScrollBar()->pageStep() / scaleValue,
                   this->verticalScrollBar()->pageStep() / scaleValue);
+}
+
+void QCanvasArea::_initialize()
+{
+    //创建画布
+    mpCanvas = std::make_shared<QCanvas>(this, mCanvasSize);
+    //链接事件响应
+    connect(mpCanvas.get(), &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
+    connect(this->horizontalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
+    //调整对齐
+    setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignVCenter));
+    this->setWidget(mpCanvas.get());
+    mpCanvas->setViewArea(viewArea());
 }
 
 void QCanvasArea::wheelEvent(QWheelEvent *event)

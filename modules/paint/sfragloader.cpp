@@ -63,3 +63,10 @@ void SFragLoader::push_front(SImage** pImage, size_t count)
             mReadInStack.pop_back();
     }
 }
+
+void SFragLoader::releaseAll()
+{
+    for(auto& pImage : mFragTempQueue)
+        if(pImage)
+            pImage->releaseImage();
+}

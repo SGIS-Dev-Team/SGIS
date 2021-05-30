@@ -1,6 +1,13 @@
 ﻿#ifndef GLOBAL_H
 #define GLOBAL_H
 
+//Visual Leak Detector内存泄露探查器
+#pragma comment(lib,"vld.lib")
+#ifndef QT_NO_DEBUG
+#include <vld.h>
+#endif
+//仅在Debug模式下使用，调用VLDReportLeak()在应用程序输出中查看内存泄露报告
+
 #include"slogger.h"
 #include <QStandardPaths>
 #include <QDebug>
@@ -33,7 +40,7 @@
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
 //默认分片影像读取栈大小
 #define DEFAULT_FRAG_TEMP_SIZE 20
-#define DEFAULT_READ_IN_STACK_SIZE 20
+#define DEFAULT_READ_IN_STACK_SIZE 100
 
 //外接矩形逻辑像素
 #define BOUND_RECT_PEN_WIDTH 2
@@ -54,7 +61,7 @@
 //缩略图大小（顶层金字塔限制大小）
 #define DEFAULT_TOP_PYRAMID_SIZE 1600
 //默认逻辑分片尺寸(长和宽)
-#define DEFAULT_LOGICAL_FRAGMENT_SIZE 1600
+#define DEFAULT_LOGICAL_FRAGMENT_SIZE 800
 
 //文档位置
 #define SGIS_DOCUMENT_FOLDER QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis"

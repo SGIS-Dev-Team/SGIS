@@ -15,7 +15,6 @@ class QBandSelectDialog;
 class QBandSelectDialog : public QDialog
 {
     Q_OBJECT
-    typedef unsigned char UCHAR;
 
     /*-----构造函数与析构函数-----*/
 public:

@@ -33,7 +33,8 @@ void QCanvas::paintEvent(QPaintEvent *event)
     painter.scale(mdScale, mdScale);
 
     if(mpDoc)
-        mpDoc->paint(painter, mViewArea, mdScale);
+        mpDoc->paint(painter, mViewArea, mdScale, mTrigger);
+    this->resetPaintTrigger();
 
     /*-----画布背景绘图部分-----*/
     painter.resetTransform();
@@ -338,7 +339,7 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 
                 mgr.clickSelect(lgcPos, doMultiSelect);
 
-                update(this->LtoA(mViewArea.toRect()));
+                updateViewArea();
             }
 
         //清空控制标记
@@ -364,6 +365,16 @@ void QCanvas::wheelEvent(QWheelEvent * event)
         emit scaling(AtoL(event->position()), event->angleDelta().y());
         return;
     }
+}
+
+void QCanvas::doRepaint()
+{
+    repaint(mViewArea.toRect());
+}
+
+void QCanvas::doUpdate()
+{
+    updateViewArea();
 }
 
 QSize QCanvas::logicalSize() const

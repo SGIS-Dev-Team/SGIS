@@ -48,7 +48,9 @@ signals:
     void scaled(double value);
 
     /*-----槽函数-----*/
-private slots:
+public slots:
+    void doRepaint();
+    void doUpdate();
 
     /*-----控制标记-----*/
 private:

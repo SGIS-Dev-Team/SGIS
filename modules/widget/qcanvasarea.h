@@ -1,6 +1,7 @@
 ﻿#ifndef QCANVASAREA_H
 #define QCANVASAREA_H
 #include "modules/global.h"
+#include "QThread"
 #include <QScrollArea>
 #include "modules/widget/qcanvas.h"
 
@@ -38,14 +39,21 @@ private slots:
 
     /*-----成员变量-----*/
 private:
-    QCanvas* mpCanvas{};
+    //画布
+    std::shared_ptr<QCanvas> mpCanvas{};
+    //画布尺寸
+    QSize mCanvasSize{};
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    QCanvas *canvas();
+    std::shared_ptr<QCanvas> canvas()const;
     //获取视图区逻辑坐标矩形
     QRectF viewArea()const;
+
+    //[功能函数]
+private:
+    void _initialize();
 };
 
 #endif // QCANVASAREA_H

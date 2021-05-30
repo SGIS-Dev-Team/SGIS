@@ -82,3 +82,10 @@ LIBS += \
 
 RESOURCES += \
     Resource/Icons.qrc
+
+win32:CONFIG(release, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+else:win32:CONFIG(debug, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+else:unix: LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+
+INCLUDEPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
+DEPENDPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'

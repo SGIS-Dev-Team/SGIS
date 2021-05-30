@@ -176,6 +176,7 @@
     <addaction name="mActionAnotator"/>
     <addaction name="separator"/>
     <addaction name="mActionPreferences"/>
+    <addaction name="mActionReportLeaks"/>
    </widget>
    <addaction name="mMenuFile"/>
    <addaction name="mMenuEdit"/>
@@ -619,6 +620,11 @@
   <action name="mActionLoadHugeImage">
    <property name="text">
     <string>[Test] Load Huge Image</string>
+   </property>
+  </action>
+  <action name="mActionReportLeaks">
+   <property name="text">
+    <string>[Test] Print Memory Leak Report</string>
    </property>
   </action>
  </widget>

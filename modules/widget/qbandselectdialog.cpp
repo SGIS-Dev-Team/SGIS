@@ -177,6 +177,7 @@ void QBandSelectDialog::_initialize()
     }
     else
     {
+        onProgressUpdated(100, tr("Found existing overviews."));
         onOverviewBuilt(savePath + '/' + QFileInfo(mStrOriImgPath).completeBaseName());
     }
 
@@ -217,6 +218,7 @@ int QBandSelectDialog::getRedBandIdx() const
 
 void QBandSelectDialog::onOverviewBuilt(QString pyramidDirPath)
 {
+    ui->mLabelStatus->setText(tr("Overviews are Ready"));
     this->mStrPyramidDirPath = pyramidDirPath;
     ui->mButtonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }

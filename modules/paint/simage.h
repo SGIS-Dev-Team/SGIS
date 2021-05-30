@@ -3,6 +3,7 @@
 
 #include "modules/paint/sobject.h"
 #include "QImage"
+#include <QMutex>
 #include "gdal_priv.h"
 
 //------------------------
@@ -99,6 +100,9 @@ private:
     std::unique_ptr<uchar> mpBandData[3] {nullptr};
     //图像数据(8位、已均衡化)
     std::unique_ptr<uchar> mpImageData{nullptr};
+    //锁
+    QMutex mMutex;
+
 
     /*-----成员函数-----*/
 public:
@@ -201,24 +205,24 @@ public:
 
 public:
     //读取特定波段数据
-    static uchar *loadBand(int x_off, int y_off, int x_span, int y_span,
-                           int image_width, int image_height,
-                           const QString &imagePath, int bandIdx, GDALDataType dataType,
-                           std::shared_ptr<void> pEqFunc = nullptr);
+    static std::unique_ptr<uchar> loadBand(int x_off, int y_off, int x_span, int y_span,
+                                           int image_width, int image_height,
+                                           const QString &imagePath, int bandIdx, GDALDataType dataType,
+                                           std::shared_ptr<void> pEqFunc = nullptr);
 
-    static uchar *loadBand(int x_off, int y_off, int x_span, int y_span,
-                           int image_width, int image_height,
-                           GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
-                           std::shared_ptr<void> pEqFunc = nullptr);
+    static std::unique_ptr<uchar> loadBand(int x_off, int y_off, int x_span, int y_span,
+                                           int image_width, int image_height,
+                                           GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
+                                           std::shared_ptr<void> pEqFunc = nullptr);
 
     //融合为逐像素存储图像
-    static uchar *merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
+    static std::unique_ptr<uchar> merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
     //计算直方图均衡化函数
     static std::shared_ptr<void> calcHistEqFunc(GDALDataType type, const uchar* pBandData, size_t count);
     //对波段执行直方图均衡化
     static void histEqualize(GDALDataType type, uchar *pBandData, size_t count, const void *pEqFunc);
     //对波段进行8位转换;算法:按数值范围比例缩放
-    static uchar *to8bit(GDALDataType type, const uchar *pBandData, size_t count);
+    static std::unique_ptr<uchar> to8bit(GDALDataType type, const uchar *pBandData, size_t count);
     //获取目标影像的描述数据
     static SImageMeta getMetaOf(QString imagePath);
     static SImageMeta getMetaOf(GDALDataset *pDataSet);
@@ -235,6 +239,6 @@ private:
 };
 
 template<typename T>
-uchar* _to8bit(const T* pBandData, size_t count, T divisor);
+std::unique_ptr<uchar> _to8bit(const T* pBandData, size_t count, T divisor);
 
 #endif // SIMAGE_H

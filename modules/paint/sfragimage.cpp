@@ -17,7 +17,6 @@ SFragImage::~SFragImage()
 
 void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
-    clock_t calc_start = clock();
     //检测视图显示区域是否与图像区域重合
     if(!intersect(viewLogicalArea))
         return;
@@ -43,15 +42,12 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
     painter.setTransform(mTransform * painter.transform());
 
     //-----绘图-----//
-
     //从下往上绘制各层金字塔影像
-    clock_t paint_start = std::clock();
+    mFragMatVec[idx].paint(painter, viewLogicalArea.translated(-mPtCenter));
 
     for(int i = mFragMatVec.size() - 1; i >= 0; --i)
         mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
 
-    qDebug() << "Painting Duration: " << std::clock() - paint_start;
-    qDebug() << "Caculation Duration: " << std::clock() - calc_start;
     //-----绘图-----//
 
     //还原变换

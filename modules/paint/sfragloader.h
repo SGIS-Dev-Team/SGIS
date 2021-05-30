@@ -52,6 +52,7 @@ public:
     //多个压入读取栈，栈顶元素将是pImageArray的第一个元素
     void push_front(SImage **pImage, size_t count);
     //[功能函数]
+    void releaseAll();
 };
 
 size_t SFragLoader::stackSize()
