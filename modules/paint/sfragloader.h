@@ -38,6 +38,8 @@ protected:
     std::deque<SImage*> mReadInStack{};
     //缓存队列：用于存放已经加载的分片，队列的容量由muMaxFragCount确定，处于队首(front)的对象将被优先清除
     std::deque<SImage*> mFragTempQueue{};
+
+
     /*-----成员函数-----*/
 public:
     //[访问函数]
@@ -50,6 +52,7 @@ public:
     //多个压入读取栈，栈顶元素将是pImageArray的第一个元素
     void push_front(SImage **pImage, size_t count);
     //[功能函数]
+    void releaseAll();
 };
 
 size_t SFragLoader::stackSize()

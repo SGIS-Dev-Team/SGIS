@@ -38,7 +38,7 @@ protected:
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const;
+    virtual void paint(QPainter &painter, bool doTranslate = true, const QRectF & viewLogicalArea = QRectF(), double scaleValue = 0, PaintTrigger trigger = User_Trigger)const;
     //获取包围矩形
     virtual QPolygonF boundingRect()const;
     //是否包含某点(画布坐标系)，若参数2为True,则只判断包围矩形是否包含某点

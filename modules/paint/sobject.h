@@ -34,6 +34,13 @@ using namespace sgis;
 class SObject
 {
     friend class SObjectFactory;
+public:
+    enum PaintTrigger
+    {
+        Loaded_Trigger, //由其他线程加载完成引起的重绘
+        User_Trigger   //由用户操作引起的重绘
+    };
+
     /*-----构造函数与析构函数-----*/
 protected:
     explicit SObject(PaintObject _type, bool _selected = false, QPointF _center = QPointF(),
@@ -45,7 +52,11 @@ protected:
     /*-----虚函数-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter, bool doTranslate = true, QRectF viewLogicalArea = QRectF(), double scaleValue = 0)const = 0;
+    virtual void paint(QPainter &painter,
+                       bool doTranslate = true,
+                       const QRectF &viewLogicalArea = QRectF(),
+                       double scaleValue = 0,
+                       PaintTrigger trigger = User_Trigger)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
     virtual QPolygonF boundingRect()const = 0;
     //是否包含某点(画布坐标系)，若参数2为True,则只判断包围矩形是否包含某点

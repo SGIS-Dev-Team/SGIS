@@ -4,6 +4,8 @@
 #include <QDateTime>
 #include <QMessageBox>
 
+SLogger* SLogger::global_logger = nullptr;
+
 SLogger::SLogger()
 {
     newLog();
@@ -12,7 +14,6 @@ SLogger::SLogger()
 SLogger::~SLogger()
 {
     closeLog();
-
 }
 
 void SLogger::closeLog()
@@ -77,6 +78,9 @@ void SLogger::addEntry(const QString &id, LogType type, const QString& entry)
     mLogStream << '\n';
     switch (type)
     {
+    case DebugInfo:
+        mLogStream << "Debug_Info : ";
+        break;
     case UserAction:
         mLogStream << "User_Action : ";
         break;
@@ -102,4 +106,5 @@ void SLogger::addSeperator()
         return;
     mLogStream << "\n***************\n";
 }
+
 

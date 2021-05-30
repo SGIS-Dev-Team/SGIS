@@ -24,6 +24,7 @@ QCanvas::~QCanvas()
 
 void QCanvas::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
     QPainter painter(this);
 
     /*-----画布内容绘制-----*/
@@ -32,7 +33,8 @@ void QCanvas::paintEvent(QPaintEvent *event)
     painter.scale(mdScale, mdScale);
 
     if(mpDoc)
-        mpDoc->paint(painter, mViewArea, mdScale);
+        mpDoc->paint(painter, mViewArea, mdScale, mTrigger);
+    this->resetPaintTrigger();
 
     /*-----画布背景绘图部分-----*/
     painter.resetTransform();
@@ -247,8 +249,6 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 pObj->rotate(angleRotated, false);
                 pObj->setScaleFactor(mdOriginalScaleX * xScaled, mdOriginalScaleY * yScaled, false);
                 pObj->reCalcTransfrom();
-                //qDebug() << S3DBG(pObj->rotateAngle(), pObj->scaleFactorX(), pObj->scaleFactorY());
-                //qDebug() << S3DBG(mdOriginalRotateAngle, mdOriginalScaleX, mdOriginalScaleY);
             }
 
             //更新视图区
@@ -339,7 +339,7 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
 
                 mgr.clickSelect(lgcPos, doMultiSelect);
 
-                update(this->LtoA(mViewArea.toRect()));
+                updateViewArea();
             }
 
         //清空控制标记
@@ -365,6 +365,16 @@ void QCanvas::wheelEvent(QWheelEvent * event)
         emit scaling(AtoL(event->position()), event->angleDelta().y());
         return;
     }
+}
+
+void QCanvas::doRepaint()
+{
+    repaint(mViewArea.toRect());
+}
+
+void QCanvas::doUpdate()
+{
+    updateViewArea();
 }
 
 QSize QCanvas::logicalSize() const
@@ -397,9 +407,24 @@ bool QCanvas::isRefLineOn() const
     return mbRefLineOn;
 }
 
+SObject::PaintTrigger QCanvas::currentPaintTrigger() const
+{
+    return mTrigger;
+}
+
 void QCanvas::setDocument(SDocument * pDoc)
 {
     this->mpDoc = pDoc;
+}
+
+void QCanvas::setPaintTrigger(SObject::PaintTrigger trigger)
+{
+    mTrigger = trigger;
+}
+
+void QCanvas::resetPaintTrigger()
+{
+    mTrigger = SObject::User_Trigger;
 }
 
 bool QCanvas::setScaleValue(double value)

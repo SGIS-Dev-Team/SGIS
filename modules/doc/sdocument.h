@@ -12,13 +12,14 @@ class SDocument: public QObject
     /*-----构造函数与析构函数-----*/
 public:
     //构造一个空文档，绑定一个画布对象
-    explicit SDocument(QCanvas* canvas);
+    explicit SDocument(std::shared_ptr<QCanvas> pCanvas);
     //从文件构建文档，绑定一个画布对象
-    explicit SDocument(QCanvas* canvas, const QString& path);
+    explicit SDocument(std::shared_ptr<QCanvas> pCanvas, const QString& path);
     ~SDocument();
 
     /*-----信号-----*/
 signals:
+    void updateCanvas();
 
     /*-----槽函数-----*/
 private slots:
@@ -27,7 +28,7 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
-    QCanvas *mpCanvas;
+    std::shared_ptr<QCanvas> mpCanvas;
     //图层管理器
     SLayerManager mLayerMgr;
     //分片读取器
@@ -38,10 +39,10 @@ public:
 
     //-----访问与修改函数-----//
     //指定画布
-    void setCanvas(QCanvas * canvas);
+    void setCanvas(std::shared_ptr<QCanvas> canvas);
 
     //获取画布
-    QCanvas *getCanvas();
+    std::shared_ptr<QCanvas> getCanvas();
 
     //获取图层管理器
     SLayerManager &getLayerManager();
@@ -50,11 +51,12 @@ public:
     SFragLoader &getFragLoader();
 
     //在画布上绘制图层
-    void paint(QPainter &painter, const QRectF &viewArea, double scaleValue);
+    void paint(QPainter &painter, const QRectF &viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);
 
     //------功能函数------//
 private:
     void _initializeConnections();
+    void _disconnectCanvas();
 };
 
 #endif // SDOCUMENT_H

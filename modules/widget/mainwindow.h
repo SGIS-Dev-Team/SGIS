@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include "modules/global.h"
-#include "modules/slogger.h"
 #include "modules/widget/straymgr.h"
 #include "modules/widget/seditor.h"
 QT_BEGIN_NAMESPACE
@@ -48,7 +47,7 @@ private:
     //托盘配置文件路径
     QString mStrTrayConfigDir;
     //托盘图标
-    STrayMgr* mpTrayIconMgr;
+    STrayManager* mpTrayIconMgr;
     //[Me]
     QString Me = "Main_Window";
 

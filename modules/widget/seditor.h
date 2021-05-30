@@ -2,8 +2,8 @@
 #define SEDITOR_H
 
 #include <QMainWindow>
+#include <modules/global.h>
 #include "modules/widget/qcanvasarea.h"
-#include"modules/slogger.h"
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
 
@@ -49,6 +49,8 @@ private slots:
     void onActionCreateRectTriggered();
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
+    void onActionLoadHugeImageTriggered();
+    void onActionReportLeaksTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]
@@ -69,13 +71,13 @@ private:
     //[Me]
     QString Me = QString("SEditor");
     //[当前绘图区]
-    QCanvasArea* mpCurCanvasArea{};
+    std::shared_ptr<QCanvasArea> mpCurCanvasArea{};
     //[当前文档]
-    SDocument* mpCurDoc{};
+    std::shared_ptr<SDocument> mpCurDoc{};
     //[已打开并加载的绘图区]
-    std::vector<QCanvasArea*> mpCanvasAreaVec{};
+    std::vector<std::shared_ptr<QCanvasArea>> mpCanvasAreaVec{};
     //[已打开并加载的文档]
-    std::vector<SDocument*> mpDocVec{};
+    std::vector<std::shared_ptr<SDocument>> mpDocVec{};
 
 
     /*-----成员函数-----*/

@@ -1,5 +1,5 @@
 ﻿#include "qlayerview.h"
-QLayerView::QLayerView(QWidget *parent, SDocument *pCurrentDocument): QTreeView(parent)
+QLayerView::QLayerView(QWidget *parent, std::shared_ptr<SDocument> pCurrentDocument): QTreeView(parent)
 {
     setDocument(pCurrentDocument);
 }
@@ -9,12 +9,12 @@ QLayerView::~QLayerView()
 
 }
 
-SDocument *QLayerView::getDocument()
+std::shared_ptr<SDocument> QLayerView::getDocument()
 {
     return this->mpCurDoc;
 }
 
-void QLayerView::setDocument(SDocument *pCurrentDocument)
+void QLayerView::setDocument(std::shared_ptr<SDocument> pCurrentDocument)
 {
     if(mpCurDoc)
         disconnect(this, &QLayerView::clicked, &mpCurDoc->getLayerManager(), &SLayerManager::onLayerViewClicked);

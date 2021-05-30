@@ -4,6 +4,8 @@
 #include "modules/paint/simage.h"
 #include <modules/global.h>
 #include <modules/doc/sdocument.h>
+#include "modules/paint/sobject.h"
+
 
 class SDocument;
 class QCanvas : public QWidget
@@ -46,7 +48,9 @@ signals:
     void scaled(double value);
 
     /*-----槽函数-----*/
-private slots:
+public slots:
+    void doRepaint();
+    void doUpdate();
 
     /*-----控制标记-----*/
 private:
@@ -95,6 +99,8 @@ private:
 private:
     //文档
     SDocument* mpDoc{nullptr};
+    //重绘诱因
+    SObject::PaintTrigger mTrigger{SObject::User_Trigger};
 
     /*-----成员函数-----*/
 public:
@@ -116,9 +122,15 @@ public:
     //参考线是否开启
     bool isRefLineOn()const;
 
+    SObject::PaintTrigger currentPaintTrigger()const;
+
     //[更改函数]
 
     void setDocument(SDocument* pDoc);
+
+    void setPaintTrigger(SObject::PaintTrigger trigger);
+    //重置绘制诱因为User
+    void resetPaintTrigger();
 
     //按数值缩放画布实际尺寸
     bool setScaleValue(double value);

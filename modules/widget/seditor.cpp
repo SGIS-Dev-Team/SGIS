@@ -2,6 +2,7 @@
 #include "ui_seditor.h"
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
+#include <QMessageBox>
 
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
@@ -57,6 +58,7 @@ void SEditor::onActionLoadImageTriggered()
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
         SImage* pImg = new SImage(pathList[i], true, QPoint(x, y));
+        pImg->load();
         pImg->rotate(60);
 
         mpCurDoc->getLayerManager().addLayer(pImg);
@@ -78,10 +80,58 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setFragmentPath(path, file_info.completeBaseName());
-    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-    mpCurDoc->getLayerManager().addLayer(pFragImg);
+    pFragImg->setFragmentPath(file_info.filePath());
+    pFragImg->loadMeta();
 
+    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+
+    pFragImg->setBandIndices(1, 2, 3);
+
+    pFragImg->setHoldTopPyramidEnabled(true);
+
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
+}
+
+#include "qbandselectdialog.h"
+void SEditor::onActionLoadHugeImageTriggered()
+{
+    //获取要读取的文件路径
+    QString strImagePath = QFileDialog::getOpenFileName(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+    if(strImagePath.isEmpty())
+        return;
+
+    //打开波段预览对话框
+    QBandSelectDialog dialog(strImagePath, this);
+    dialog.exec();
+
+    if(dialog.getPyramidDirPath().isEmpty())
+    {
+        QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
+        return;
+    }
+
+    //选择完成：将影像读入
+    mpCurDoc->getLayerManager().clearSelection();
+
+    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
+
+    QFileInfo file_info(dialog.getPyramidDirPath());
+    pFragImg->setFragmentPath(file_info.filePath());
+    pFragImg->loadMeta();
+
+    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+    pFragImg->setHoldTopPyramidEnabled(true);
+    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
+
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
+}
+
+#include <QTextEdit>
+void SEditor::onActionReportLeaksTriggered()
+{
+#ifndef QT_NO_DEBUG
+    VLDReportLeaks();
+#endif
 }
 
 void SEditor::onActionBringForwardTriggered()
@@ -164,6 +214,7 @@ void SEditor::onLayersUpdated(SLayerManager *which)
 
 void SEditor::closeEvent(QCloseEvent *event)
 {
+    Q_UNUSED(event);
     emit closed();
 }
 
@@ -187,8 +238,12 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
+
+    //[测试用链接]
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
+    connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
+    connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
 
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
@@ -211,21 +266,21 @@ void SEditor::initializeConnections()
 void SEditor::createWorkspace(const QSize &CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-    QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
+    std::shared_ptr<QCanvasArea> newCanvasArea = std::make_shared<QCanvasArea>(CanvasSize);
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
-    SDocument* newDocument = new SDocument(newCanvasArea->canvas());
+    std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());
     this->mpDocVec.push_back(newDocument);
     //添加Tab页面并激活
     //TODO:解决重名问题
-    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
+    int newIdx = ui->mTabWidget->addTab(newCanvasArea.get(), tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
     mpCurDoc = newDocument;
     //链接绘图区信息显示
-    connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
-    connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(mpCurCanvasArea->canvas().get(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
+    connect(mpCurCanvasArea->canvas().get(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
     connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
     //设置图层视图

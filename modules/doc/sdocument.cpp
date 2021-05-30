@@ -1,38 +1,36 @@
 ﻿#include "sdocument.h"
 
 
-SDocument::SDocument(QCanvas *canvas)
+SDocument::SDocument(std::shared_ptr<QCanvas> pCanvas)
 {
-    if(!canvas)
+    if(!pCanvas)
         return;
-    setCanvas(canvas);
-    canvas->setDocument(this);
+    setCanvas(pCanvas);
+    pCanvas.get()->setDocument(this);
     _initializeConnections();
 }
 
-SDocument::SDocument(QCanvas *canvas, const QString &path): SDocument(canvas)
+SDocument::SDocument(std::shared_ptr<QCanvas> pCanvas, const QString &path): SDocument(pCanvas)
 {
 
 }
 
 SDocument::~SDocument()
 {
-
+    _disconnectCanvas();
 }
 
 void SDocument::onImageLoaded(SImage *pImage)
 {
-    const QRectF& viewAreaRect = mpCanvas->viewArea();
-    double scaleValue = mpCanvas->scaleValue();
-    mpCanvas->repaint(viewAreaRect.left() * scaleValue,
-                      viewAreaRect.top() * scaleValue,
-                      viewAreaRect.width() * scaleValue,
-                      viewAreaRect.height() * scaleValue);
+    Q_UNUSED(pImage);
+    mpCanvas->setPaintTrigger(SObject::Loaded_Trigger);
+    emit updateCanvas();
 }
 
-void SDocument::setCanvas(QCanvas *canvas)
+void SDocument::setCanvas(std::shared_ptr<QCanvas> pCanvas)
 {
-    this->mpCanvas = canvas;
+    _disconnectCanvas();
+    this->mpCanvas = pCanvas;
 }
 
 SLayerManager &SDocument::getLayerManager()
@@ -45,7 +43,7 @@ SFragLoader &SDocument::getFragLoader()
     return mFragLoader;
 }
 
-void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleValue)
+void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleValue, SObject::PaintTrigger trigger)
 {
     const layer_list layerList = mLayerMgr.getLayerList();
 
@@ -55,7 +53,7 @@ void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleVal
     {
         SObject* obj = *iter;
         if(obj->isVisible())
-            obj->paint(painter, true, viewArea, scaleValue);
+            obj->paint(painter, true, viewArea, scaleValue, trigger);
     }
 
     //绘制选框
@@ -71,6 +69,13 @@ void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleVal
 void SDocument::_initializeConnections()
 {
     connect(&mFragLoader, &SFragLoader::imageLoaded, this, &SDocument::onImageLoaded);
+    connect(this, &SDocument::updateCanvas, mpCanvas.get(), &QCanvas::doUpdate);
+}
+
+void SDocument::_disconnectCanvas()
+{
+    if(!mpCanvas)
+        disconnect(this, &SDocument::updateCanvas, mpCanvas.get(), &QCanvas::doUpdate);
 }
 
 
