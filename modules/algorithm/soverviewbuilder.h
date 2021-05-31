@@ -29,7 +29,6 @@ public:
         TIFF
     };
 
-
 public:
     explicit SOverviewBuilder(QObject *parent = nullptr);
     virtual ~SOverviewBuilder() {}

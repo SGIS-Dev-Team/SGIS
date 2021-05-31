@@ -45,12 +45,14 @@ void SImage::paint(QPainter &painter, bool doTranslate, const QRectF & viewLogic
 
     //执行变换
     painter.setTransform(mTransform * painter.transform());
+
     //绘图
     const_cast<SImage*>(this)->mMutex.lock();
     painter.drawImage(mImageRect, *mpImage, mpImage->rect());
     const_cast<SImage*>(this)->mMutex.unlock();
 
     painter.setTransform(oldTransform);
+
 }
 
 const QImage &SImage::getImage() const

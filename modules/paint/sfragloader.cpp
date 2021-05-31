@@ -35,6 +35,11 @@ void SFragLoader::run()
     }
 }
 
+void SFragLoader::doPaint(QPainter &painter)
+{
+    paint(painter);
+}
+
 void SFragLoader::push_front(SImage *pImage)
 {
     //如果为空指针或已加载图像，则不做任何事
@@ -49,16 +54,16 @@ void SFragLoader::push_front(SImage *pImage)
     mReadInStack.push_front(pImage);
 }
 
-void SFragLoader::push_front(SImage** pImage, size_t count)
+void SFragLoader::push_front(SImage** ppImage, size_t count)
 {
     //保证压入量不大于缓存数
     count = count > muMaxReadInStackSize ? muMaxReadInStackSize : count;
 
     for(int i = count - 1; i >= 0; --i)
     {
-        if(!pImage[i] || !pImage[i]->isNull())
+        if(!ppImage[i] || !ppImage[i]->isNull())
             continue;
-        mReadInStack.push_front(pImage[i]);
+        mReadInStack.push_front(ppImage[i]);
         if(mReadInStack.size() == muMaxReadInStackSize)
             mReadInStack.pop_back();
     }
@@ -69,4 +74,11 @@ void SFragLoader::releaseAll()
     for(auto& pImage : mFragTempQueue)
         if(pImage)
             pImage->releaseImage();
+}
+
+void SFragLoader::paint(QPainter &painter)
+{
+    for(auto& pImage : mFragTempQueue)
+        if(pImage)
+            pImage->paint(painter);
 }

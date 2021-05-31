@@ -38,6 +38,15 @@
 #define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
+//debug计时器
+#include <ctime>
+#ifndef QT_NO_DEBUG
+#define CLOCK_START(N)     std::clock_t start ## N = clock();
+#define CLOCK_STOP(N)      qDebug() << "Elapsed Time at "<<__FILE__<<"["<<__LINE__<<"] :" << std::clock() - start ## N <<" ms";
+#else
+#define CLOCK_START(N)
+#define CLOCK_STOP(N)
+#endif
 //默认分片影像读取栈大小
 #define DEFAULT_FRAG_TEMP_SIZE 20
 #define DEFAULT_READ_IN_STACK_SIZE 100

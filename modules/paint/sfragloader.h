@@ -25,7 +25,8 @@ signals:
     void imageLoaded(SImage* pImage);
 
     /*-----槽函数-----*/
-private slots:
+public slots:
+    void doPaint(QPainter &painter);
 
     /*-----成员变量-----*/
 protected:
@@ -48,11 +49,14 @@ public:
     inline void clearReadInStack();
     inline void setStackSize(size_t size);
     //单个压入读取栈
-    void push_front(SImage *image);
+    void push_front(SImage *pImage);
     //多个压入读取栈，栈顶元素将是pImageArray的第一个元素
-    void push_front(SImage **pImage, size_t count);
+    void push_front(SImage **ppImage, size_t count);
     //[功能函数]
     void releaseAll();
+    //绘制已加载的图像
+    void paint(QPainter& painter);
+
 };
 
 size_t SFragLoader::stackSize()

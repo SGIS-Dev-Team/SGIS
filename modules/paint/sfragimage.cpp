@@ -43,11 +43,14 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
 
     //-----绘图-----//
     //从下往上绘制各层金字塔影像
-    mFragMatVec[idx].paint(painter, viewLogicalArea.translated(-mPtCenter));
+    CLOCK_START(1)
+//    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
+//        mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
+    //绘制已加载的所有分片
+    if(mbHoldTopPyramid)
+        mFragMatVec.back().paint(painter);
 
-    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
-        mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
-
+    CLOCK_STOP(1)
     //-----绘图-----//
 
     //还原变换
