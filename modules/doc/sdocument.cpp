@@ -7,6 +7,10 @@ SDocument::SDocument(std::shared_ptr<QCanvas> pCanvas)
         return;
     setCanvas(pCanvas);
     pCanvas.get()->setDocument(this);
+    //初始化读取器线程
+    mFragLoader.moveToThread(&mLoaderThread);
+    mLoaderThread.start();
+
     _initializeConnections();
 }
 

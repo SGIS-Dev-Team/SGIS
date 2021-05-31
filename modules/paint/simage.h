@@ -89,7 +89,7 @@ private:
     //图像文件路径
     QString mStrImagePath{};
     //图像
-    QImage *mpImage{nullptr};
+    QPixmap *mpImage{nullptr};
     //图像在无缩放无旋转下的包围矩形
     QRectF mImageRect;
     //图像的包围控制点（变换后）
@@ -97,19 +97,18 @@ private:
     //均衡化函数(三个波段的)
     std::shared_ptr<void> mpEqualizeFunc[3] {nullptr};
     //图像波段数据
-    std::unique_ptr<uchar> mpBandData[3] {nullptr};
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> mpBandData[3] {nullptr};
     //图像数据(8位、已均衡化)
-    std::unique_ptr<uchar> mpImageData{nullptr};
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> mpImageData{nullptr};
     //锁
     QMutex mMutex;
-
 
     /*-----成员函数-----*/
 public:
 
     //[访问函数]
 
-    const QImage& getImage()const;
+    const QPixmap& getImage()const;
     const QString& getImagePath()const;
     bool isNull()const;
     void getHistEqFunc(std::shared_ptr<void> pEqFunc[]);
@@ -181,7 +180,7 @@ public:
     bool save(const QString& _savePath);
     //设置路径（不加载图片）
     void setImagePath(const QString& imagePath);
-    void setImage(const QImage& image);
+    void setImage(const QPixmap& image);
     //释放图片内存
     void releaseImage();
     //改变波段
@@ -205,24 +204,24 @@ public:
 
 public:
     //读取特定波段数据
-    static std::unique_ptr<uchar> loadBand(int x_off, int y_off, int x_span, int y_span,
-                                           int image_width, int image_height,
-                                           const QString &imagePath, int bandIdx, GDALDataType dataType,
-                                           std::shared_ptr<void> pEqFunc = nullptr);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> loadBand(int x_off, int y_off, int x_span, int y_span,
+            int image_width, int image_height,
+            const QString &imagePath, int bandIdx, GDALDataType dataType,
+            std::shared_ptr<void> pEqFunc = nullptr);
 
-    static std::unique_ptr<uchar> loadBand(int x_off, int y_off, int x_span, int y_span,
-                                           int image_width, int image_height,
-                                           GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
-                                           std::shared_ptr<void> pEqFunc = nullptr);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> loadBand(int x_off, int y_off, int x_span, int y_span,
+            int image_width, int image_height,
+            GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
+            std::shared_ptr<void> pEqFunc = nullptr);
 
     //融合为逐像素存储图像
-    static std::unique_ptr<uchar> merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
     //计算直方图均衡化函数
     static std::shared_ptr<void> calcHistEqFunc(GDALDataType type, const uchar* pBandData, size_t count);
     //对波段执行直方图均衡化
     static void histEqualize(GDALDataType type, uchar *pBandData, size_t count, const void *pEqFunc);
     //对波段进行8位转换;算法:按数值范围比例缩放
-    static std::unique_ptr<uchar> to8bit(GDALDataType type, const uchar *pBandData, size_t count);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> to8bit(GDALDataType type, const uchar *pBandData, size_t count);
     //获取目标影像的描述数据
     static SImageMeta getMetaOf(QString imagePath);
     static SImageMeta getMetaOf(GDALDataset *pDataSet);
@@ -235,10 +234,12 @@ private:
     void _reloadChannel(int channel, int newBandIdx, std::shared_ptr<void> pHistEqFunc = nullptr);
     //更新图像原始坐标矩形和边界点
     void _updateImageRect();
+    //使用图像数据更新图像
+    void _updateImage();
 
 };
 
 template<typename T>
-std::unique_ptr<uchar> _to8bit(const T* pBandData, size_t count, T divisor);
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> _to8bit(const T* pBandData, size_t count, T divisor);
 
 #endif // SIMAGE_H

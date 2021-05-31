@@ -18,6 +18,7 @@
 
 class SFragImage : public SObject
 {
+    Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
     explicit SFragImage(SFragLoader& _loader, bool _selected = true, QPointF center = QPointF(),
@@ -51,6 +52,8 @@ private:
 
     /*-----信号-----*/
 signals:
+    void paintFrag(QPainter &painter)const;
+    void loadFrag()const;
 
     /*-----槽函数-----*/
 private slots:
@@ -93,6 +96,10 @@ public:
 public:
     //读取元数据
     void loadMeta();
+private:
+    //初始化链接
+    void _initializeConnections();
+    void _destroyConnections();
 };
 
 #endif // SFRAGIMAGE_H

@@ -7,16 +7,17 @@
 SFragImage::SFragImage(SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
-
+    _initializeConnections();
 }
 
 SFragImage::~SFragImage()
 {
-
+    _destroyConnections();
 }
 
 void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
+    //CLOCK_START(1)
     //检测视图显示区域是否与图像区域重合
     if(!intersect(viewLogicalArea))
         return;
@@ -30,7 +31,7 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
     //加载当前层区域的分片
     if(trigger == User_Trigger)
         mFragMatVec[idx].loadBlockArea(viewLogicalArea.translated(-mPtCenter), mFragLoader);
-
+    emit loadFrag();
     //保存原来的变换
     QTransform oldTransform = painter.transform();
 
@@ -43,14 +44,11 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
 
     //-----绘图-----//
     //从下往上绘制各层金字塔影像
-    CLOCK_START(1)
-//    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
-//        mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
-    //绘制已加载的所有分片
-    if(mbHoldTopPyramid)
-        mFragMatVec.back().paint(painter);
-
-    CLOCK_STOP(1)
+    //CLOCK_START(2)
+    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
+        mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
+    //CLOCK_STOP(2)
+    //CLOCK_STOP(1)
     //-----绘图-----//
 
     //还原变换
@@ -145,6 +143,17 @@ void SFragImage::loadMeta()
     _applyTransform();
 }
 
+void SFragImage::_initializeConnections()
+{
+    connect(this, &SFragImage::paintFrag, &mFragLoader, &SFragLoader::doPaintFrag);
+    connect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
+}
+
+void SFragImage::_destroyConnections()
+{
+    disconnect(this, &SFragImage::paintFrag, &mFragLoader, &SFragLoader::doPaintFrag);
+    disconnect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
+}
 
 QPolygonF SFragImage::boundingRect() const
 {

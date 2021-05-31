@@ -33,6 +33,8 @@ private:
     SLayerManager mLayerMgr;
     //分片读取器
     SFragLoader mFragLoader;
+    //读取器线程
+    QThread mLoaderThread;
 
     /*-----成员函数-----*/
 public:

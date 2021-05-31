@@ -52,7 +52,7 @@ void QBandSelectDialog::onComboBoxIndexChanged(int idx)
     if(channel != -1)
         mImage.setBandIndex(channel, idx + 1, true);
 
-    ui->mLabelPreviewImage->setPixmap(QPixmap::fromImage(mImage.getImage()));
+    ui->mLabelPreviewImage->setPixmap(mImage.getImage());
 }
 
 void QBandSelectDialog::onButtonOkClicked()

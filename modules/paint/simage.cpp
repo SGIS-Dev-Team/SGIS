@@ -47,15 +47,13 @@ void SImage::paint(QPainter &painter, bool doTranslate, const QRectF & viewLogic
     painter.setTransform(mTransform * painter.transform());
 
     //绘图
-    const_cast<SImage*>(this)->mMutex.lock();
-    painter.drawImage(mImageRect, *mpImage, mpImage->rect());
-    const_cast<SImage*>(this)->mMutex.unlock();
+    painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
 
     painter.setTransform(oldTransform);
 
 }
 
-const QImage &SImage::getImage() const
+const QPixmap &SImage::getImage() const
 {
     return *mpImage;
 }
@@ -70,16 +68,15 @@ void SImage::setImagePath(const QString &imagePath)
     mStrImagePath = imagePath;
 }
 
-void SImage::setImage(const QImage &image)
+void SImage::setImage(const QPixmap &image)
 {
     if(!image.isNull())
-        mpImage = new QImage(image);
+        mpImage = new QPixmap(image);
     mStrImagePath = nullptr;
 }
 
 void SImage::releaseImage()
 {
-
     if(mpImage)
         delete mpImage;
     mpImage = nullptr;
@@ -180,26 +177,26 @@ void SImage::setLoadRegionResampledSize(const QSize &size)
     mImageSize = size;
 }
 
-std::unique_ptr<uchar> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
-                                        int image_width, int image_height,
-                                        const QString &imagePath, int bandIdx, GDALDataType dataType,
-                                        std::shared_ptr<void> pEqFunc)
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
+        int image_width, int image_height,
+        const QString &imagePath, int bandIdx, GDALDataType dataType,
+        std::shared_ptr<void> pEqFunc)
 {
     GDALDataset *pDataSet = SImage::_getOpenDataSet(imagePath);
-    std::unique_ptr<uchar> pBandData = loadBand(x_off, y_off, x_span, y_span,
-                                       image_width, image_height,
-                                       pDataSet,
-                                       bandIdx,
-                                       dataType,
-                                       pEqFunc);
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> pBandData = loadBand(x_off, y_off, x_span, y_span,
+            image_width, image_height,
+            pDataSet,
+            bandIdx,
+            dataType,
+            pEqFunc);
     GDALClose(pDataSet);
     return pBandData;
 }
 
-std::unique_ptr<uchar> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
-                                        int image_width, int image_height,
-                                        GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
-                                        std::shared_ptr<void> pEqFunc)
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
+        int image_width, int image_height,
+        GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
+        std::shared_ptr<void> pEqFunc)
 {
     //执行越界检查
 #ifndef QT_NO_DEBUG
@@ -215,7 +212,7 @@ std::unique_ptr<uchar> SImage::loadBand(int x_off, int y_off, int x_span, int y_
     int nPixels = image_width * image_height;
 
     //分配内存、读入波段、直方图均衡化
-    std::unique_ptr<uchar> pBandData (new uchar[nPixels * GDALGetDataTypeSizeBytes(dataType)] {});
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> pBandData (new uchar[nPixels * GDALGetDataTypeSizeBytes(dataType)] {});
 
     pDataSet->GetRasterBand(bandIdx)->RasterIO(
         GF_Read,
@@ -231,16 +228,16 @@ std::unique_ptr<uchar> SImage::loadBand(int x_off, int y_off, int x_span, int y_
     return pBandData;
 }
 
-std::unique_ptr<uchar> SImage::merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount)
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> SImage::merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount)
 {
     //分配内存
-    std::unique_ptr<uchar> pMergedData(new uchar [bandCount * pixelCount * sizeof(uchar)]);
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> pMergedData(new uchar [bandCount * pixelCount * sizeof(uchar)]);
 
     //合成逐像素存储图像数据
     for(int i = 0; i < bandCount; ++i)
     {
         uchar *pm = pMergedData.get() + i;
-        std::unique_ptr<uchar> pBand8Bit = to8bit(dataType, pBandData[i], pixelCount);
+        std::unique_ptr<uchar[], std::default_delete<uchar[]>> pBand8Bit = to8bit(dataType, pBandData[i], pixelCount);
         uchar *pb = pBand8Bit.get();
         uchar *pbEnd = pb + pixelCount;
         for(; pb != pbEnd; pm += bandCount, ++pb)
@@ -368,7 +365,7 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
     QFileInfo imgInfo(mStrImagePath);
     //TODO: 记得对jpg存储的金字塔单独处理
     if(imgInfo.suffix() != "tiff" && imgInfo.suffix() != "tif")
-        mpImage = new QImage(mStrImagePath);
+        mpImage = new QPixmap(mStrImagePath);
     else
     {
         //获取描述数据
@@ -381,11 +378,18 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
         int pBandIdx[3] = {mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx};
         for(int i = 0; i < 3; ++i)
         {
+            uchar *pData = mpBandData->get();
+            bool valid = (bool)pData;
+
             mpBandData[i] = this->loadBand(x_off, y_off, x_span, y_span,
                                            image_width, image_height,
                                            pDataSet,
                                            pBandIdx[i],
                                            mnDataType);
+
+            if(valid && pData)
+                qDebug() << "Memory Leak Detected.";
+
             //直方图均衡化
             if(!mpEqualizeFunc[i])
                 mpEqualizeFunc[i] = SImage::calcHistEqFunc(mnDataType, mpBandData[i].get(), nPixels);
@@ -393,12 +397,10 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
         }
 
         //融合图像，并创建QImage用于显示
-        uchar *pBandData[3] = {mpBandData[0].get(), mpBandData[1].get(), mpBandData[2].get()};
-        mpImageData = SImage::merge(const_cast<const uchar**>(pBandData), mnDataType, nPixels, 3);
-        mpImage = new QImage(mpImageData.get(),
-                             image_width, image_height,
-                             image_width * 3,
-                             QImage::Format_RGB888);
+        const uchar *pBandData[3] = {mpBandData[0].get(), mpBandData[1].get(), mpBandData[2].get()};
+        mpImageData = SImage::merge(pBandData, mnDataType, nPixels, 3);
+
+        _updateImage();
     }
     _updateImageRect();
 
@@ -439,7 +441,7 @@ void SImage::_initializeWith(const SImage &theImage)
     if(mpImage)
         delete mpImage;
     if(theImage.mpImage)
-        mpImage = new QImage(*theImage.mpImage);
+        mpImage = new QPixmap(*theImage.mpImage);
 
     mImageRect = theImage.mImageRect;
     for(int i = 0; i < 4; ++i)
@@ -461,7 +463,7 @@ void SImage::_initializeWith(const SImage &theImage)
     for(int i = 0; i < 3; ++i)
         if(theImage.mpBandData[i].get())
         {
-            mpBandData[i].reset(new uchar[mImageSize.width()*mImageSize.height()]);
+            mpBandData[i].reset(new uchar[mImageSize.width() * mImageSize.height()]);
 
             memcpy_s(mpBandData[i].get(),
                      mImageSize.width() * mImageSize.height(),
@@ -510,7 +512,7 @@ void SImage::_reloadChannel(int channel, int newBandIdx, std::shared_ptr<void> p
     SImage::histEqualize(mnDataType, mpBandData[channel].get(), nPixels, this->mpEqualizeFunc[channel].get());
 
     //拉伸
-    std::unique_ptr<uchar> pBand8bit = to8bit(mnDataType, mpBandData[channel].get(), nPixels);
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> pBand8bit = to8bit(mnDataType, mpBandData[channel].get(), nPixels);
 
     //替换通道值
     uchar *pm = mpImageData.get() + channel;
@@ -518,6 +520,9 @@ void SImage::_reloadChannel(int channel, int newBandIdx, std::shared_ptr<void> p
     uchar *pbEnd = pb + nPixels;
     for(; pb != pbEnd; pm += 3, ++pb)
         * pm = *pb;
+
+    //更新图像
+    _updateImage();
 }
 
 void SImage::_updateImageRect()
@@ -528,19 +533,29 @@ void SImage::_updateImageRect()
                              mpImage->height());
 }
 
+void SImage::_updateImage()
+{
+    mpImage = new QPixmap();
+    *mpImage = QPixmap::fromImage(QImage(mpImageData.get(),
+                                         mImageSize.width(), mImageSize.height(),
+                                         mImageSize.width() * 3,
+                                         QImage::Format_RGB888,
+    [](void * pData) {delete[]static_cast<uchar*>(pData);}));
+}
+
 std::shared_ptr<void> SImage::calcHistEqFunc(GDALDataType type, const uchar *pBandData, size_t count)
 {
     std::shared_ptr<void> pFunc{nullptr};
     switch (type)
     {
     case GDT_Byte:
-        pFunc.reset(getEqualizeFunction<UINT8>(static_cast<const UINT8*>((const void*)pBandData), count));
+        pFunc = getEqualizeFunction<UINT8>(static_cast<const UINT8*>(pBandData), count);
         break;
     case GDT_UInt16:
-        pFunc.reset(getEqualizeFunction<UINT16>(static_cast<const UINT16*>((const void*)pBandData), count));
+        pFunc = getEqualizeFunction<UINT16>(static_cast<const UINT16*>((const void*)pBandData), count);
         break;
     case GDT_UInt32:
-        pFunc.reset(getEqualizeFunction<UINT32>(static_cast<const UINT32*>((const void*)pBandData), count));
+        pFunc = getEqualizeFunction<UINT32>(static_cast<const UINT32*>((const void*)pBandData), count);
         break;
     default:
         Q_ASSERT(0);
@@ -569,11 +584,10 @@ void SImage::histEqualize(GDALDataType type, uchar *pBandData, size_t count, con
 
 }
 
-
 template<typename T>
-std::unique_ptr<uchar> _to8bit(const T* pBandData, size_t count, T divisor)
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> _to8bit(const T* pBandData, size_t count, T divisor)
 {
-    std::unique_ptr<uchar> p8bitData(new uchar[count]);
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> p8bitData(new uchar[count]);
     uchar* pData = p8bitData.get();
     for(size_t i = 0; i < count; ++i)
         pData[i] = pBandData[i] / divisor;
@@ -582,9 +596,9 @@ std::unique_ptr<uchar> _to8bit(const T* pBandData, size_t count, T divisor)
 
 #define DIV_FACTOR_16TO8BIT 257
 #define DIV_FACTOR_32TO8BIT 16843009
-std::unique_ptr<uchar> SImage::to8bit(GDALDataType type, const uchar *pBandData, size_t count)
+std::unique_ptr<uchar[], std::default_delete<uchar[]>> SImage::to8bit(GDALDataType type, const uchar *pBandData, size_t count)
 {
-    std::unique_ptr<uchar> p8bitData{nullptr};
+    std::unique_ptr<uchar[], std::default_delete<uchar[]>> p8bitData{nullptr};
 
     switch (type)
     {

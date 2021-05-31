@@ -95,7 +95,6 @@ void SFragMatrix::loadBlockArea(const QRectF &rect, SFragLoader &loader) const
     //调用加载器线程加载图像
     if(!loadBlockVec.empty())
         loader.push_front(loadBlockVec.data(), loadBlockVec.size());
-    loader.start();
 }
 
 void SFragMatrix::loadAll()const

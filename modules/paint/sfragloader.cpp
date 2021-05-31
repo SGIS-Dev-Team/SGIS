@@ -1,6 +1,5 @@
 ﻿#include "sfragloader.h"
 
-
 SFragLoader::SFragLoader(size_t fragTempSize, size_t readInStackSize): muMaxFragCount(fragTempSize), muMaxReadInStackSize(readInStackSize)
 {
 }
@@ -10,7 +9,12 @@ SFragLoader::~SFragLoader()
 
 }
 
-void SFragLoader::run()
+void SFragLoader::doPaintFrag(QPainter &painter)
+{
+    paint(painter);
+}
+
+void SFragLoader::doLoadFrag()
 {
     //循环读入栈顶分片
     while(!mReadInStack.empty())
@@ -28,16 +32,12 @@ void SFragLoader::run()
             {
                 mFragTempQueue.front()->releaseImage();
                 mFragTempQueue.pop_front();
+                qDebug() << "Temp Queue Full.";
             }
             mFragTempQueue.push_back(pImage);
         }
         mReadInStack.pop_front();
     }
-}
-
-void SFragLoader::doPaint(QPainter &painter)
-{
-    paint(painter);
 }
 
 void SFragLoader::push_front(SImage *pImage)

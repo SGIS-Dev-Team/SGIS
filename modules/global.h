@@ -42,11 +42,12 @@
 #include <ctime>
 #ifndef QT_NO_DEBUG
 #define CLOCK_START(N)     std::clock_t start ## N = clock();
-#define CLOCK_STOP(N)      qDebug() << "Elapsed Time at "<<__FILE__<<"["<<__LINE__<<"] :" << std::clock() - start ## N <<" ms";
+#define CLOCK_STOP(N)      qDebug() << "Clock "<<N<<" Elapsed Time at "<<__FILE__<<"["<<__LINE__<<"] :" << std::clock() - start ## N <<" ms";
 #else
 #define CLOCK_START(N)
 #define CLOCK_STOP(N)
 #endif
+
 //默认分片影像读取栈大小
 #define DEFAULT_FRAG_TEMP_SIZE 20
 #define DEFAULT_READ_IN_STACK_SIZE 100
