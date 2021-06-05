@@ -219,6 +219,11 @@ bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &p
     return true;
 }
 
+QString SOverviewBuilder::generatePyramidDir(const QString &oriImagePath, const QString &savePath)
+{
+    return savePath + '/' + QFileInfo(oriImagePath).completeBaseName();
+}
+
 
 
 

@@ -6,6 +6,7 @@
 #include "modules/widget/qcanvasarea.h"
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
+#include <modules/widget/qdataimportwizard.h>
 
 namespace Ui
 {
@@ -79,7 +80,6 @@ private:
     //[已打开并加载的文档]
     std::vector<std::shared_ptr<SDocument>> mpDocVec{};
 
-
     /*-----成员函数-----*/
 public:
     //初始化函数
@@ -93,8 +93,10 @@ public:
 private:
     Ui::SEditor * ui;
     //[状态栏控件]
-    QLabel* mpStatLblCursorPos;
-    QLabel* mpStatLblCanvasScale;
+    std::unique_ptr<QLabel> mpStatLblCursorPos;
+    std::unique_ptr<QLabel> mpStatLblCanvasScale;
+    //[数据导入向导]
+    std::unique_ptr<QDataImportWizard> mpImportDialog;
 };
 
 #endif // SEditor_H

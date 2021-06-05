@@ -6,8 +6,6 @@ SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const 
     : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
     mStrImagePath = _imagePath;
-    for(auto &ptr : mpBandData)ptr = nullptr;
-    for(auto &ptr : mpEqualizeFunc)ptr = nullptr;
 }
 
 SImage::SImage(const SImage &theImage): SObject(PaintObject::ImageBase)
@@ -47,7 +45,9 @@ void SImage::paint(QPainter &painter, bool doTranslate, const QRectF & viewLogic
     painter.setTransform(mTransform * painter.transform());
 
     //绘图
+    const_cast<SImage*>(this)->mMutex.lock();
     painter.drawPixmap(mImageRect, *mpImage, mpImage->rect());
+    const_cast<SImage*>(this)->mMutex.unlock();
 
     painter.setTransform(oldTransform);
 
@@ -77,9 +77,21 @@ void SImage::setImage(const QPixmap &image)
 
 void SImage::releaseImage()
 {
+    mMutex.lock();
+
     if(mpImage)
         delete mpImage;
     mpImage = nullptr;
+
+    mMutex.unlock();
+}
+
+void SImage::releaseMemory()
+{
+    for(auto &ptr : mpBandData)
+        ptr.reset();
+    mpImageData.reset();
+    releaseImage();
 }
 
 bool SImage::isNull()const
@@ -155,7 +167,7 @@ const QSize &SImage::getLoadResampledSize() const
     return mImageSize;
 }
 
-void SImage::getHistEqFunc(std::shared_ptr<void> pEqFunc[])
+void SImage::getHistEqFunc(std::shared_ptr<void> pEqFunc[])const
 {
     for(int i = 0; i < 3; ++i)
         pEqFunc[i] = mpEqualizeFunc[i];
@@ -279,25 +291,49 @@ void SImage::setBandIndex(int channel, int bandIdx, bool reload, std::shared_ptr
     }
 }
 
-void SImage::setBandIndices(int r, int g, int b, bool reload)
+void SImage::presetBandIndices(int r, int g, int b)
 {
-    Q_ASSERT(r > 0 && g > 0 && b > 0);
-    setRedBandIdx(r, reload, nullptr);
-    setGreenBandIdx(g, reload, nullptr);
-    setBlueBandIdx(b, reload, nullptr);
+    std::shared_ptr<void> pHistEqFuncs[3] = {nullptr, nullptr, nullptr};
+    presetBandIndices(r, g, b, pHistEqFuncs);
 }
 
-void SImage::setBandIndices(int r, int g, int b, bool reload, std::shared_ptr<void> pHistEqFuncs[])
+void SImage::presetBandIndices(int r, int g, int b, std::shared_ptr<void> pHistEqFuncs[])
 {
     Q_ASSERT(r > 0 && g > 0 && b > 0);
-    setRedBandIdx(r, reload, pHistEqFuncs[0]);
-    setGreenBandIdx(g, reload, pHistEqFuncs[1]);
-    setBlueBandIdx(b, reload, pHistEqFuncs[2]);
+    setRedBandIdx(r, false, pHistEqFuncs[0]);
+    setGreenBandIdx(g, false, pHistEqFuncs[1]);
+    setBlueBandIdx(b, false, pHistEqFuncs[2]);
 }
 
-void SImage::setDefaultedBands(bool reload)
+void SImage::setBandIndices(int r, int g, int b)
 {
-    setBandIndices(1, 1, 1, reload);
+    std::shared_ptr<void> pHistEqFuncs[3] = {nullptr, nullptr, nullptr};
+    setBandIndices(r, g, b, pHistEqFuncs);
+}
+
+void SImage::setBandIndices(int r, int g, int b, std::shared_ptr<void> pHistEqFuncs[])
+{
+    Q_ASSERT(r > 0 && g > 0 && b > 0);
+    Q_ASSERT(r <= mnBands && g <= mnBands && b <= mnBands);
+    if(r != mnRedBandIdx)
+        setRedBandIdx(r, true, pHistEqFuncs[0]);
+    if(g != mnGreenBandIdx)
+        setGreenBandIdx(g, true, pHistEqFuncs[1]);
+    if(b != mnBlueBandIdx)
+        setBlueBandIdx(b, true, pHistEqFuncs[2]);
+}
+
+void SImage::setDefaultedBands()
+{
+    if(mnBands > 3)
+        setBandIndices(1, 2, 3);
+    else
+        setBandIndices(1, 1, 1);
+}
+
+void SImage::presetDefaultedBands()
+{
+    presetBandIndices(1, 1, 1);
 }
 
 void SImage::setGreenBandIdx(int value, bool reload, std::shared_ptr<void> pHistEqFunc)
@@ -348,9 +384,6 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
     if(mStrImagePath.isEmpty())
         return;
 
-    if(image_width == 0 || image_height == 0)
-        image_width = x_span, image_height = y_span;
-
     GDALDataset *pDataSet = SImage::_getOpenDataSet(mStrImagePath);
     load(x_off, y_off, x_span, y_span, image_width, image_height, pDataSet);
     GDALClose(pDataSet);
@@ -358,72 +391,84 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
 
 void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width, int image_height, GDALDataset *pDataSet)
 {
-    releaseImage();
-    //------加载图片------//
+    SImageMeta meta = getMetaOf(pDataSet);
+    mnBands = meta.bandCount();
+    int nPixels = image_width * image_height;
+    mnDataType = meta.dataType();
 
-    //判断文件后缀是否为*.tif或*.tiff
-    QFileInfo imgInfo(mStrImagePath);
-    //TODO: 记得对jpg存储的金字塔单独处理
-    if(imgInfo.suffix() != "tiff" && imgInfo.suffix() != "tif")
-        mpImage = new QPixmap(mStrImagePath);
-    else
-    {
-        //获取描述数据
-        SImageMeta meta = getMetaOf(pDataSet);
-        mnBands = meta.bandCount();
-        int nPixels = image_width * image_height;
-        mnDataType = meta.dataType();
+    if(x_span == 0)
+        x_span = meta.width() - x_off;
+    if(y_span == 0)
+        y_span = meta.height() - y_off;
 
-        //读入选中的各波段数据
-        int pBandIdx[3] = {mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx};
-        for(int i = 0; i < 3; ++i)
-        {
-            uchar *pData = mpBandData->get();
-            bool valid = (bool)pData;
+    if(image_width == 0)
+        image_width = x_span;
+    if(image_height == 0)
+        image_height = y_span;
 
-            mpBandData[i] = this->loadBand(x_off, y_off, x_span, y_span,
-                                           image_width, image_height,
-                                           pDataSet,
-                                           pBandIdx[i],
-                                           mnDataType);
-
-            if(valid && pData)
-                qDebug() << "Memory Leak Detected.";
-
-            //直方图均衡化
-            if(!mpEqualizeFunc[i])
-                mpEqualizeFunc[i] = SImage::calcHistEqFunc(mnDataType, mpBandData[i].get(), nPixels);
-            SImage::histEqualize(mnDataType, mpBandData[i].get(), nPixels, mpEqualizeFunc[i].get());
-        }
-
-        //融合图像，并创建QImage用于显示
-        const uchar *pBandData[3] = {mpBandData[0].get(), mpBandData[1].get(), mpBandData[2].get()};
-        mpImageData = SImage::merge(pBandData, mnDataType, nPixels, 3);
-
-        _updateImage();
-    }
-    _updateImageRect();
-
-    //应用变换
-    _applyTransform();
+    Q_ASSERT(x_span > 0);
+    Q_ASSERT(y_span > 0);
+    Q_ASSERT(image_width > 0);
+    Q_ASSERT(image_height > 0);
 
     //更新读取图像区域
     mLoadRect.setRect(x_off, y_off, x_span, y_span);
     mImageSize.setWidth(image_width);
     mImageSize.setHeight(image_height);
+
+    releaseImage();
+    //------加载图片------//
+
+    //获取描述数据
+
+    //读入选中的各波段数据
+    if(mnRedBandIdx == 0 || mnGreenBandIdx == 0 || mnBlueBandIdx == 0)
+        this->presetDefaultedBands();
+    int pBandIdx[3] = {mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx};
+    for(int i = 0; i < 3; ++i)
+    {
+        mpBandData[i] = this->loadBand(x_off, y_off, x_span, y_span,
+                                       image_width, image_height,
+                                       pDataSet,
+                                       pBandIdx[i],
+                                       mnDataType);
+        //直方图均衡化
+        if(!mpEqualizeFunc[i])
+            mpEqualizeFunc[i] = SImage::calcHistEqFunc(mnDataType, mpBandData[i].get(), nPixels);
+        SImage::histEqualize(mnDataType, mpBandData[i].get(), nPixels, mpEqualizeFunc[i].get());
+    }
+
+    //融合图像，并创建QImage用于显示
+    const uchar *pBandData[3] = {mpBandData[0].get(), mpBandData[1].get(), mpBandData[2].get()};
+    mpImageData = SImage::merge(pBandData, mnDataType, nPixels, 3);
+
+    _updateImage();
+    _updateImageRect();
+
+    //应用变换
+    _applyTransform();
 }
 
-void SImage::load(const QRect &rect, int down_sampling_ratio, const QString &imagePath)
+void SImage::load(const QRect &rect, double resampling_ratio, const QString &imagePath)
 {
-    //计算降采样后的图像大小
-    SImageMeta meta = SImage::getMetaOf(imagePath);
-    int w = rect.width();
-    int h = rect.height();
-    if(w == 0)w = meta.width();
-    if(h == 0)h = meta.height();
+    load(rect.left(), rect.top(), rect.width(), rect.height(),
+         resampling_ratio,
+         imagePath);
+}
 
-    load(rect.left(), rect.top(), w, h,
-         w / down_sampling_ratio, h / down_sampling_ratio,
+void SImage::load(int x_off, int y_off, int x_span, int y_span, double resampling_ratio, const QString &imagePath)
+{
+    Q_ASSERT(resampling_ratio > 0);
+
+    if(x_span == 0 || y_span == 0)
+    {
+        SImageMeta meta = getMetaOf(imagePath);
+        if(x_span == 0 )x_span = meta.width() - x_off;
+        if(y_span == 0 )y_span = meta.height() - y_off;
+    }
+
+    load(x_off, y_off, x_span, y_span,
+         x_span * resampling_ratio, y_span * resampling_ratio,
          imagePath);
 }
 

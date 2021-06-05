@@ -112,7 +112,7 @@ void SFragMatrix::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 void SFragMatrix::setBandIndices(int r, int g, int b)
 {
     for(size_t i = 0; i < rows * cols; ++i)
-        data[i].setBandIndices(r, g, b, false);
+        data[i].presetBandIndices(r, g, b);
 }
 
 void SFragMatrix::setLevelPath(const QString &path)
@@ -157,10 +157,10 @@ QPointF SFragMatrix::_centerAt(size_t row, size_t col)
 
 QRect SFragMatrix::_fragRectAt(size_t row, size_t col)
 {
-    int left = fragWidth * col;
-    int top = fragHeight * row;
-    int width = (col == cols - 1 ? edgeFragWidth : fragWidth);
-    int height = (row == rows - 1 ? edgeFragHeight : fragHeight);
+    int left = static_cast<int>(fragWidth) * static_cast<int>(col);
+    int top = static_cast<int>(fragHeight) * static_cast<int>(row);
+    int width = (col == cols - 1 ? static_cast<int>(edgeFragWidth) : static_cast<int>(fragWidth));
+    int height = (row == rows - 1 ? static_cast<int>(edgeFragHeight) : static_cast<int>(fragHeight));
     return QRect(left, top, width, height);
 }
 

@@ -40,10 +40,13 @@ protected:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    inline size_t stackSize();
+    inline size_t readInStackSize() {return muMaxReadInStackSize;}
+    inline size_t tempQueueSize() {return muMaxFragCount;}
     //[修改函数]
-    inline void clearReadInStack();
-    inline void setStackSize(size_t size);
+    inline void clearReadInStack() {mReadInStack.clear();}
+    inline void setReadInStackSize(size_t size) {mReadInStack.clear(); muMaxReadInStackSize = size;}
+    inline void clearTempQueue() {for(auto &pImage : mFragTempQueue)pImage->releaseImage(); mFragTempQueue.clear();}
+    inline void setTempQueueSize(size_t size) {clearTempQueue(); muMaxFragCount = size;}
     //单个压入读取栈
     void push_front(SImage *pImage);
     //多个压入读取栈，栈顶元素将是pImageArray的第一个元素
@@ -55,18 +58,5 @@ public:
 
 };
 
-size_t SFragLoader::stackSize()
-{
-    return muMaxFragCount;
-}
 
-void SFragLoader::setStackSize(size_t size)
-{
-    muMaxFragCount = size;
-}
-
-void SFragLoader::clearReadInStack()
-{
-    mReadInStack.clear();
-}
 #endif // SFRAGLOADER_H

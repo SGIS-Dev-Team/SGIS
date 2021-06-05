@@ -6,7 +6,7 @@
 #ifndef QT_NO_DEBUG
 #include <vld.h>
 #endif
-//仅在Debug模式下使用，调用VLDReportLeak()在应用程序输出中查看内存泄露报告
+//仅在Debug模式下使用，调用VLDReportLeak()在保存内存泄露报告
 
 #include"slogger.h"
 #include <QStandardPaths>
@@ -32,7 +32,7 @@
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
 #define SSTR(expr)#expr
-#define SDBG(expr)SSTR(expr)<<expr<<"\n"
+#define SDBG(expr)"var ["<<SSTR(expr)<<"]"<<expr<<"\n"
 #define S2DBG(expr1,expr2)SDBG(expr1)<<SDBG(expr2)
 #define S3DBG(expr1,expr2,expr3)S2DBG(expr1,expr2)<<SDBG(expr3)
 #define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)

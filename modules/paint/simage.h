@@ -7,29 +7,54 @@
 #include "gdal_priv.h"
 
 //------------------------
-//      SImage类
-//      多波段图像类
+//      SImageMeta类
+//      图像元数据类
 //------------------------
 
 class SImageMeta
 {
 private:
-    int Width{0}, Height{0}, BandCount{0};
-    GDALDataType DataType{GDT_Byte};
+    int mnWidth{0}, mnHeight{0}, mnBandCount{0};
+    GDALDataType mnDataType{GDT_Byte};
 public:
-    SImageMeta(int width, int height, int bandCount, GDALDataType dataType):
-        Width(width), Height(height), BandCount(bandCount), DataType(dataType)
+    explicit SImageMeta(int width, int height, int bandCount, GDALDataType dataType):
+        mnWidth(width), mnHeight(height), mnBandCount(bandCount), mnDataType(dataType)
     {
-        Q_ASSERT(Width >= 0 && Height >= 0 && BandCount >= 0);
-        Q_ASSERT(DataType >= 0 && DataType < GDT_TypeCount);
+        Q_ASSERT(mnWidth > 0 && mnHeight > 0 && mnBandCount >= 0);
+        Q_ASSERT(mnDataType >= 0 && mnDataType < GDT_TypeCount);
     }
-    SImageMeta() = default;
+    explicit SImageMeta(const QSize &imageSize, int bandCount, GDALDataType dataType):
+        mnWidth(imageSize.width()), mnHeight(imageSize.height()), mnBandCount(bandCount), mnDataType(dataType)
+    {
+        Q_ASSERT(mnWidth > 0 && mnHeight > 0 && mnBandCount >= 0);
+        Q_ASSERT(mnDataType >= 0 && mnDataType < GDT_TypeCount);
+    }
+    explicit SImageMeta() = default;
+    SImageMeta(const SImageMeta &meta) = default;
+    SImageMeta &operator=(const SImageMeta &meta) = default;
+
 public:
-    inline int width() const {return Width;}
-    inline int height() const {return Height;}
-    inline int bandCount() const {return BandCount;}
-    inline GDALDataType dataType() const {return DataType;}
+    inline int width() const {return mnWidth;}
+    inline int height() const {return mnHeight;}
+    inline QSize imageSize()const {return QSize(mnWidth, mnHeight);}
+    inline int bandCount() const {return mnBandCount;}
+    inline GDALDataType dataType() const {return mnDataType;}
+
+    inline int &rWidth() {return mnWidth;}
+    inline int &rHeight() {return mnHeight;}
+    inline void setImageSize(int w, int h) {Q_ASSERT(w > 0 && h > 0); mnWidth = w; mnHeight = h;}
+    inline void setImageSize(const QSize &sz) {Q_ASSERT(sz.width() > 0 && sz.height() > 0); mnWidth = sz.width(); mnHeight = sz.height();}
+    inline int &rBandCount() {return mnBandCount;}
+    inline GDALDataType &rDataType() {return mnDataType;}
+
+    inline bool isEmpty()const {return mnWidth == 0 || mnHeight == 0 || mnBandCount == 0;}
+    inline void clear() {mnWidth = 0; mnHeight = 0; mnBandCount = 0; mnDataType = GDT_Byte;}
 };
+
+//------------------------
+//      SImage类
+//      多波段图像类
+//------------------------
 
 class SImage : public SObject
 {
@@ -111,7 +136,7 @@ public:
     const QPixmap& getImage()const;
     const QString& getImagePath()const;
     bool isNull()const;
-    void getHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    void getHistEqFunc(std::shared_ptr<void> pEqFunc[])const;
 
     int getBandCount() const;
     void getBandIdices(int *pRGBIdx) const;
@@ -129,33 +154,22 @@ public:
     // 区域读取函数：使用set后的参数读取
     void load(const QString &imagePath = "");
 
-    /* 区域读取函数
-     * @param   x_off       读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
-     * @param   y_off       读取区域纵向偏移量，即起始行号，为0时从图像最上一行开始读取
-     * @param   x_span      区域横向跨度，即区域宽度（列数），为0时读取x_off开始的所有行
-     * @param   y_span      区域横向跨度，即区域高度（行数），为0时读取y_off开始的所有列
-     * @param   imagePath   图像文件完整路径（包含扩展名）
-     */
+    // 区域读取函数
     void load(int x_off, int y_off, int x_span, int y_span, const QString &imagePath = "");
 
-    /* 区域读取函数
-     * @param   rect        读取的图像区域
-     * @param   imagePath   图像文件完整路径（包含扩展名）
-     */
+    // 区域读取函数
     void load(const QRect &rect, const QString &imagePath = "");
 
-    /* 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
-     * @param   x_off           读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
-     * @param   y_off           读取区域纵向偏移量，即起始行号，为0时从图像最上一行开始读取
-     * @param   x_span          区域横向跨度，即区域宽度（列数），为0时读取x_off开始的所有行
-     * @param   y_span          区域横向跨度，即区域高度（行数），为0时读取y_off开始的所有列
-     * @param   image_width     对区域采样的图像宽
-     * @param   image_height    对区域采样的图像高
-     * @param   imagePath       图像文件完整路径（包含扩展名）
-     */
+    // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
     void load(int x_off, int y_off, int x_span, int y_span,
               int image_width, int image_height,
               const QString &imagePath = "");
+
+    // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
+    void load(const QRect &rect, double resampling_ratio, const QString &imagePath = "");
+
+    // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
+    void load(int x_off, int y_off, int x_span, int y_span, double resampling_ratio, const QString &imagePath = "");
 
     /* 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
      * @param   x_off           读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
@@ -170,29 +184,31 @@ public:
               int image_width, int image_height,
               GDALDataset *pDataSet);
 
-    /* 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
-     * @param   rect            读取的图像区域
-     * @param   sampling_ratio  图像采样倍数
-     * @param   imagePath       图像文件完整路径（包含扩展名）
-     */
-    void load(const QRect &rect, int down_sampling_ratio, const QString &imagePath = "");
 
     bool save(const QString& _savePath);
     //设置路径（不加载图片）
     void setImagePath(const QString& imagePath);
     void setImage(const QPixmap& image);
-    //释放图片内存
+    //释放图像内存
     void releaseImage();
+    //释放所有内存
+    void releaseMemory();
     //改变波段
     void setRedBandIdx(int value, bool reload, std::shared_ptr<void> pHistEqFunc = nullptr);
     void setGreenBandIdx(int value, bool reload, std::shared_ptr<void> pHistEqFunc = nullptr);
     void setBlueBandIdx(int value, bool reload, std::shared_ptr<void> pHistEqFunc = nullptr);
     //设置波段：从1开始
     void setBandIndex(int channel, int bandIdx, bool reload, std::shared_ptr<void> pHistEqFunc = nullptr);
-    void setBandIndices(int r, int g, int b, bool reload);
-    void setBandIndices(int r, int g, int b, bool reload, std::shared_ptr<void> pHistEqFuncs[]);
+    //预设置载入波段
+    void presetBandIndices(int r, int g, int b);
+    void presetBandIndices(int r, int g, int b, std::shared_ptr<void> pHistEqFuncs[]);
+    //该函数将判断哪些波段需要重新载入
+    void setBandIndices(int r, int g, int b);
+    void setBandIndices(int r, int g, int b, std::shared_ptr<void> pHistEqFuncs[]);
     //设置波段为默认值
-    void setDefaultedBands(bool reload);
+    void setDefaultedBands();
+    //设置为默认波段但不加载
+    void presetDefaultedBands();
     //设置均衡化函数
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
     //设置图像读取区域

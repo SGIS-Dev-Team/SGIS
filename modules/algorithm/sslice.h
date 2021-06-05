@@ -13,13 +13,11 @@
 //分片大小
 #define SLICE_SIZE 800
 
-
 //------------------------------------------
 //  SSlice类
 //  切片和金字塔
 //  直接调用getOverviewsSlice函数即可
 //------------------------------------------
-
 
 class SSlice: public QObject
 {

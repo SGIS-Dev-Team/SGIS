@@ -80,7 +80,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setFragmentPath(file_info.filePath());
+    pFragImg->setPyramidDir(file_info.filePath());
     pFragImg->loadMeta();
 
     pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
@@ -92,38 +92,41 @@ void SEditor::onActionLoadFragmentsTriggered()
     mpCurDoc->getLayerManager().addLayer(pFragImg);
 }
 
-#include "qbandselectdialog.h"
+#include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
     //获取要读取的文件路径
-    QString strImagePath = QFileDialog::getOpenFileName(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-    if(strImagePath.isEmpty())
+    QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+    if(strImagePathList.isEmpty())
         return;
 
     //打开波段预览对话框
-    QBandSelectDialog dialog(strImagePath, this);
-    dialog.exec();
+    mpImportDialog.get()->setImagePathList(strImagePathList);
+    mpImportDialog.get()->exec();
 
-    if(dialog.getPyramidDirPath().isEmpty())
-    {
-        QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
-        return;
-    }
-
-    //选择完成：将影像读入
+    //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
-    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
+    auto &streamMetaVec = mpImportDialog.get()->getStreamMetaVec();
+    for(auto &pStreamMeta : streamMetaVec)
+    {
+        SImageStreamMeta &streamMeta = *pStreamMeta;
 
-    QFileInfo file_info(dialog.getPyramidDirPath());
-    pFragImg->setFragmentPath(file_info.filePath());
-    pFragImg->loadMeta();
+        if(streamMeta.isImported())
+            continue;
 
-    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-    pFragImg->setHoldTopPyramidEnabled(true);
-    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
+        SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
 
-    mpCurDoc->getLayerManager().addLayer(pFragImg);
+        pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+        pFragImg->setHoldTopPyramidEnabled(true);
+        pFragImg->setBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
+        std::shared_ptr<void> pEqFunc[3] {nullptr};
+        streamMeta.getHistEqFunc(pEqFunc);
+        pFragImg->setHistEqFunc(pEqFunc);
+
+        mpCurDoc->getLayerManager().addLayer(pFragImg);
+        streamMeta.setImported(true);
+    }
 }
 
 #include <QTextEdit>
@@ -221,11 +224,14 @@ void SEditor::closeEvent(QCloseEvent *event)
 void SEditor::initialize()
 {
     /*-----初始化状态栏-----*/
-    mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
-    mpStatLblCursorPos = new QLabel(ui->mStatusBar);
+    mpStatLblCanvasScale.reset(new QLabel(ui->mStatusBar));
+    mpStatLblCursorPos.reset(new QLabel(ui->mStatusBar));
 
-    ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
-    ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
+    ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos.get());
+    ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale.get());
+
+    /*-----初始化子窗口-----*/
+    mpImportDialog.reset(new QDataImportWizard(this));
 
     /*-----创建绘图区-----*/
     createWorkspace();
@@ -239,11 +245,12 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
 
-    //[测试用链接]
+    //-----测试用链接-----//
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
     connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
     connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
+    //-----测试用链接-----//
 
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);

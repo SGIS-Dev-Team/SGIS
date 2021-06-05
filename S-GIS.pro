@@ -13,6 +13,7 @@ SOURCES += \
     modules/algorithm/soverviewbuilder.cpp \
     modules/algorithm/sslice.cpp \
     modules/doc/sdocument.cpp \
+    modules/doc/simagestreammeta.cpp \
     modules/doc/slayermanager.cpp \
     modules/main.cpp \
     modules/paint/sfragimage.cpp \
@@ -24,13 +25,12 @@ SOURCES += \
     modules/paint/sshapefactory.cpp \
     modules/slogger.cpp \
     modules/widget/mainwindow.cpp \
-    modules/widget/qbandselectdialog.cpp \
     modules/widget/qcanvas.cpp \
     modules/widget/qcanvasarea.cpp \
+    modules/widget/qdataimportwizard.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
-    modules/widget/straymgr.cpp \
-    modules/widget/qbandselectdialog.cpp
+    modules/widget/straymgr.cpp
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
@@ -38,6 +38,7 @@ HEADERS += \
     modules/algorithm/soverviewbuilder.h \
     modules/algorithm/sslice.h \
     modules/doc/sdocument.h \
+    modules/doc/simagestreammeta.h \
     modules/doc/slayermanager.h \
     modules/global.h \
     modules/paint/sfragimage.h \
@@ -50,20 +51,17 @@ HEADERS += \
     modules/paint/sshapefactory.h \
     modules/slogger.h \
     modules/widget/mainwindow.h \
-    modules/widget/qbandselectdialog.h \
     modules/widget/qcanvas.h \
     modules/widget/qcanvasarea.h \
+    modules/widget/qdataimportwizard.h \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
-    modules/widget/straymgr.h \
-    modules/widget/qbandselectdialog.h
+    modules/widget/straymgr.h
 
 FORMS += \
     modules/widget/mainwindow.ui \
-    modules/widget/mainwindow.ui \
-    modules/widget/qbandselectdialog.ui \
     modules/widget/seditor.ui \
-    modules/widget/seditor.ui \
+    modules/widget/qdataimportwizard.ui \
 
 TRANSLATIONS += \
     S-GIS_zh_CN.ts

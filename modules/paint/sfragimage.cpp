@@ -10,6 +10,18 @@ SFragImage::SFragImage(SFragLoader &_loader, bool _selected, QPointF center, con
     _initializeConnections();
 }
 
+SFragImage::SFragImage(const SImageStreamMeta &_streamMeta, SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+{
+    _initializeConnections();
+
+    if(_streamMeta.isOverviewsReady())
+        onOverviewsReady(_streamMeta.pyramidDirPath());
+    else
+        connect(&_streamMeta, &SImageStreamMeta::overviewsBuilt, this, &SFragImage::onOverviewsReady);
+}
+
+
 SFragImage::~SFragImage()
 {
     _destroyConnections();
@@ -17,7 +29,6 @@ SFragImage::~SFragImage()
 
 void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
-    //CLOCK_START(1)
     //检测视图显示区域是否与图像区域重合
     if(!intersect(viewLogicalArea))
         return;
@@ -44,18 +55,15 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
 
     //-----绘图-----//
     //从下往上绘制各层金字塔影像
-    //CLOCK_START(2)
     for(int i = mFragMatVec.size() - 1; i >= 0; --i)
         mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
-    //CLOCK_STOP(2)
-    //CLOCK_STOP(1)
     //-----绘图-----//
 
     //还原变换
     painter.setTransform(oldTransform);
 }
 
-void SFragImage::setFragmentPath(const QString &dirPath)
+void SFragImage::setPyramidDir(const QString &dirPath)
 {
     this->mStrDirPath = dirPath;
 }
@@ -70,21 +78,6 @@ void SFragImage::setBandIndices(int r, int g, int b)
 {
     for(auto& mat : mFragMatVec)
         mat.setBandIndices(r, g, b);
-    if(mFragMatVec.empty())
-        return;
-
-    //计算并设置顶层金字塔均衡化函数
-    SImage *pImage = mFragMatVec.back().getData();
-    pImage->load();
-
-    std::shared_ptr<void> pEqFunc[3];
-    pImage->getHistEqFunc(pEqFunc);
-
-    for(auto &mat : mFragMatVec)
-        mat.setHistEqFunc(pEqFunc);
-
-    if(!mbHoldTopPyramid)
-        pImage->releaseImage();
 }
 
 void SFragImage::setHoldTopPyramidEnabled(bool hold)
@@ -98,8 +91,12 @@ void SFragImage::setHoldTopPyramidEnabled(bool hold)
         this->mFragMatVec.back().getData()->releaseImage();
 }
 
-void SFragImage::loadMeta()
+void SFragImage::loadMeta(const QString &pyramidDir)
 {
+    if(!pyramidDir.isEmpty())
+        mStrDirPath = pyramidDir;
+    Q_ASSERT(mStrDirPath.isEmpty());
+
     //打开元数据文本文件
     QFile file(mStrDirPath + '/' + QFileInfo(mStrDirPath).fileName() + "_Meta.txt");
     if(!file.open(QFile::ReadOnly))
@@ -121,6 +118,7 @@ void SFragImage::loadMeta()
     int nBaseWidth, nBaseHeight;
     stream >> buf >> nLevel >> buf >> nBaseWidth >> buf >> nBaseHeight;
 
+    mFragMatVec.clear();
     mFragMatVec.reserve(nLevel);
     stream.readLine();  //将最后一行的换行符读取掉
     for(int i = 0; i < nLevel; ++i)
@@ -145,13 +143,11 @@ void SFragImage::loadMeta()
 
 void SFragImage::_initializeConnections()
 {
-    connect(this, &SFragImage::paintFrag, &mFragLoader, &SFragLoader::doPaintFrag);
     connect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
 }
 
 void SFragImage::_destroyConnections()
 {
-    disconnect(this, &SFragImage::paintFrag, &mFragLoader, &SFragLoader::doPaintFrag);
     disconnect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
 }
 
@@ -226,4 +222,10 @@ void SFragImage::_applyTransform()
 QRectF SFragImage::_originalRect()
 {
     return mImageRect;
+}
+
+void SFragImage::onOverviewsReady(QString pyramidDir)
+{
+    this->setPyramidDir(pyramidDir);
+    this->loadMeta();
 }
