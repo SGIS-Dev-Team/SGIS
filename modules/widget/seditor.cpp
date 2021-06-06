@@ -101,7 +101,7 @@ void SEditor::onActionLoadHugeImageTriggered()
         return;
 
     //打开波段预览对话框
-    mpImportDialog.get()->setImagePathList(strImagePathList);
+    mpImportDialog.get()->addImagePaths(strImagePathList);
     mpImportDialog.get()->exec();
 
     //将影像读入

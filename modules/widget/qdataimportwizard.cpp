@@ -7,17 +7,23 @@
 #include <QComboBox>
 #include <QFileInfo>
 #include <modules/paint/simage.h>
+#include <QDesktopServices>
+#include <QMouseEvent>
+#include <QFileDialog>
 
 QDataImportWizard::QDataImportWizard(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::QDataImportWizard)
 {
     ui->setupUi(this);
+    //初始化
+    _initialize();
 }
 
 QDataImportWizard::QDataImportWizard(const QStringList &imagePathList, QWidget *parent): QDataImportWizard(parent)
 {
-    setImagePathList(imagePathList);
+    //添加数据
+    addImagePaths(imagePathList);
 }
 
 QDataImportWizard::~QDataImportWizard()
@@ -49,8 +55,9 @@ void QDataImportWizard::onComboBoxIndexChanged(int idx)
                       ui->mComboRed->currentIndex() + 1,
                       ui->mComboGreen->currentIndex() + 1,
                       ui->mComboBlue->currentIndex() + 1);
-
-    streamMeta.setImported(false);
+    //非信号调用
+    if(idx != -1)
+        streamMeta.setImported(false);
 }
 
 void QDataImportWizard::onButtonImportClicked()
@@ -61,7 +68,11 @@ void QDataImportWizard::onButtonImportClicked()
 void QDataImportWizard::onPreviewImageLoaded()
 {
     if(muCurrentPreviewIndex == muCurrentLoadingPreviewIndex)
-        ui->mLabelPreviewImage->setPixmap(mStreamMetaVec[muCurrentPreviewIndex].get()->previewImage().getImage());
+    {
+        SImageStreamMeta &streamMeta = *mStreamMetaVec[muCurrentPreviewIndex];
+        ui->mLabelPreviewImage->setPixmap(streamMeta.previewImage().getImage());
+        ui->mLabelPreviewImage->setMaximumSize(streamMeta.imageMeta().imageSize());
+    }
 
     this->setCursor(QCursor());
     ui->mLabelTitle->setText(tr("Choose three bands to preview"));
@@ -69,24 +80,91 @@ void QDataImportWizard::onPreviewImageLoaded()
     ui->mComboRed->setEnabled(true);
     ui->mComboGreen->setEnabled(true);
     ui->mComboBlue->setEnabled(true);
+
+    auto pStreamMeta = mStreamMetaVec[muCurrentLoadingPreviewIndex].get();
+    disconnect(this, &QDataImportWizard::startLoadingPreview, pStreamMeta, &SImageStreamMeta::loadPreviewImage);
+    disconnect(pStreamMeta, &SImageStreamMeta::previewImageLoaded, this, &QDataImportWizard::onPreviewImageLoaded);
 }
 
-void QDataImportWizard::setImagePathList(const QStringList &imagePathList)
+void QDataImportWizard::onListItemDoubleClicked(const QModelIndex &index)
+{
+    size_t rowIdx = static_cast<size_t>(index.row());
+    if(rowIdx != muCurrentPreviewIndex)
+        _setCurrentImage(rowIdx);
+}
+
+void QDataImportWizard::onListViewMenuActionOpenInExplorerTriggered()
+{
+    QModelIndex index = mListItemSltModel.currentIndex();
+    const QString &imagePath = mStreamMetaVec[index.row()]->originialImagePath();
+    QDesktopServices::openUrl(QUrl(QFileInfo(imagePath).path()));
+}
+
+void QDataImportWizard::onListViewMenuActionAddImageTriggered()
+{
+    QStringList imagePathList = QFileDialog::getOpenFileNames(this, tr("Add Image"), tr(""), tr("Images (*.tif *.tiff)"));
+    if(imagePathList.isEmpty())
+        return;
+
+    addImagePaths(imagePathList);
+}
+
+void QDataImportWizard::onListViewMenuActionRemoveTriggered()
+{
+
+}
+
+void QDataImportWizard::onListViewMenuActionRemoveAllTriggered()
+{
+
+}
+
+void QDataImportWizard::onListViewMenuActionRebuildOverviewsTriggered()
+{
+
+}
+
+void QDataImportWizard::onListViewMenuActionShowMetaDataTriggered()
+{
+
+}
+
+void QDataImportWizard::setImagePaths(const QStringList &imagePathList)
 {
     mStreamMetaVec.clear();
+    mImageListModel.removeRows(0, mImageListModel.rowCount());
+    mListItemSltModel.clear();
 
+    addImagePaths(imagePathList);
+}
+
+void QDataImportWizard::addImagePaths(const QStringList &imagePathList)
+{
+    //构造并追加图像数据流
     for(auto &path : imagePathList)
         this->mStreamMetaVec.push_back(
             std::make_shared<SImageStreamMeta>(
                 path, SOverviewBuilder::generatePyramidDir(path, mStrPyramidSavePath)));
 
-    _initialize();
+    //更新图像列表数据模型
+    QStringList imageFileNameList;
+    for(auto &imagePath : imagePathList)
+        imageFileNameList << QFileInfo(imagePath).fileName();
+    mImageListModel.setStringList(mImageListModel.stringList() << imageFileNameList);
+
+    //设置显示第一张图像的缩略图
+    if(!mListItemSltModel.currentIndex().isValid())
+        _setCurrentImage(0);
+}
+
+void QDataImportWizard::removeStream(size_t idx)
+{
+    Q_ASSERT(idx < mStreamMetaVec.size());
 }
 
 void QDataImportWizard::_initialize()
 {
-    if(mStreamMetaVec.empty())
-        return;
+    mStreamMetaVec.clear();
 
     //------更新图像显示------//
     mbUpdatePreviewImg = true;
@@ -101,7 +179,7 @@ void QDataImportWizard::_initialize()
     mBuilderThread.start();
 
     //找到第一个未构建金字塔的图像
-    for(; muCurrentBuildingIndex != mStreamMetaVec.size(); ++muCurrentBuildingIndex)
+    for(muCurrentBuildingIndex = 0; muCurrentBuildingIndex != mStreamMetaVec.size(); ++muCurrentBuildingIndex)
         if(!mStreamMetaVec[muCurrentBuildingIndex].get()->isOverviewsReady())
             break;
 
@@ -110,11 +188,18 @@ void QDataImportWizard::_initialize()
         emit startBuildingThread(mStreamMetaVec[muCurrentBuildingIndex].get()->originialImagePath(),
                                  this->mStrPyramidSavePath, SOverviewBuilder::TIFF);
 
+    //------准备图像列表数据模型------//
+    //数据模型
+    mImageListModel.removeRows(0, mImageListModel.rowCount());
+    //选择模型
+    mListItemSltModel.clear();
+    mListItemSltModel.setModel(&mImageListModel);
+    //链接模型与视图
+    ui->mImageListView->setModel(&mImageListModel);
+    ui->mImageListView->setSelectionModel(&mListItemSltModel);
+
     //初始化链接
     _initializeConnections();
-
-    //设置显示第一张图像的缩略图
-    _setCurrentImage(0);
 }
 
 void QDataImportWizard::_initializeConnections()
@@ -126,6 +211,21 @@ void QDataImportWizard::_initializeConnections()
             this, &QDataImportWizard::onComboBoxIndexChanged);
     connect(ui->mComboBlue, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &QDataImportWizard::onComboBoxIndexChanged);
+    //链接列表视图事件
+    connect(ui->mImageListView, &QListView::doubleClicked, this, &QDataImportWizard::onListItemDoubleClicked);
+    //链接列表视图右键菜单触发事件
+    connect(ui->mImageListView->getAction(QImageListView::Open_In_Explorer), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionOpenInExplorerTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Add_Image), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionAddImageTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Remove), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionRemoveTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Remove_All), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionRemoveAllTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Show_Meta_Data), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionShowMetaDataTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Rebuild_Overviews), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionRebuildOverviewsTriggered);
 }
 
 void QDataImportWizard::_setCurrentImage(size_t idx)
@@ -155,16 +255,19 @@ void QDataImportWizard::_setCurrentImage(size_t idx)
     ui->mComboGreen ->addItems(bandStrList);
     ui->mComboBlue  ->addItems(bandStrList);
     //确定当前显示的波段
-    ui->mComboRed   ->setCurrentIndex(bandCount > 3 ? 0 : 0);
-    ui->mComboGreen ->setCurrentIndex(bandCount > 3 ? 1 : 0);
-    ui->mComboBlue  ->setCurrentIndex(bandCount > 3 ? 2 : 0);
+    ui->mComboRed   ->setCurrentIndex(bandCount >= 3 ? 0 : 0);
+    ui->mComboGreen ->setCurrentIndex(bandCount >= 3 ? 1 : 0);
+    ui->mComboBlue  ->setCurrentIndex(bandCount >= 3 ? 2 : 0);
 
     //------更新图像元数据简略信息栏------//
     ui->mLabelImageMeta->setText(_generateMetaInfo(streamMeta));
     mbUpdatePreviewImg = true;
 
+    //更新选中的图像
+    mListItemSltModel.select(mImageListModel.index(idx), QItemSelectionModel::ClearAndSelect);
+
     //更新预览图
-    onComboBoxIndexChanged(0);
+    onComboBoxIndexChanged(-1);
 }
 
 QString QDataImportWizard::_generateMetaInfo(const SImageStreamMeta & streamMeta)
@@ -174,7 +277,7 @@ QString QDataImportWizard::_generateMetaInfo(const SImageStreamMeta & streamMeta
     textStream << QFileInfo(streamMeta.originialImagePath()).fileName() << '\n';
     const SImageMeta &meta = streamMeta.imageMeta();
     textStream << meta.width() << " * " << meta.height()
-               << "\t" << meta.bandCount()
+               << "    " << meta.bandCount()
                << tr(" bands(") << GDALGetDataTypeSizeBits(meta.dataType()) << tr(" bit)\n");
     return metaInfoStr;
 }
@@ -199,14 +302,14 @@ void QDataImportWizard::_loadPreviewImage(size_t idx, int r, int g, int b)
     SImageStreamMeta *pStreamMeta = mStreamMetaVec[idx].get();
 
     pStreamMeta->moveToThread(pPreviewLoaderThread);
-    connect(this, &QDataImportWizard::startLoadPreview, pStreamMeta, &SImageStreamMeta::loadPreviewImage);
+    connect(this, &QDataImportWizard::startLoadingPreview, pStreamMeta, &SImageStreamMeta::loadPreviewImage);
     connect(pStreamMeta, &SImageStreamMeta::previewImageLoaded, this, &QDataImportWizard::onPreviewImageLoaded);
     //事件队列处理完成后释放该QThread临时对象的内存
     connect(pPreviewLoaderThread, &QThread::finished, pPreviewLoaderThread, &QObject::deleteLater);
 
     pPreviewLoaderThread->start();
     //为该临时线程的事件队列添加任务
-    emit startLoadPreview(r, g, b);
+    emit startLoadingPreview(r, g, b);
     //在标题设置状态提示
     ui->mLabelTitle->setText(tr("Loading Preview Image..."));
 }
@@ -217,6 +320,8 @@ void QDataImportWizard::onOverviewBuilt()
     //更新状态信息
     streamMeta.setStreamStatus(tr("Overviews are ready for this image."));
     streamMeta.setBuildingProgress(100);
+    //TODO:将列表项底色变绿
+
     //找到下一张未构建金字塔的影像
     while(++muCurrentBuildingIndex != mStreamMetaVec.size())
         if(!streamMeta.isOverviewsReady())

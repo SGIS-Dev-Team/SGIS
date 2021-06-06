@@ -13,7 +13,7 @@ public:
     ~CLASS();
 
     /*-----虚函数重载-----*/
-public:
+protected:
 
     /*-----信号-----*/
 signals:

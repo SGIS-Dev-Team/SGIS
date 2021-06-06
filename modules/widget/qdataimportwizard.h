@@ -9,6 +9,8 @@
 #include <modules/doc/simagestreammeta.h>
 #include <modules/paint/sfragloader.h>
 #include <modules/paint/sfragimage.h>
+#include <QStringListModel>
+#include <QItemSelectionModel>
 
 namespace Ui
 {
@@ -26,12 +28,12 @@ public:
     ~QDataImportWizard();
 
     /*-----虚函数重载-----*/
-public:
+protected:
 
     /*-----信号-----*/
 signals:
     void startBuildingThread(QString imgPath, QString savePath, SOverviewBuilder::Format format = SOverviewBuilder::TIFF);
-    void startLoadPreview(int r = 0, int g = 0, int b = 0);
+    void startLoadingPreview(int r = 0, int g = 0, int b = 0);
 
     /*-----槽函数-----*/
 private slots:
@@ -45,6 +47,15 @@ private slots:
     void onButtonImportClicked();
     //预览图加载完成
     void onPreviewImageLoaded();
+    //图像列表双击事件
+    void onListItemDoubleClicked(const QModelIndex &index);
+    //图像列表右键菜单触发
+    void onListViewMenuActionOpenInExplorerTriggered();
+    void onListViewMenuActionAddImageTriggered();
+    void onListViewMenuActionRemoveTriggered();
+    void onListViewMenuActionRemoveAllTriggered();
+    void onListViewMenuActionRebuildOverviewsTriggered();
+    void onListViewMenuActionShowMetaDataTriggered();
 
     /*-----成员变量-----*/
 protected:
@@ -66,6 +77,10 @@ protected:
     QThread mBuilderThread{};
     //构建器
     SOverviewBuilder mOverviewBuilder{};
+    //图像列表数据模型
+    QStringListModel mImageListModel{};
+    //图像列表选择模型
+    QItemSelectionModel mListItemSltModel{};
 
     /*-----成员函数-----*/
 public:
@@ -77,7 +92,9 @@ public:
 
     //[修改函数]
     inline void removeStreamMeta(size_t idx) {mStreamMetaVec.erase(mStreamMetaVec.begin() + idx);}
-    void setImagePathList(const QStringList &imagePathList);
+    void setImagePaths(const QStringList &imagePathList);
+    void addImagePaths(const QStringList &imagePathList);
+    void removeStream(size_t idx);
 
     //[功能函数]
 private:

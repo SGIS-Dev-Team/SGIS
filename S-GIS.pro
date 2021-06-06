@@ -28,6 +28,7 @@ SOURCES += \
     modules/widget/qcanvas.cpp \
     modules/widget/qcanvasarea.cpp \
     modules/widget/qdataimportwizard.cpp \
+    modules/widget/qimagelistview.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
     modules/widget/straymgr.cpp
@@ -54,6 +55,7 @@ HEADERS += \
     modules/widget/qcanvas.h \
     modules/widget/qcanvasarea.h \
     modules/widget/qdataimportwizard.h \
+    modules/widget/qimagelistview.h \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
     modules/widget/straymgr.h

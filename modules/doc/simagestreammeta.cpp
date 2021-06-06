@@ -4,7 +4,10 @@
 
 void SImageStreamMeta::loadPreviewImage(int r, int g, int b)
 {
-    _loadPreviewImage(r, g, b);
+    if(mPreviewImage.isNull())
+        _loadPreviewImage(r, g, b);
+    else
+        mPreviewImage.setBandIndices(r, g, b);
     moveBackToMainThread();
     emit previewImageLoaded();
 }

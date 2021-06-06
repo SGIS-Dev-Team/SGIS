@@ -325,7 +325,7 @@ void SImage::setBandIndices(int r, int g, int b, std::shared_ptr<void> pHistEqFu
 
 void SImage::setDefaultedBands()
 {
-    if(mnBands > 3)
+    if(mnBands >= 3)
         setBandIndices(1, 2, 3);
     else
         setBandIndices(1, 1, 1);

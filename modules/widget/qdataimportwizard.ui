@@ -211,7 +211,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="mImageList"/>
+          <widget class="QImageListView" name="mImageList">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QFrame" name="mButtonFrame">
@@ -258,6 +262,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QImageListView</class>
+   <extends>QListView</extends>
+   <header>qimagelistview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
