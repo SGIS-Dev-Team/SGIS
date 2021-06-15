@@ -39,7 +39,7 @@ void QDataImportWizard::onProgressUpdated(int progress, QString info)
     ui->mProgressBarBuildOverview->setValue(progress);
     ui->mLabelStatus->setText(info);
     //更新流
-    this->mStreamMetaVec[muCurrentBuildingIndex].get()->setBuildingProgress(progress);
+    this->mStreamMetaVec[mnCurrentBuildingIndex].get()->setBuildingProgress(progress);
 }
 
 void QDataImportWizard::onComboBoxIndexChanged(int idx)
@@ -49,9 +49,9 @@ void QDataImportWizard::onComboBoxIndexChanged(int idx)
     //改变鼠标图标
     this->setCursor(QCursor(Qt::BusyCursor));
 
-    auto &streamMeta = *mStreamMetaVec[muCurrentPreviewIndex];
+    auto &streamMeta = *mStreamMetaVec[mnCurrentPreviewIndex];
     //根据三个组合框选择的波段更新预览图
-    _loadPreviewImage(muCurrentPreviewIndex,
+    _loadPreviewImage(mnCurrentPreviewIndex,
                       ui->mComboRed->currentIndex() + 1,
                       ui->mComboGreen->currentIndex() + 1,
                       ui->mComboBlue->currentIndex() + 1);
@@ -62,14 +62,29 @@ void QDataImportWizard::onComboBoxIndexChanged(int idx)
 
 void QDataImportWizard::onButtonImportClicked()
 {
+    //全部已完成构建
+    if(mnCurrentBuildingIndex == -1)
+    {
+        this->hide();
+        emit importingData();
+    }
+    else
+    {
+        QMessageBox::critical(this, tr("Failed"), tr("Currently building overviews for added images."));
+    }
+}
 
+void QDataImportWizard::onButtonBackgroundClicked()
+{
+    this->hide();
+    emit holdingBackground();
 }
 
 void QDataImportWizard::onPreviewImageLoaded()
 {
-    if(muCurrentPreviewIndex == muCurrentLoadingPreviewIndex)
+    if(mnCurrentPreviewIndex == mnCurrentLoadingPreviewIndex)
     {
-        SImageStreamMeta &streamMeta = *mStreamMetaVec[muCurrentPreviewIndex];
+        SImageStreamMeta &streamMeta = *mStreamMetaVec[mnCurrentPreviewIndex];
         ui->mLabelPreviewImage->setPixmap(streamMeta.previewImage().getImage());
         ui->mLabelPreviewImage->setMaximumSize(streamMeta.imageMeta().imageSize());
     }
@@ -77,20 +92,25 @@ void QDataImportWizard::onPreviewImageLoaded()
     this->setCursor(QCursor());
     ui->mLabelTitle->setText(tr("Choose three bands to preview"));
 
+    //恢复控件响应
     ui->mComboRed->setEnabled(true);
     ui->mComboGreen->setEnabled(true);
     ui->mComboBlue->setEnabled(true);
+    ui->mImageListView->setEnabled(true);
 
-    auto pStreamMeta = mStreamMetaVec[muCurrentLoadingPreviewIndex].get();
+
+    auto pStreamMeta = mStreamMetaVec[mnCurrentLoadingPreviewIndex].get();
     disconnect(this, &QDataImportWizard::startLoadingPreview, pStreamMeta, &SImageStreamMeta::loadPreviewImage);
     disconnect(pStreamMeta, &SImageStreamMeta::previewImageLoaded, this, &QDataImportWizard::onPreviewImageLoaded);
 }
 
 void QDataImportWizard::onListItemDoubleClicked(const QModelIndex &index)
 {
-    size_t rowIdx = static_cast<size_t>(index.row());
-    if(rowIdx != muCurrentPreviewIndex)
+    int rowIdx = index.row();
+    if(rowIdx != mnCurrentPreviewIndex)
         _setCurrentImage(rowIdx);
+    //清空选择
+    mListItemSltModel.clear();
 }
 
 void QDataImportWizard::onListViewMenuActionOpenInExplorerTriggered()
@@ -98,6 +118,8 @@ void QDataImportWizard::onListViewMenuActionOpenInExplorerTriggered()
     QModelIndex index = mListItemSltModel.currentIndex();
     const QString &imagePath = mStreamMetaVec[index.row()]->originialImagePath();
     QDesktopServices::openUrl(QUrl(QFileInfo(imagePath).path()));
+    //清空选择
+    mListItemSltModel.clear();
 }
 
 void QDataImportWizard::onListViewMenuActionAddImageTriggered()
@@ -107,21 +129,77 @@ void QDataImportWizard::onListViewMenuActionAddImageTriggered()
         return;
 
     addImagePaths(imagePathList);
+    //清空选择
+    mListItemSltModel.clear();
+}
+
+void QDataImportWizard::onListViewMenuActionAddTarballTriggered()
+{
+
+    //清空选择
+    mListItemSltModel.clear();
 }
 
 void QDataImportWizard::onListViewMenuActionRemoveTriggered()
 {
+    QModelIndexList idxList = mListItemSltModel.selectedIndexes();
 
+    //是否包含正在显示的图像
+    bool includeCurrentPreview {false};
+    //临时数组；用来存要删除的序号
+    std::vector<size_t> dltIdxVec;
+    dltIdxVec.reserve(idxList.size());
+
+    for(auto &idx : idxList)
+    {
+        if(idx.row() == mnCurrentPreviewIndex)
+            includeCurrentPreview = true;
+        dltIdxVec.emplace_back(idx.row());
+    }
+
+    //执行删除
+    removeStreams(dltIdxVec);
+
+    if(includeCurrentPreview && mStreamMetaVec.size() != 0)
+    {
+        _setCurrentImage(0);
+        mListItemSltModel.select(mImageListModel.index(0), QItemSelectionModel::ClearAndSelect);
+    }
 }
 
 void QDataImportWizard::onListViewMenuActionRemoveAllTriggered()
 {
-
+    setImagePaths(QStringList());
 }
 
 void QDataImportWizard::onListViewMenuActionRebuildOverviewsTriggered()
 {
+    //检测当前是否正在构建该图像的金字塔
+    int idx = mListItemSltModel.currentIndex().row();
+    if(idx == mnCurrentBuildingIndex)
+    {
+        QMessageBox::critical(this, tr("Unsuccessful"), tr("Currently building overviews for the selected image.\nPlease retry later."));
+        return;
+    }
 
+    //重置金字塔的显示
+    SImageStreamMeta &streamMeta = *mStreamMetaVec[idx];
+
+    if(idx == mnCurrentPreviewIndex)
+    {
+        ui->mLabelStatus->setText(tr(""));
+        ui->mProgressBarBuildOverview->setValue(0);
+    }
+
+    //重设构建进度
+    streamMeta.setBuildingProgress(0);
+
+    //删除原有金字塔数据
+    SOverviewBuilder::removeExistingPyramid(streamMeta.pyramidDirPath());
+
+    //如果当前不在构建金字塔，则继续构建
+    if(mnCurrentBuildingIndex == -1)
+        onOverviewBuilt();
 }
 
 void QDataImportWizard::onListViewMenuActionShowMetaDataTriggered()
@@ -134,7 +212,7 @@ void QDataImportWizard::setImagePaths(const QStringList &imagePathList)
     mStreamMetaVec.clear();
     mImageListModel.removeRows(0, mImageListModel.rowCount());
     mListItemSltModel.clear();
-
+    //添加图像
     addImagePaths(imagePathList);
 }
 
@@ -153,13 +231,28 @@ void QDataImportWizard::addImagePaths(const QStringList &imagePathList)
     mImageListModel.setStringList(mImageListModel.stringList() << imageFileNameList);
 
     //设置显示第一张图像的缩略图
-    if(!mListItemSltModel.currentIndex().isValid())
+    if(mStreamMetaVec.size() > 0)
         _setCurrentImage(0);
+
+    //如果没有正在构建的金字塔
+    if(mnCurrentBuildingIndex == -1)
+        onOverviewBuilt();
 }
 
 void QDataImportWizard::removeStream(size_t idx)
 {
     Q_ASSERT(idx < mStreamMetaVec.size());
+    mImageListModel.removeRow(idx);
+    mStreamMetaVec.erase(mStreamMetaVec.begin() + idx);
+}
+
+void QDataImportWizard::removeStreams(std::vector<size_t> indices)
+{
+    //先从大到小排序
+    std::sort(indices.rbegin(), indices.rend());
+    //从大到小删
+    for(auto idx : indices)
+        removeStream(idx);
 }
 
 void QDataImportWizard::_initialize()
@@ -178,16 +271,6 @@ void QDataImportWizard::_initialize()
     connect(&mBuilderThread, &QThread::finished, &mOverviewBuilder, &QObject::deleteLater);
     mBuilderThread.start();
 
-    //找到第一个未构建金字塔的图像
-    for(muCurrentBuildingIndex = 0; muCurrentBuildingIndex != mStreamMetaVec.size(); ++muCurrentBuildingIndex)
-        if(!mStreamMetaVec[muCurrentBuildingIndex].get()->isOverviewsReady())
-            break;
-
-    //发射构建开始信号
-    if(muCurrentBuildingIndex != mStreamMetaVec.size())
-        emit startBuildingThread(mStreamMetaVec[muCurrentBuildingIndex].get()->originialImagePath(),
-                                 this->mStrPyramidSavePath, SOverviewBuilder::TIFF);
-
     //------准备图像列表数据模型------//
     //数据模型
     mImageListModel.removeRows(0, mImageListModel.rowCount());
@@ -197,6 +280,8 @@ void QDataImportWizard::_initialize()
     //链接模型与视图
     ui->mImageListView->setModel(&mImageListModel);
     ui->mImageListView->setSelectionModel(&mListItemSltModel);
+    //设置选择模式
+    ui->mImageListView->setSelectionMode(QAbstractItemView::SelectionMode::MultiSelection);
 
     //初始化链接
     _initializeConnections();
@@ -218,6 +303,8 @@ void QDataImportWizard::_initializeConnections()
             this, &QDataImportWizard::onListViewMenuActionOpenInExplorerTriggered);
     connect(ui->mImageListView->getAction(QImageListView::Add_Image), &QAction::triggered,
             this, &QDataImportWizard::onListViewMenuActionAddImageTriggered);
+    connect(ui->mImageListView->getAction(QImageListView::Add_Tarball), &QAction::triggered,
+            this, &QDataImportWizard::onListViewMenuActionAddTarballTriggered);
     connect(ui->mImageListView->getAction(QImageListView::Remove), &QAction::triggered,
             this, &QDataImportWizard::onListViewMenuActionRemoveTriggered);
     connect(ui->mImageListView->getAction(QImageListView::Remove_All), &QAction::triggered,
@@ -226,13 +313,16 @@ void QDataImportWizard::_initializeConnections()
             this, &QDataImportWizard::onListViewMenuActionShowMetaDataTriggered);
     connect(ui->mImageListView->getAction(QImageListView::Rebuild_Overviews), &QAction::triggered,
             this, &QDataImportWizard::onListViewMenuActionRebuildOverviewsTriggered);
+    //链接对话框按钮响应
+    connect(ui->mButtonImport, &QPushButton::clicked, this, &QDataImportWizard::onButtonImportClicked);
+    connect(ui->mButtonBackground, &QPushButton::clicked, this, &QDataImportWizard::onButtonBackgroundClicked);
 }
 
 void QDataImportWizard::_setCurrentImage(size_t idx)
 {
     Q_ASSERT(idx < mStreamMetaVec.size());
     mbUpdatePreviewImg = false;
-    muCurrentPreviewIndex = idx;
+    mnCurrentPreviewIndex = idx;
 
     const SImageStreamMeta &streamMeta = *mStreamMetaVec[idx];
 
@@ -294,8 +384,10 @@ void QDataImportWizard::_loadPreviewImage(size_t idx, int r, int g, int b)
     ui->mComboRed->setEnabled(false);
     ui->mComboGreen->setEnabled(false);
     ui->mComboBlue->setEnabled(false);
+    //锁定影像列表框
+    ui->mImageListView->setEnabled(false);
 
-    muCurrentLoadingPreviewIndex = idx;
+    mnCurrentLoadingPreviewIndex = idx;
 
     QThread *pPreviewLoaderThread = new QThread();
 
@@ -316,19 +408,25 @@ void QDataImportWizard::_loadPreviewImage(size_t idx, int r, int g, int b)
 
 void QDataImportWizard::onOverviewBuilt()
 {
-    auto &streamMeta = *mStreamMetaVec[muCurrentBuildingIndex];
-    //更新状态信息
-    streamMeta.setStreamStatus(tr("Overviews are ready for this image."));
-    streamMeta.setBuildingProgress(100);
-    //TODO:将列表项底色变绿
+    //检查当前是否在构建金字塔
+    if(mnCurrentBuildingIndex != -1)
+    {
+        auto &streamMeta = *mStreamMetaVec[mnCurrentBuildingIndex];
+        //更新状态信息
+        streamMeta.setStreamStatus(tr("Overviews are ready for this image."));
+        streamMeta.setBuildingProgress(100);
+        //TODO:将列表项底色变绿
+    }
 
-    //找到下一张未构建金字塔的影像
-    while(++muCurrentBuildingIndex != mStreamMetaVec.size())
-        if(!streamMeta.isOverviewsReady())
+    //找到一张未构建金字塔的影像
+    for(mnCurrentBuildingIndex = 0; mnCurrentBuildingIndex != (int)mStreamMetaVec.size(); ++mnCurrentBuildingIndex)
+        if(!mStreamMetaVec[mnCurrentBuildingIndex]->isOverviewsReady())
             break;
     //进行下一张图像的构建
-    if(muCurrentBuildingIndex != mStreamMetaVec.size())
-        emit startBuildingThread(streamMeta.originialImagePath(),
+    if(mnCurrentBuildingIndex != (int)mStreamMetaVec.size())
+        emit startBuildingThread(mStreamMetaVec[mnCurrentBuildingIndex]->originialImagePath(),
                                  mStrPyramidSavePath,
                                  SOverviewBuilder::Format::TIFF);
+    else
+        mnCurrentBuildingIndex = -1;
 }

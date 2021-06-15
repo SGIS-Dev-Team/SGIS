@@ -31,6 +31,8 @@ void QImageListView::mouseReleaseEvent(QMouseEvent *event)
 
 void QImageListView::mousePressEvent(QMouseEvent *event)
 {
+    if(event->button() == Qt::LeftButton)
+        this->clearSelection();
     QListView::mousePressEvent(event);
 }
 
@@ -39,6 +41,9 @@ const QAction *QImageListView::getAction(QImageListView::ImageListViewMenuAction
     switch (action)
     {
     case QImageListView::Add_Image:
+        return mpActionAddImage.get();
+        break;
+    case QImageListView::Add_Tarball:
         return mpActionAddImage.get();
         break;
     case QImageListView::Remove:
@@ -66,7 +71,9 @@ void QImageListView::_initialize()
     //初始化右键菜单
     mpMenu                   .reset(new QMenu());
 
-    mpActionAddImage         .reset(new QAction(tr("Add Image..."),          mpMenu.get()));
+    mpMenuAdd                .reset(new QMenu(tr("Add..."),                  mpMenu.get()));
+    mpActionAddImage         .reset(new QAction(tr("Add Image"),             mpMenuAdd.get()));
+    mpActionAddTarball       .reset(new QAction(tr("Add Tarball"),           mpMenuAdd.get()));
     mpActionOpenInExplorer   .reset(new QAction(tr("Open In Explorer..."),   mpMenu.get()));
     mpActionRebuildOverviews .reset(new QAction(tr("Rebuild Overviews"),     mpMenu.get()));
     mpActionRemove           .reset(new QAction(tr("Remove"),                mpMenu.get()));
@@ -78,7 +85,10 @@ void QImageListView::_initialize()
     mpMenu->addAction(mpActionRemove             .get());
     mpMenu->addAction(mpActionRebuildOverviews   .get());
     mpMenu->addSeparator();
-    mpMenu->addAction(mpActionAddImage           .get());
+    //子菜单
+    mpMenuAdd->addAction(mpActionAddImage        .get());
+    mpMenuAdd->addAction(mpActionAddTarball      .get());
+    mpMenu->addMenu(mpMenuAdd                    .get());
     mpMenu->addAction(mpActionRemoveAll          .get());
 }
 

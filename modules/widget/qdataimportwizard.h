@@ -34,6 +34,10 @@ protected:
 signals:
     void startBuildingThread(QString imgPath, QString savePath, SOverviewBuilder::Format format = SOverviewBuilder::TIFF);
     void startLoadingPreview(int r = 0, int g = 0, int b = 0);
+    //确认进行导入操作
+    void importingData();
+    //确认在后台进行构建操作
+    void holdingBackground();
 
     /*-----槽函数-----*/
 private slots:
@@ -45,6 +49,8 @@ private slots:
     void onComboBoxIndexChanged(int idx);
     //按下导入按钮
     void onButtonImportClicked();
+    //按下后台按钮
+    void onButtonBackgroundClicked();
     //预览图加载完成
     void onPreviewImageLoaded();
     //图像列表双击事件
@@ -52,6 +58,7 @@ private slots:
     //图像列表右键菜单触发
     void onListViewMenuActionOpenInExplorerTriggered();
     void onListViewMenuActionAddImageTriggered();
+    void onListViewMenuActionAddTarballTriggered();
     void onListViewMenuActionRemoveTriggered();
     void onListViewMenuActionRemoveAllTriggered();
     void onListViewMenuActionRebuildOverviewsTriggered();
@@ -64,11 +71,11 @@ protected:
     //图像数据流描述对象容器：数据量不大，插入操作并不多，可以使用vector
     std::vector<std::shared_ptr<SImageStreamMeta>> mStreamMetaVec{};
     //当前选中的预览图像
-    size_t muCurrentPreviewIndex{0};
-    //当前正在构建的对象
-    size_t muCurrentBuildingIndex{0};
+    int mnCurrentPreviewIndex{-1};
+    //当前正在构建的对象:-1为当前无构造
+    int mnCurrentBuildingIndex{-1};
     //当前正在加载预览图的对象
-    size_t muCurrentLoadingPreviewIndex{0};
+    int mnCurrentLoadingPreviewIndex{-1};
     //所有金字塔缓存目录(sgis/pyramid)
     QString mStrPyramidSavePath = SGIS_DOCUMENT_FOLDER + PYRAMID_FOLDER_NAME;
     //是否根据选择框更新预览图像
@@ -95,8 +102,11 @@ public:
     void setImagePaths(const QStringList &imagePathList);
     void addImagePaths(const QStringList &imagePathList);
     void removeStream(size_t idx);
+    void removeStreams(std::vector<size_t> indices);
 
     //[功能函数]
+public:
+    bool isEmpty()const {return mStreamMetaVec.empty();}
 private:
     void _initialize();
     void _initializeConnections();

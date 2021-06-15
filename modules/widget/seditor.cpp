@@ -63,7 +63,6 @@ void SEditor::onActionLoadImageTriggered()
 
         mpCurDoc->getLayerManager().addLayer(pImg);
     }
-
 }
 
 #include <modules/paint/sfragimage.h>
@@ -95,15 +94,21 @@ void SEditor::onActionLoadFragmentsTriggered()
 #include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
-    //获取要读取的文件路径
-    QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-    if(strImagePathList.isEmpty())
-        return;
+    if(mpImportDialog->isEmpty())
+    {
+        //获取要读取的文件路径
+        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+        if(strImagePathList.isEmpty())
+            return;
 
-    //打开波段预览对话框
-    mpImportDialog.get()->addImagePaths(strImagePathList);
-    mpImportDialog.get()->exec();
+        mpImportDialog->addImagePaths(strImagePathList);
+    }
+    //打开数据导入向导对话框
+    mpImportDialog->open();
+}
 
+void SEditor::onImportingData()
+{
     //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
@@ -118,8 +123,13 @@ void SEditor::onActionLoadHugeImageTriggered()
         SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
 
         pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-        pFragImg->setHoldTopPyramidEnabled(true);
+
+        //强制加载ImageMeta
+        streamMeta.imageMeta();
         pFragImg->setBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
+
+        pFragImg->setHoldTopPyramidEnabled(true);
+
         std::shared_ptr<void> pEqFunc[3] {nullptr};
         streamMeta.getHistEqFunc(pEqFunc);
         pFragImg->setHistEqFunc(pEqFunc);
@@ -266,7 +276,9 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
-
+    //对话框事件响应
+    connect(this->mpImportDialog.get(), &QDataImportWizard::importingData, this, &SEditor::onImportingData);
+    //connect(this->mpImportDialog.get(),&QDataImportWizard::holdingBackground,this,&
 
 }
 

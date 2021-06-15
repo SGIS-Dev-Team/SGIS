@@ -30,7 +30,6 @@ private slots:
     //[菜单选项响应]
     void onActionZoominTriggered();
     void onActionZoomoutTriggered();
-
     //画布前后移动
     void onActionBringForwardTriggered();
     void onActionSendBackwardTriggered();
@@ -51,6 +50,8 @@ private slots:
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
     void onActionLoadHugeImageTriggered();
+    //[数据导入对话框时间响应]
+    void onImportingData();
     void onActionReportLeaksTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
@@ -65,7 +66,6 @@ private slots:
     /*-----虚函数重载-----*/
 public:
     void closeEvent(QCloseEvent* event)override;
-
 
     /*-----成员变量-----*/
 private:

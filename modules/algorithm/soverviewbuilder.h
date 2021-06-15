@@ -10,7 +10,7 @@
 //  变量                    描述           示例
 //  (original)imagePath   源图像路径       xxx/xxx/xxx.tif(.tiff)
 //  savePath              保存路径         通常为 [文档路径]/sgis/pyramid
-//  pyramidDir        金字塔路径       通常为 [文档路径]/sgis/pyramid/[原始图像名称]
+//  pyramidDir            金字塔路径       通常为 [文档路径]/sgis/pyramid/[原始图像名称]
 //  metaFilePath          元数据文件路径    通常为 [文档路径]/sgis/pyramid/[原始图像名称]/[原始图像名称]_Meta.txt
 //  --------------------------------------------------------------------------------------------------
 //-----------------------------------
@@ -84,6 +84,9 @@ public:
 
     //根据源图像路径和金字塔保存路径生成目标金字塔文件夹路径，详见"SOverviewBuilder.h"最顶上的说明
     static QString generatePyramidDir(const QString &oriImagePath, const QString &savePath);
+
+    //删除该目录下的金字塔，返回删除操作是否成功
+    static bool removeExistingPyramid(const QString &pyramidDir);
 };
 
 Q_DECLARE_METATYPE(SOverviewBuilder::Format);

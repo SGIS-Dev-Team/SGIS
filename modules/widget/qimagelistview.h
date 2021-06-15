@@ -12,11 +12,13 @@ public:
     enum ImageListViewMenuAction
     {
         Add_Image,
+        Add_Tarball,
         Remove,
         Remove_All,
         Rebuild_Overviews,
         Show_Meta_Data,
         Open_In_Explorer
+
     };
 
     /*-----构造函数与析构函数-----*/
@@ -59,7 +61,9 @@ private:
     /*-----UI-----*/
 private:
     std::unique_ptr<QMenu> mpMenu;
+    std::unique_ptr<QMenu> mpMenuAdd;
     std::unique_ptr<QAction> mpActionAddImage;
+    std::unique_ptr<QAction> mpActionAddTarball;
     std::unique_ptr<QAction> mpActionRemove;
     std::unique_ptr<QAction> mpActionRebuildOverviews;
     std::unique_ptr<QAction> mpActionShowMetaData;

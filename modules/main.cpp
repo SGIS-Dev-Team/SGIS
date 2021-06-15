@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
 #ifndef QT_NO_DEBUG
     //VLDGlobalDisable();
 #endif
-
     QApplication app(argc, argv);
     //使得程序可以在系统托盘运行
     app.setQuitOnLastWindowClosed(false);

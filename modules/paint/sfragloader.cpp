@@ -32,7 +32,7 @@ void SFragLoader::doLoadFrag()
             {
                 mFragTempQueue.front()->releaseImage();
                 mFragTempQueue.pop_front();
-                qDebug() << "Temp Queue Full.";
+                //qDebug() << "Temp Queue Full.";
             }
             mFragTempQueue.push_back(pImage);
         }

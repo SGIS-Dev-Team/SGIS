@@ -31,7 +31,12 @@ SOURCES += \
     modules/widget/qimagelistview.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
-    modules/widget/straymgr.cpp
+    modules/widget/straymgr.cpp \
+    modules/widget/wizard/extract/qextractwizard.cpp \
+    modules/widget/wizard/extract/qextractwizardpagefile.cpp \
+    modules/widget/wizard/extract/qextractwizardpageintro.cpp \
+    modules/widget/wizard/extract/qextractwizardpageprogress.cpp \
+    modules/widget/wizard/extract/qextractwizardpagetempdir.cpp
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
@@ -58,12 +63,22 @@ HEADERS += \
     modules/widget/qimagelistview.h \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
-    modules/widget/straymgr.h
+    modules/widget/straymgr.h \
+    modules/widget/wizard/extract/qextractwizard.h \
+    modules/widget/wizard/extract/qextractwizardpagefile.h \
+    modules/widget/wizard/extract/qextractwizardpageintro.h \
+    modules/widget/wizard/extract/qextractwizardpageprogress.h \
+    modules/widget/wizard/extract/qextractwizardpagetempdir.h
 
 FORMS += \
     modules/widget/mainwindow.ui \
     modules/widget/seditor.ui \
     modules/widget/qdataimportwizard.ui \
+    modules/widget/wizard/extract/qextractwizard.ui \
+    modules/widget/wizard/extract/qextractwizardpagefile.ui \
+    modules/widget/wizard/extract/qextractwizardpageintro.ui \
+    modules/widget/wizard/extract/qextractwizardpageprogress.ui \
+    modules/widget/wizard/extract/qextractwizardpagetempdir.ui
 
 TRANSLATIONS += \
     S-GIS_zh_CN.ts

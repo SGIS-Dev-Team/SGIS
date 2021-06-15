@@ -95,7 +95,7 @@ void SFragImage::loadMeta(const QString &pyramidDir)
 {
     if(!pyramidDir.isEmpty())
         mStrDirPath = pyramidDir;
-    Q_ASSERT(mStrDirPath.isEmpty());
+    Q_ASSERT(!mStrDirPath.isEmpty());
 
     //打开元数据文本文件
     QFile file(mStrDirPath + '/' + QFileInfo(mStrDirPath).fileName() + "_Meta.txt");
@@ -131,9 +131,6 @@ void SFragImage::loadMeta(const QString &pyramidDir)
         mFragMatVec.emplace_back(levelPath);
         mFragMatVec.back().setLevelMeta(nBaseWidth, nBaseHeight, levelWidth, levelHeight);
     }
-
-    if(mbHoldTopPyramid)
-        mFragMatVec.back().loadAll();
 
     //计算原始图像包围矩形
     this->mImageRect.setRect(-nBaseWidth / 2.0, -nBaseHeight / 2.0, nBaseWidth, nBaseHeight);
