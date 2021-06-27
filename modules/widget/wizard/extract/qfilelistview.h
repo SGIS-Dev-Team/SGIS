@@ -1,29 +1,25 @@
-﻿#ifndef QIMAGELISTVIEW_H
-#define QIMAGELISTVIEW_H
+﻿#ifndef QFILELISTVIEW_H
+#define QFILELISTVIEW_H
 
 #include <QListView>
-#include <QMenu>
-#include <QAction>
 
-class QImageListView : public QListView
+class QFileListView : public QListView
 {
     Q_OBJECT
 public:
-    enum ImageListViewMenuAction
+    enum FileListViewMenuAction
     {
-        Add_Image,
-        Add_Tarball,
+        Open_In_Explorer,
+        Preview_Archive,
         Remove,
+        Add_Archive,
         Remove_All,
-        Rebuild_Overviews,
-        Show_Meta_Data,
-        Open_In_Explorer
     };
 
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QImageListView(QWidget *parent = nullptr);
-    virtual ~QImageListView();
+    explicit QFileListView(QWidget *parent = nullptr);
+    virtual ~QFileListView();
 
     /*-----虚函数重载-----*/
 protected:
@@ -46,7 +42,7 @@ protected:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    const QAction *getAction(ImageListViewMenuAction action);
+    const QAction *getAction(FileListViewMenuAction action);
 
     //[修改函数]
 
@@ -60,15 +56,11 @@ private:
     /*-----UI-----*/
 private:
     QMenu *mpMenu;
-    QMenu *mpMenuAdd;
-    QAction *mpActionAddImage;
-    QAction *mpActionAddTarball;
-    QAction *mpActionRemove;
-    QAction *mpActionRebuildOverviews;
-    QAction *mpActionShowMetaData;
-    QAction *mpActionRemoveAll;
     QAction *mpActionOpenInExplorer;
-
+    QAction *mpActionPreviewArchive;
+    QAction *mpActionRemove;
+    QAction *mpActionAddArchive;
+    QAction *mpActionRemoveAll;
 };
 
-#endif // QIMAGELISTVIEW_H
+#endif // QFILELISTVIEW_H

@@ -6,44 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
-    <height>572</height>
+    <width>922</width>
+    <height>669</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Wizard</string>
+   <string>Archive Extract Wizard</string>
   </property>
-  <widget class="QExtractWizardPageIntro" name="mPageIntro"/>
-  <widget class="QExtractWizardPageFile" name="mPageFile"/>
-  <widget class="QExtractWizardPageTempDir" name="mPageTempDir"/>
-  <widget class="QExtractWizardPageProgress" name="mPageProgress"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QExtractWizardPageIntro</class>
-   <extends>QWizardPage</extends>
-   <header>qextractwizardpageintro.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QExtractWizardPageFile</class>
-   <extends>QWizardPage</extends>
-   <header>qextractwizardpagefile.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QExtractWizardPageTempDir</class>
-   <extends>QWizardPage</extends>
-   <header>qextractwizardpagetempdir.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QExtractWizardPageProgress</class>
-   <extends>QWizardPage</extends>
-   <header>qextractwizardpageprogress.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

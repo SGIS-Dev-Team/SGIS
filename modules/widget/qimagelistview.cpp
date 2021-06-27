@@ -14,6 +14,7 @@ QImageListView::~QImageListView()
 void QImageListView::mouseReleaseEvent(QMouseEvent *event)
 {
     QListView::mouseReleaseEvent(event);
+    Q_ASSERT(model());
 
     if(event->button() == Qt::RightButton)
     {
@@ -31,8 +32,9 @@ void QImageListView::mouseReleaseEvent(QMouseEvent *event)
 
 void QImageListView::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
-        this->clearSelection();
+    if(event->modifiers() == Qt::NoModifier)
+        if(event->button() == Qt::LeftButton)
+            this->clearSelection();
     QListView::mousePressEvent(event);
 }
 
@@ -41,25 +43,25 @@ const QAction *QImageListView::getAction(QImageListView::ImageListViewMenuAction
     switch (action)
     {
     case QImageListView::Add_Image:
-        return mpActionAddImage.get();
+        return mpActionAddImage;
         break;
     case QImageListView::Add_Tarball:
-        return mpActionAddImage.get();
+        return mpActionAddTarball;
         break;
     case QImageListView::Remove:
-        return mpActionRemove.get();
+        return mpActionRemove;
         break;
     case QImageListView::Remove_All:
-        return mpActionRemoveAll.get();
+        return mpActionRemoveAll;
         break;
     case QImageListView::Rebuild_Overviews:
-        return mpActionRebuildOverviews.get();
+        return mpActionRebuildOverviews;
         break;
     case QImageListView::Show_Meta_Data:
-        return mpActionShowMetaData.get();
+        return mpActionShowMetaData;
         break;
     case QImageListView::Open_In_Explorer:
-        return mpActionOpenInExplorer.get();
+        return mpActionOpenInExplorer;
         break;
     default:
         Q_ASSERT(0);
@@ -69,27 +71,27 @@ const QAction *QImageListView::getAction(QImageListView::ImageListViewMenuAction
 void QImageListView::_initialize()
 {
     //初始化右键菜单
-    mpMenu                   .reset(new QMenu());
+    mpMenu                   = new QMenu(this);
 
-    mpMenuAdd                .reset(new QMenu(tr("Add..."),                  mpMenu.get()));
-    mpActionAddImage         .reset(new QAction(tr("Add Image"),             mpMenuAdd.get()));
-    mpActionAddTarball       .reset(new QAction(tr("Add Tarball"),           mpMenuAdd.get()));
-    mpActionOpenInExplorer   .reset(new QAction(tr("Open In Explorer..."),   mpMenu.get()));
-    mpActionRebuildOverviews .reset(new QAction(tr("Rebuild Overviews"),     mpMenu.get()));
-    mpActionRemove           .reset(new QAction(tr("Remove"),                mpMenu.get()));
-    mpActionRemoveAll        .reset(new QAction(tr("Remove All"),            mpMenu.get()));
-    mpActionShowMetaData     .reset(new QAction(tr("Show Meta Data..."),     mpMenu.get()));
+    mpMenuAdd                = new QMenu(tr("Add..."),                  mpMenu);
+    mpActionAddImage         = new QAction(tr("Add Image"),             mpMenuAdd);
+    mpActionAddTarball       = new QAction(tr("Add Tarball"),           mpMenuAdd);
+    mpActionOpenInExplorer   = new QAction(tr("Open In Explorer..."),   mpMenu);
+    mpActionRebuildOverviews = new QAction(tr("Rebuild Overviews"),     mpMenu);
+    mpActionRemove           = new QAction(tr("Remove"),                mpMenu);
+    mpActionRemoveAll        = new QAction(tr("Remove All"),            mpMenu);
+    mpActionShowMetaData     = new QAction(tr("Show Meta Data..."),     mpMenu);
 
-    mpMenu->addAction(mpActionOpenInExplorer     .get());
-    mpMenu->addAction(mpActionShowMetaData       .get());
-    mpMenu->addAction(mpActionRemove             .get());
-    mpMenu->addAction(mpActionRebuildOverviews   .get());
+    mpMenu->addAction(mpActionOpenInExplorer);
+    mpMenu->addAction(mpActionShowMetaData);
+    mpMenu->addAction(mpActionRemove);
+    mpMenu->addAction(mpActionRebuildOverviews);
     mpMenu->addSeparator();
     //子菜单
-    mpMenuAdd->addAction(mpActionAddImage        .get());
-    mpMenuAdd->addAction(mpActionAddTarball      .get());
-    mpMenu->addMenu(mpMenuAdd                    .get());
-    mpMenu->addAction(mpActionRemoveAll          .get());
+    mpMenuAdd->addAction(mpActionAddImage);
+    mpMenuAdd->addAction(mpActionAddTarball);
+    mpMenu->addMenu(mpMenuAdd);
+    mpMenu->addAction(mpActionRemoveAll);
 }
 
 void QImageListView::_initializeConnections()

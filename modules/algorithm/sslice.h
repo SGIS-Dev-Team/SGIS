@@ -24,7 +24,7 @@ class SSlice: public QObject
     Q_OBJECT
 public:
     explicit SSlice();
-    ~SSlice();
+    virtual ~SSlice();
 
     /*-----虚函数重载-----*/
 public:

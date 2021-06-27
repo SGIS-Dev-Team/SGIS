@@ -7,6 +7,8 @@
 
 int main(int argc, char *argv[])
 {
+    GDALAllRegister();
+
 #ifndef QT_NO_DEBUG
     //VLDGlobalDisable();
 #endif
@@ -16,10 +18,6 @@ int main(int argc, char *argv[])
 
     //启动主程序
     MainWindow wnd;
-
-    GDALAllRegister();
-    qRegisterMetaType<SOverviewBuilder::Format>("Format");
-
 
     return app.exec();
 }

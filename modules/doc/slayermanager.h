@@ -26,7 +26,7 @@ class SLayerManager: public QObject
     /*-----构造函数与析构函数-----*/
 public:
     explicit SLayerManager();
-
+    virtual ~SLayerManager();
     /*-----信号-----*/
 signals:
     void layersUpdated(SLayerManager* which);

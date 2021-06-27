@@ -32,6 +32,7 @@ public:
     explicit SImageMeta() = default;
     SImageMeta(const SImageMeta &meta) = default;
     SImageMeta &operator=(const SImageMeta &meta) = default;
+    virtual ~SImageMeta() {}
 
 public:
     inline int width() const {return mnWidth;}

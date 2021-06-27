@@ -25,7 +25,7 @@ class QDataImportWizard : public QDialog
 public:
     explicit QDataImportWizard(QWidget *parent = nullptr);
     explicit QDataImportWizard(const QStringList &imagePathList, QWidget *parent = nullptr);
-    ~QDataImportWizard();
+    virtual ~QDataImportWizard();
 
     /*-----虚函数重载-----*/
 protected:

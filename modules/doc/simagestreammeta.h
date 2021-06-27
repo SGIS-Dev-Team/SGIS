@@ -88,7 +88,7 @@ public:
     {
         if(checkPyramidExistence())mnBuildingProgress = 100;
     }
-    ~SImageStreamMeta() {}
+    virtual ~SImageStreamMeta() {}
 };
 
 #endif // SIMAGESTREAMMETA_H

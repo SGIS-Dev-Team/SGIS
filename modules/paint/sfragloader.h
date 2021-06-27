@@ -14,7 +14,7 @@ class SFragLoader : public QObject
     /*-----构造函数与析构函数-----*/
 public:
     explicit SFragLoader(size_t fragTempSize = DEFAULT_FRAG_TEMP_SIZE, size_t readInStackSize = DEFAULT_READ_IN_STACK_SIZE);
-    ~SFragLoader();
+    virtual ~SFragLoader();
 
     /*-----信号-----*/
 signals:

@@ -1,4 +1,4 @@
-#include "qextractwizardpagetempdir.h"
+﻿#include "qextractwizardpagetempdir.h"
 #include "ui_qextractwizardpagetempdir.h"
 
 QExtractWizardPageTempDir::QExtractWizardPageTempDir(QWidget *parent) :
@@ -11,4 +11,14 @@ QExtractWizardPageTempDir::QExtractWizardPageTempDir(QWidget *parent) :
 QExtractWizardPageTempDir::~QExtractWizardPageTempDir()
 {
     delete ui;
+}
+
+void QExtractWizardPageTempDir::initializePage()
+{
+
+}
+
+bool QExtractWizardPageTempDir::isComplete() const
+{
+    return false;
 }

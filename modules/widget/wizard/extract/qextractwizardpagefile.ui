@@ -87,9 +87,21 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="mFileTreeView">
+    <widget class="QFileTreeView" name="mFileTreeView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DragOnly</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
     </widget>
    </item>
@@ -114,14 +126,35 @@
     </widget>
    </item>
    <item>
-    <widget class="QListView" name="mSltFileList">
+    <widget class="QFileListView" name="mFileListView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DropOnly</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QFileListView</class>
+   <extends>QListView</extends>
+   <header>qfilelistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QFileTreeView</class>
+   <extends>QTreeView</extends>
+   <header>qfiletreeview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -36,7 +36,10 @@ SOURCES += \
     modules/widget/wizard/extract/qextractwizardpagefile.cpp \
     modules/widget/wizard/extract/qextractwizardpageintro.cpp \
     modules/widget/wizard/extract/qextractwizardpageprogress.cpp \
-    modules/widget/wizard/extract/qextractwizardpagetempdir.cpp
+    modules/widget/wizard/extract/qextractwizardpagetempdir.cpp \
+    modules/widget/wizard/extract/qfilelistmodel.cpp \
+    modules/widget/wizard/extract/qfilelistview.cpp \
+    modules/widget/wizard/extract/qfiletreeview.cpp
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
@@ -68,7 +71,10 @@ HEADERS += \
     modules/widget/wizard/extract/qextractwizardpagefile.h \
     modules/widget/wizard/extract/qextractwizardpageintro.h \
     modules/widget/wizard/extract/qextractwizardpageprogress.h \
-    modules/widget/wizard/extract/qextractwizardpagetempdir.h
+    modules/widget/wizard/extract/qextractwizardpagetempdir.h \
+    modules/widget/wizard/extract/qfilelistmodel.h \
+    modules/widget/wizard/extract/qfilelistview.h \
+    modules/widget/wizard/extract/qfiletreeview.h
 
 FORMS += \
     modules/widget/mainwindow.ui \

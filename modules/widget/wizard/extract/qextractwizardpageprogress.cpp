@@ -1,4 +1,4 @@
-#include "qextractwizardpageprogress.h"
+﻿#include "qextractwizardpageprogress.h"
 #include "ui_qextractwizardpageprogress.h"
 
 QExtractWizardPageProgress::QExtractWizardPageProgress(QWidget *parent) :
@@ -11,4 +11,14 @@ QExtractWizardPageProgress::QExtractWizardPageProgress(QWidget *parent) :
 QExtractWizardPageProgress::~QExtractWizardPageProgress()
 {
     delete ui;
+}
+
+void QExtractWizardPageProgress::initializePage()
+{
+
+}
+
+bool QExtractWizardPageProgress::isComplete() const
+{
+    return false;
 }

@@ -19,7 +19,7 @@ class SEditor : public QMainWindow
     /*-----构造函数与析构函数-----*/
 public:
     explicit SEditor(QWidget *parent = nullptr);
-    ~SEditor();
+    virtual ~SEditor();
 
     /*-----信号-----*/
 signals:
@@ -72,11 +72,11 @@ private:
     //[Me]
     QString Me = QString("SEditor");
     //[当前绘图区]
-    std::shared_ptr<QCanvasArea> mpCurCanvasArea{};
+    QCanvasArea * mpCurCanvasArea{};
     //[当前文档]
     std::shared_ptr<SDocument> mpCurDoc{};
     //[已打开并加载的绘图区]
-    std::vector<std::shared_ptr<QCanvasArea>> mpCanvasAreaVec{};
+    std::vector<QCanvasArea *> mpCanvasAreaVec{};
     //[已打开并加载的文档]
     std::vector<std::shared_ptr<SDocument>> mpDocVec{};
 
@@ -93,10 +93,10 @@ public:
 private:
     Ui::SEditor * ui;
     //[状态栏控件]
-    std::unique_ptr<QLabel> mpStatLblCursorPos;
-    std::unique_ptr<QLabel> mpStatLblCanvasScale;
+    QLabel *mpStatLblCursorPos;
+    QLabel *mpStatLblCanvasScale;
     //[数据导入向导]
-    std::unique_ptr<QDataImportWizard> mpImportDialog;
+    QDataImportWizard *mpImportDialog;
 };
 
 #endif // SEditor_H

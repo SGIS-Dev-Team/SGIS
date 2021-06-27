@@ -15,7 +15,7 @@ public:
     explicit SFragMatrix(size_t _rows, size_t _cols);
     //拷贝构造函数
     SFragMatrix(const SFragMatrix& mat);
-    ~SFragMatrix();
+    virtual ~SFragMatrix();
 
     //赋值运算符函数
     SFragMatrix& operator=(const SFragMatrix& mat);

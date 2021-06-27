@@ -10,6 +10,7 @@
 #include <QDesktopServices>
 #include <QMouseEvent>
 #include <QFileDialog>
+#include <modules/widget/wizard/extract/qextractwizard.h>
 
 QDataImportWizard::QDataImportWizard(QWidget *parent) :
     QDialog(parent),
@@ -135,9 +136,13 @@ void QDataImportWizard::onListViewMenuActionAddImageTriggered()
 
 void QDataImportWizard::onListViewMenuActionAddTarballTriggered()
 {
-
     //清空选择
     mListItemSltModel.clear();
+
+    //初始化解压向导
+    QExtractWizard *pWizard = new QExtractWizard();
+    pWizard->open();
+
 }
 
 void QDataImportWizard::onListViewMenuActionRemoveTriggered()

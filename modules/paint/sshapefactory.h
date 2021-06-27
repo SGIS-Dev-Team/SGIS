@@ -28,7 +28,7 @@ class SShapeFactory
 private:
     SShapeFactory();
 public:
-    ~SShapeFactory();
+    virtual ~SShapeFactory();
 
 
     /*-----成员函数-----*/

@@ -112,7 +112,7 @@ void SEditor::onImportingData()
     //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
-    auto &streamMetaVec = mpImportDialog.get()->getStreamMetaVec();
+    auto &streamMetaVec = mpImportDialog->getStreamMetaVec();
     for(auto &pStreamMeta : streamMetaVec)
     {
         SImageStreamMeta &streamMeta = *pStreamMeta;
@@ -234,14 +234,17 @@ void SEditor::closeEvent(QCloseEvent *event)
 void SEditor::initialize()
 {
     /*-----初始化状态栏-----*/
-    mpStatLblCanvasScale.reset(new QLabel(ui->mStatusBar));
-    mpStatLblCursorPos.reset(new QLabel(ui->mStatusBar));
+    //画布缩放等级
+    mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
+    //鼠标逻辑位置
+    mpStatLblCursorPos = new QLabel(ui->mStatusBar);
 
-    ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos.get());
-    ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale.get());
+    ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
+    ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
     /*-----初始化子窗口-----*/
-    mpImportDialog.reset(new QDataImportWizard(this));
+    //数据导入向导
+    mpImportDialog = new QDataImportWizard(this);
 
     /*-----创建绘图区-----*/
     createWorkspace();
@@ -276,30 +279,28 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
-    //对话框事件响应
-    connect(this->mpImportDialog.get(), &QDataImportWizard::importingData, this, &SEditor::onImportingData);
-    //connect(this->mpImportDialog.get(),&QDataImportWizard::holdingBackground,this,&
-
+    //数据导入向导对话框事件响应
+    connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }
 
 void SEditor::createWorkspace(const QSize &CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-    std::shared_ptr<QCanvasArea> newCanvasArea = std::make_shared<QCanvasArea>(CanvasSize);
+    QCanvasArea * newCanvasArea = new QCanvasArea(CanvasSize);
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
     std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());
     this->mpDocVec.push_back(newDocument);
     //添加Tab页面并激活
     //TODO:解决重名问题
-    int newIdx = ui->mTabWidget->addTab(newCanvasArea.get(), tr("Untitled Workspace"));
+    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
     mpCurDoc = newDocument;
     //链接绘图区信息显示
-    connect(mpCurCanvasArea->canvas().get(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
-    connect(mpCurCanvasArea->canvas().get(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
+    connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
     connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
     //设置图层视图

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>356</width>
-    <height>262</height>
+    <width>662</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,82 +90,101 @@
       </property>
       <item>
        <widget class="QRadioButton" name="mRadioButtonEmplace">
+        <property name="font">
+         <font>
+          <family>Microsoft Sans Serif</family>
+         </font>
+        </property>
         <property name="text">
-         <string>RadioButton</string>
+         <string>Extract to the same directory</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="mRadioButtonUseBelow">
+        <property name="font">
+         <font>
+          <family>Microsoft Sans Serif</family>
+         </font>
+        </property>
         <property name="text">
-         <string>RadioButton</string>
+         <string>Using temporary directory:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="mDirFrame">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>200</height>
+      </size>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="leftMargin">
+       <number>35</number>
+      </property>
+      <item>
+       <widget class="QTextEdit" name="mTextEditTempDir">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft Sans Serif</family>
+         </font>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOn</enum>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="mDirFrame">
+       <widget class="QPushButton" name="mButtonOpen">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>30</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>80</width>
           <height>80</height>
          </size>
         </property>
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
+        <property name="font">
+         <font>
+          <family>Microsoft Sans Serif</family>
+         </font>
         </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
+        <property name="text">
+         <string>Open</string>
         </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="3">
-          <widget class="QLineEdit" name="mLineEditDir"/>
-         </item>
-         <item row="1" column="4">
-          <widget class="QLabel" name="mLabelTempDir">
-           <property name="text">
-            <string>Temp Dir :</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="5" rowspan="2">
-          <widget class="QFrame" name="mPlaceHolder1">
-           <property name="minimumSize">
-            <size>
-             <width>50</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="3">
-          <widget class="QPushButton" name="pushButton">
-           <property name="minimumSize">
-            <size>
-             <width>50</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>80</width>
-             <height>200</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Open</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </widget>
       </item>
      </layout>
