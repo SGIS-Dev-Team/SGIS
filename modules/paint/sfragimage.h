@@ -1,6 +1,11 @@
 ﻿#ifndef SFRAGIMAGE_H
 #define SFRAGIMAGE_H
 
+#include "modules/paint/sobject.h"
+#include "modules/paint/sfragmatrix.h"
+#include "modules/paint/sfragloader.h"
+#include "modules/doc/simagestreammeta.h"
+
 //----------------------------------------
 //              SFragImage
 //             分片大型图像类
@@ -12,15 +17,22 @@
 //
 //----------------------------------------
 
-#include "modules/paint/sobject.h"
-#include "modules/paint/sfragmatrix.h"
-#include "modules/paint/sfragloader.h"
 
 class SFragImage : public SObject
 {
+    Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SFragImage(SFragLoader& _loader, bool _selected = true, QPointF center = QPointF(),
+    explicit SFragImage(SFragLoader& _loader,
+                        bool _selected = true,
+                        QPointF center = QPointF(),
+                        const QString& _layerName = "",
+                        const QString& _layerDiscription = "",
+                        const QColor& _layerColor = "");
+    explicit SFragImage(const SImageStreamMeta &_streamMeta,
+                        SFragLoader &_loader,
+                        bool _selected = true,
+                        QPointF center = QPointF(),
                         const QString& _layerName = "",
                         const QString& _layerDiscription = "",
                         const QColor& _layerColor = "");
@@ -51,9 +63,12 @@ private:
 
     /*-----信号-----*/
 signals:
+    void paintFrag(QPainter &painter)const;
+    void loadFrag()const;
 
     /*-----槽函数-----*/
 private slots:
+    void onOverviewsReady(QString pyramidDir);
 
     /*-----属性-----*/
 protected:
@@ -80,10 +95,13 @@ public:
     //[访问函数]
     inline int width()const;
     inline int height()const;
-    inline const QSize& size()const;
+    inline const QSize &size()const;
+    inline SFragLoader &getFragLoader() {return this->mFragLoader;}
+    inline const SFragLoader &getFragLoader()const {return this->mFragLoader;}
+
     //[修改函数]
     //设置影像金字塔文件路径，影像文件名（不要带格式后缀）
-    void setFragmentPath(const QString& dirPath);
+    void setPyramidDir(const QString& dirPath);
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
     void setBandIndices(int r, int g, int b);
     //常驻顶层金字塔图像
@@ -92,7 +110,11 @@ public:
     //[功能函数]
 public:
     //读取元数据
-    void loadMeta();
+    void loadMeta(const QString &pyramidDir = "");
+private:
+    //初始化链接
+    void _initializeConnections();
+    void _destroyConnections();
 };
 
 #endif // SFRAGIMAGE_H

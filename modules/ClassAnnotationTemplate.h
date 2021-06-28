@@ -10,10 +10,10 @@ class CLASS : public //QObject
     /*-----构造函数与析构函数-----*/
 public:
     explicit CLASS();
-    ~CLASS();
+    virtual ~CLASS();
 
     /*-----虚函数重载-----*/
-public:
+protected:
 
     /*-----信号-----*/
 signals:
@@ -35,5 +35,9 @@ public:
     //[修改函数]
 
     //[功能函数]
+
+    /*-----UI-----*/
+private:
+
 };
 #endif // CLASSANNOTATIONTEMPLATE_H

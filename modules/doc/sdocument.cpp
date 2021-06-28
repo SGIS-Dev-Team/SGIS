@@ -1,16 +1,20 @@
 ﻿#include "sdocument.h"
 
 
-SDocument::SDocument(std::shared_ptr<QCanvas> pCanvas)
+SDocument::SDocument(QCanvas * pCanvas)
 {
     if(!pCanvas)
         return;
     setCanvas(pCanvas);
-    pCanvas.get()->setDocument(this);
+    pCanvas->setDocument(this);
+    //初始化读取器线程
+    mFragLoader.moveToThread(&mLoaderThread);
+    mLoaderThread.start();
+
     _initializeConnections();
 }
 
-SDocument::SDocument(std::shared_ptr<QCanvas> pCanvas, const QString &path): SDocument(pCanvas)
+SDocument::SDocument(QCanvas * pCanvas, const QString &path): SDocument(pCanvas)
 {
 
 }
@@ -27,7 +31,7 @@ void SDocument::onImageLoaded(SImage *pImage)
     emit updateCanvas();
 }
 
-void SDocument::setCanvas(std::shared_ptr<QCanvas> pCanvas)
+void SDocument::setCanvas(QCanvas * pCanvas)
 {
     _disconnectCanvas();
     this->mpCanvas = pCanvas;
@@ -69,13 +73,13 @@ void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleVal
 void SDocument::_initializeConnections()
 {
     connect(&mFragLoader, &SFragLoader::imageLoaded, this, &SDocument::onImageLoaded);
-    connect(this, &SDocument::updateCanvas, mpCanvas.get(), &QCanvas::doUpdate);
+    connect(this, &SDocument::updateCanvas, mpCanvas, &QCanvas::doUpdate);
 }
 
 void SDocument::_disconnectCanvas()
 {
     if(!mpCanvas)
-        disconnect(this, &SDocument::updateCanvas, mpCanvas.get(), &QCanvas::doUpdate);
+        disconnect(this, &SDocument::updateCanvas, mpCanvas, &QCanvas::doUpdate);
 }
 
 

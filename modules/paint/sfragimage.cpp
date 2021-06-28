@@ -7,12 +7,24 @@
 SFragImage::SFragImage(SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
-
+    _initializeConnections();
 }
+
+SFragImage::SFragImage(const SImageStreamMeta &_streamMeta, SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+{
+    _initializeConnections();
+
+    if(_streamMeta.isOverviewsReady())
+        onOverviewsReady(_streamMeta.pyramidDirPath());
+    else
+        connect(&_streamMeta, &SImageStreamMeta::overviewsBuilt, this, &SFragImage::onOverviewsReady);
+}
+
 
 SFragImage::~SFragImage()
 {
-
+    _destroyConnections();
 }
 
 void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
@@ -30,7 +42,7 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
     //加载当前层区域的分片
     if(trigger == User_Trigger)
         mFragMatVec[idx].loadBlockArea(viewLogicalArea.translated(-mPtCenter), mFragLoader);
-
+    emit loadFrag();
     //保存原来的变换
     QTransform oldTransform = painter.transform();
 
@@ -43,18 +55,15 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
 
     //-----绘图-----//
     //从下往上绘制各层金字塔影像
-    mFragMatVec[idx].paint(painter, viewLogicalArea.translated(-mPtCenter));
-
     for(int i = mFragMatVec.size() - 1; i >= 0; --i)
         mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
-
     //-----绘图-----//
 
     //还原变换
     painter.setTransform(oldTransform);
 }
 
-void SFragImage::setFragmentPath(const QString &dirPath)
+void SFragImage::setPyramidDir(const QString &dirPath)
 {
     this->mStrDirPath = dirPath;
 }
@@ -69,21 +78,6 @@ void SFragImage::setBandIndices(int r, int g, int b)
 {
     for(auto& mat : mFragMatVec)
         mat.setBandIndices(r, g, b);
-    if(mFragMatVec.empty())
-        return;
-
-    //计算并设置顶层金字塔均衡化函数
-    SImage *pImage = mFragMatVec.back().getData();
-    pImage->load();
-
-    std::shared_ptr<void> pEqFunc[3];
-    pImage->getHistEqFunc(pEqFunc);
-
-    for(auto &mat : mFragMatVec)
-        mat.setHistEqFunc(pEqFunc);
-
-    if(!mbHoldTopPyramid)
-        pImage->releaseImage();
 }
 
 void SFragImage::setHoldTopPyramidEnabled(bool hold)
@@ -97,8 +91,12 @@ void SFragImage::setHoldTopPyramidEnabled(bool hold)
         this->mFragMatVec.back().getData()->releaseImage();
 }
 
-void SFragImage::loadMeta()
+void SFragImage::loadMeta(const QString &pyramidDir)
 {
+    if(!pyramidDir.isEmpty())
+        mStrDirPath = pyramidDir;
+    Q_ASSERT(!mStrDirPath.isEmpty());
+
     //打开元数据文本文件
     QFile file(mStrDirPath + '/' + QFileInfo(mStrDirPath).fileName() + "_Meta.txt");
     if(!file.open(QFile::ReadOnly))
@@ -120,6 +118,7 @@ void SFragImage::loadMeta()
     int nBaseWidth, nBaseHeight;
     stream >> buf >> nLevel >> buf >> nBaseWidth >> buf >> nBaseHeight;
 
+    mFragMatVec.clear();
     mFragMatVec.reserve(nLevel);
     stream.readLine();  //将最后一行的换行符读取掉
     for(int i = 0; i < nLevel; ++i)
@@ -133,15 +132,21 @@ void SFragImage::loadMeta()
         mFragMatVec.back().setLevelMeta(nBaseWidth, nBaseHeight, levelWidth, levelHeight);
     }
 
-    if(mbHoldTopPyramid)
-        mFragMatVec.back().loadAll();
-
     //计算原始图像包围矩形
     this->mImageRect.setRect(-nBaseWidth / 2.0, -nBaseHeight / 2.0, nBaseWidth, nBaseHeight);
 
     _applyTransform();
 }
 
+void SFragImage::_initializeConnections()
+{
+    connect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
+}
+
+void SFragImage::_destroyConnections()
+{
+    disconnect(this, &SFragImage::loadFrag, &mFragLoader, &SFragLoader::doLoadFrag);
+}
 
 QPolygonF SFragImage::boundingRect() const
 {
@@ -214,4 +219,10 @@ void SFragImage::_applyTransform()
 QRectF SFragImage::_originalRect()
 {
     return mImageRect;
+}
+
+void SFragImage::onOverviewsReady(QString pyramidDir)
+{
+    this->setPyramidDir(pyramidDir);
+    this->loadMeta();
 }

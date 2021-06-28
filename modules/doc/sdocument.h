@@ -12,10 +12,10 @@ class SDocument: public QObject
     /*-----构造函数与析构函数-----*/
 public:
     //构造一个空文档，绑定一个画布对象
-    explicit SDocument(std::shared_ptr<QCanvas> pCanvas);
+    explicit SDocument(QCanvas * pCanvas);
     //从文件构建文档，绑定一个画布对象
-    explicit SDocument(std::shared_ptr<QCanvas> pCanvas, const QString& path);
-    ~SDocument();
+    explicit SDocument(QCanvas * pCanvas, const QString& path);
+    virtual ~SDocument();
 
     /*-----信号-----*/
 signals:
@@ -28,21 +28,23 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
-    std::shared_ptr<QCanvas> mpCanvas;
+    QCanvas * mpCanvas;
     //图层管理器
     SLayerManager mLayerMgr;
     //分片读取器
     SFragLoader mFragLoader;
+    //读取器线程
+    QThread mLoaderThread;
 
     /*-----成员函数-----*/
 public:
 
     //-----访问与修改函数-----//
     //指定画布
-    void setCanvas(std::shared_ptr<QCanvas> canvas);
+    void setCanvas(QCanvas * canvas);
 
     //获取画布
-    std::shared_ptr<QCanvas> getCanvas();
+    QCanvas * getCanvas();
 
     //获取图层管理器
     SLayerManager &getLayerManager();
