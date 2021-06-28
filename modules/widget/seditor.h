@@ -6,8 +6,7 @@
 #include "modules/widget/qcanvasarea.h"
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
-#include <modules/widget/qdataimportwizard.h>
-
+#include <QPlainTextEdit>
 namespace Ui
 {
 class SEditor;
@@ -19,7 +18,7 @@ class SEditor : public QMainWindow
     /*-----构造函数与析构函数-----*/
 public:
     explicit SEditor(QWidget *parent = nullptr);
-    virtual ~SEditor();
+    ~SEditor();
 
     /*-----信号-----*/
 signals:
@@ -30,6 +29,7 @@ private slots:
     //[菜单选项响应]
     void onActionZoominTriggered();
     void onActionZoomoutTriggered();
+
     //画布前后移动
     void onActionBringForwardTriggered();
     void onActionSendBackwardTriggered();
@@ -50,8 +50,6 @@ private slots:
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
     void onActionLoadHugeImageTriggered();
-    //[数据导入对话框时间响应]
-    void onImportingData();
     void onActionReportLeaksTriggered();
     //[切换绘图区响应]
     void onTabSwitched();
@@ -63,22 +61,27 @@ private slots:
     //[图层事件响应]
     void onLayersUpdated(SLayerManager* which);
 
+	//
+	void onOutput(const QString& entry);
+
     /*-----虚函数重载-----*/
 public:
     void closeEvent(QCloseEvent* event)override;
+
 
     /*-----成员变量-----*/
 private:
     //[Me]
     QString Me = QString("SEditor");
     //[当前绘图区]
-    QCanvasArea * mpCurCanvasArea{};
+    std::shared_ptr<QCanvasArea> mpCurCanvasArea{};
     //[当前文档]
     std::shared_ptr<SDocument> mpCurDoc{};
     //[已打开并加载的绘图区]
-    std::vector<QCanvasArea *> mpCanvasAreaVec{};
+    std::vector<std::shared_ptr<QCanvasArea>> mpCanvasAreaVec{};
     //[已打开并加载的文档]
     std::vector<std::shared_ptr<SDocument>> mpDocVec{};
+
 
     /*-----成员函数-----*/
 public:
@@ -89,14 +92,17 @@ public:
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
 
+	//创建输出和Tiff信息窗口
+	void initCustomDock();
     /*-----UI与控件-----*/
 private:
     Ui::SEditor * ui;
     //[状态栏控件]
-    QLabel *mpStatLblCursorPos;
-    QLabel *mpStatLblCanvasScale;
-    //[数据导入向导]
-    QDataImportWizard *mpImportDialog;
+    QLabel* mpStatLblCursorPos;
+    QLabel* mpStatLblCanvasScale;
+	//
+	QPlainTextEdit* m_pTiffImageInfoEdit;
+	QPlainTextEdit* m_pOutputEdit;
 };
 
 #endif // SEditor_H

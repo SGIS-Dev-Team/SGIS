@@ -3,13 +3,15 @@
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
 #include <QMessageBox>
-
+#include <vld.h>
+#include "../paint/simage.h"
+#include <QJsonDocument>
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
-    initialize();
-
+	initCustomDock();
+	initialize();
 }
 
 SEditor::~SEditor()
@@ -63,6 +65,7 @@ void SEditor::onActionLoadImageTriggered()
 
         mpCurDoc->getLayerManager().addLayer(pImg);
     }
+
 }
 
 #include <modules/paint/sfragimage.h>
@@ -79,7 +82,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setPyramidDir(file_info.filePath());
+    pFragImg->setFragmentPath(file_info.filePath());
     pFragImg->loadMeta();
 
     pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
@@ -91,52 +94,38 @@ void SEditor::onActionLoadFragmentsTriggered()
     mpCurDoc->getLayerManager().addLayer(pFragImg);
 }
 
-#include "qdataimportwizard.h"
+#include "qbandselectdialog.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
-    if(mpImportDialog->isEmpty())
+    //获取要读取的文件路径
+    QString strImagePath = QFileDialog::getOpenFileName(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+    if(strImagePath.isEmpty())
+        return;
+
+    //打开波段预览对话框
+    QBandSelectDialog dialog(strImagePath, this);
+    dialog.exec();
+
+    if(dialog.getPyramidDirPath().isEmpty())
     {
-        //获取要读取的文件路径
-        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-        if(strImagePathList.isEmpty())
-            return;
-
-        mpImportDialog->addImagePaths(strImagePathList);
+        QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
+        return;
     }
-    //打开数据导入向导对话框
-    mpImportDialog->open();
-}
 
-void SEditor::onImportingData()
-{
-    //将影像读入
+    //选择完成：将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
-    auto &streamMetaVec = mpImportDialog->getStreamMetaVec();
-    for(auto &pStreamMeta : streamMetaVec)
-    {
-        SImageStreamMeta &streamMeta = *pStreamMeta;
+    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-        if(streamMeta.isImported())
-            continue;
+    QFileInfo file_info(dialog.getPyramidDirPath());
+    pFragImg->setFragmentPath(file_info.filePath());
+    pFragImg->loadMeta();
 
-        SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
+    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+    pFragImg->setHoldTopPyramidEnabled(true);
+    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
 
-        pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-
-        //强制加载ImageMeta
-        streamMeta.imageMeta();
-        pFragImg->setBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
-
-        pFragImg->setHoldTopPyramidEnabled(true);
-
-        std::shared_ptr<void> pEqFunc[3] {nullptr};
-        streamMeta.getHistEqFunc(pEqFunc);
-        pFragImg->setHistEqFunc(pEqFunc);
-
-        mpCurDoc->getLayerManager().addLayer(pFragImg);
-        streamMeta.setImported(true);
-    }
+    mpCurDoc->getLayerManager().addLayer(pFragImg);
 }
 
 #include <QTextEdit>
@@ -223,6 +212,39 @@ void SEditor::onLayersUpdated(SLayerManager *which)
 {
     if(mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
+	//更新图片信息
+	m_pTiffImageInfoEdit->clear();
+	auto lstSelectLayout = which->getSelectedLayerIterList();
+	for (auto it : lstSelectLayout)
+	{
+		auto pLayout = *it;
+		auto type = pLayout->getType();
+		if (type != ImageBase)
+		{
+			continue;
+		}
+		//
+		if (auto pImage = dynamic_cast<SImage*>(pLayout))
+		{
+			m_pTiffImageInfoEdit->appendPlainText(pImage->getImagePath());
+			m_pTiffImageInfoEdit->appendPlainText("\n");
+			auto obj = pImage->getRawMetaInfo();
+			for (auto key : obj.keys())
+			{
+				m_pTiffImageInfoEdit->appendPlainText(key);
+				m_pTiffImageInfoEdit->appendPlainText(":");
+				m_pTiffImageInfoEdit->appendPlainText(obj[key].toString());
+				m_pTiffImageInfoEdit->appendPlainText("\n");
+			}
+		}
+		m_pTiffImageInfoEdit->appendPlainText("\n\n");
+	}
+}
+
+void SEditor::onOutput(const QString& entry)
+{
+	m_pOutputEdit->appendPlainText(entry);
+	m_pOutputEdit->appendPlainText("\n");
 }
 
 void SEditor::closeEvent(QCloseEvent *event)
@@ -234,17 +256,11 @@ void SEditor::closeEvent(QCloseEvent *event)
 void SEditor::initialize()
 {
     /*-----初始化状态栏-----*/
-    //画布缩放等级
     mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
-    //鼠标逻辑位置
     mpStatLblCursorPos = new QLabel(ui->mStatusBar);
 
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
-
-    /*-----初始化子窗口-----*/
-    //数据导入向导
-    mpImportDialog = new QDataImportWizard(this);
 
     /*-----创建绘图区-----*/
     createWorkspace();
@@ -258,12 +274,11 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
 
-    //-----测试用链接-----//
+    //[测试用链接]
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
     connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
     connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
-    //-----测试用链接-----//
 
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
@@ -279,30 +294,44 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
-    //数据导入向导对话框事件响应
-    connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
+
+
 }
 
 void SEditor::createWorkspace(const QSize &CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-    QCanvasArea * newCanvasArea = new QCanvasArea(CanvasSize);
+    std::shared_ptr<QCanvasArea> newCanvasArea = std::make_shared<QCanvasArea>(CanvasSize);
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
     std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());
     this->mpDocVec.push_back(newDocument);
     //添加Tab页面并激活
     //TODO:解决重名问题
-    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
+    int newIdx = ui->mTabWidget->addTab(newCanvasArea.get(), tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
     mpCurDoc = newDocument;
     //链接绘图区信息显示
-    connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
-    connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(mpCurCanvasArea->canvas().get(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
+    connect(mpCurCanvasArea->canvas().get(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
     connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
+}
+
+void SEditor::initCustomDock()
+{
+	//
+	auto pDock = new QDockWidget("ImageInfo");
+	pDock->setWidget(m_pTiffImageInfoEdit = new QPlainTextEdit());
+	addDockWidget(Qt::RightDockWidgetArea, pDock);
+	QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
+		this, &SEditor::onOutput);
+	//
+	pDock = new QDockWidget("Output");
+	pDock->setWidget(m_pOutputEdit = new QPlainTextEdit());
+	addDockWidget(Qt::RightDockWidgetArea, pDock);
 }

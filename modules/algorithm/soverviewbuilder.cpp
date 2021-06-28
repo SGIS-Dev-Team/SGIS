@@ -50,7 +50,6 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
 
     emit progressUpdated(1, "Builder initialization complete.");
 
-    //若已存在，则删除该目录
     if(dir.exists(oriImageName))
     {
         QDir overviewDir(dir);
@@ -96,7 +95,7 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
         {
             try
             {
-                pResampledData = new uchar[nResampledWidth * nResampledHeight * GDALGetDataTypeSizeBytes(meta.dataType()) * meta.bandCount()];
+                //todo pResampledData = new uchar[nResampledWidth * nResampledHeight * GDALGetDataTypeSizeBytes(meta.dataType()) * meta.bandCount()];
             }
             catch (std::bad_alloc)
             {
@@ -218,19 +217,6 @@ bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &p
     }
 
     return true;
-}
-
-QString SOverviewBuilder::generatePyramidDir(const QString &oriImagePath, const QString &savePath)
-{
-    return savePath + '/' + QFileInfo(oriImagePath).completeBaseName();
-}
-
-bool SOverviewBuilder::removeExistingPyramid(const QString &pyramidDir)
-{
-    QDir dir(pyramidDir);
-    if(dir.exists())
-        return dir.removeRecursively();
-    return false;
 }
 
 

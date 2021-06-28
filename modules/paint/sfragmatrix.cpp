@@ -95,6 +95,7 @@ void SFragMatrix::loadBlockArea(const QRectF &rect, SFragLoader &loader) const
     //调用加载器线程加载图像
     if(!loadBlockVec.empty())
         loader.push_front(loadBlockVec.data(), loadBlockVec.size());
+    loader.start();
 }
 
 void SFragMatrix::loadAll()const
@@ -112,7 +113,7 @@ void SFragMatrix::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 void SFragMatrix::setBandIndices(int r, int g, int b)
 {
     for(size_t i = 0; i < rows * cols; ++i)
-        data[i].presetBandIndices(r, g, b);
+        data[i].setBandIndices(r, g, b, false);
 }
 
 void SFragMatrix::setLevelPath(const QString &path)
@@ -157,10 +158,10 @@ QPointF SFragMatrix::_centerAt(size_t row, size_t col)
 
 QRect SFragMatrix::_fragRectAt(size_t row, size_t col)
 {
-    int left = static_cast<int>(fragWidth) * static_cast<int>(col);
-    int top = static_cast<int>(fragHeight) * static_cast<int>(row);
-    int width = (col == cols - 1 ? static_cast<int>(edgeFragWidth) : static_cast<int>(fragWidth));
-    int height = (row == rows - 1 ? static_cast<int>(edgeFragHeight) : static_cast<int>(fragHeight));
+    int left = fragWidth * col;
+    int top = fragHeight * row;
+    int width = (col == cols - 1 ? edgeFragWidth : fragWidth);
+    int height = (row == rows - 1 ? edgeFragHeight : fragHeight);
     return QRect(left, top, width, height);
 }
 

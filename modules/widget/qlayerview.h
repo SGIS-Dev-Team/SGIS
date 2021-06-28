@@ -17,7 +17,7 @@ class QLayerView : public QTreeView
     Q_OBJECT
 public:
     explicit QLayerView(QWidget *parent = nullptr, std::shared_ptr<SDocument> pCurrentDocument = nullptr);
-    virtual ~QLayerView();
+    ~QLayerView();
 
     /*-----虚函数重载-----*/
 public:
