@@ -3,7 +3,7 @@
 #include <QFileInfo>
 #include <QDir>
 
-SOverviewBuilder::SOverviewBuilder(QObject *parent) : QObject(parent)
+SOverviewBuilder::SOverviewBuilder(QObject* parent) : QObject(parent)
 {
 
 }
@@ -20,7 +20,6 @@ void SOverviewBuilder::buildOverviews(QString imagePath, QString savePath, SOver
     case TIFF:
     {
         _build_overviews_tiff(imagePath, savePath);
-
         break;
     }
     case JPEG:
@@ -32,14 +31,14 @@ void SOverviewBuilder::buildOverviews(QString imagePath, QString savePath, SOver
     }
 }
 
-void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QString &savePath)
+void SOverviewBuilder::_build_overviews_tiff(const QString& imagePath, const QString& savePath)
 {
     this->mStrImagePath = imagePath;
     this->mStrSavePath = savePath;
 
     //-----创建路径-----//
     QDir dir;
-    if(dir.exists(savePath))
+    if (dir.exists(savePath))
         SLogger::getLogger()->addEntry(Me, SLogger::RunningStatus, "Overview dir exists.");
     else
         dir.mkdir(savePath);
@@ -51,7 +50,7 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
     emit progressUpdated(1, "Builder initialization complete.");
 
     //若已存在，则删除该目录
-    if(dir.exists(oriImageName))
+    if (dir.exists(oriImageName))
     {
         QDir overviewDir(dir);
         overviewDir.cd(oriImageName);
@@ -74,11 +73,11 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
     metaFile.close();
 
     //获取写入驱动
-    GDALDriver *pDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
+    GDALDriver* pDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
 
     //------构建金字塔-----//
     QByteArray lastOutImagePath = imagePath.toUtf8();
-    for(int i = 1; i < levelCount; ++i)
+    for (int i = 1; i < levelCount; ++i)
     {
         //更新进度条
         QString infoStr = tr("Building Overviews : ") + QString::number(i - 1) + '/' + QString::number(levelCount);
@@ -89,10 +88,10 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
         int nResampledHeight = meta.height() / pow(2, i);
 
         //尝试分配内存
-        uchar *pResampledData{nullptr};
+        uchar* pResampledData{nullptr};
         int nRetryTimes{100};   //重试次数
         int nRetryFreq{200};    //重试时间间隔
-        while(--nRetryTimes)
+        while (--nRetryTimes)
         {
             try
             {
@@ -103,14 +102,14 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
                 QThread::msleep(nRetryFreq);
             }
 
-            if(pResampledData)
+            if (pResampledData)
                 break;
         }
-        if(nRetryTimes == 0)
+        if (nRetryTimes == 0)
             Q_ASSERT(0);
 
         //采样读入
-        GDALDataset *pInDataSet = static_cast<GDALDataset*>(GDALOpen(lastOutImagePath.constData(), GA_ReadOnly));
+        GDALDataset* pInDataSet = static_cast<GDALDataset*>(GDALOpen(lastOutImagePath.constData(), GA_ReadOnly));
         pInDataSet->RasterIO(GF_Read,
                              0, 0, pInDataSet->GetRasterXSize(), pInDataSet->GetRasterYSize(),
                              pResampledData,
@@ -124,7 +123,7 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
         QString outPath = dir.path() + '/' + oriImageName + "_" + QString::number(i) + ".tif";
         QByteArray outPath_byte(outPath.toUtf8());
 
-        GDALDataset *pOutDataSet = pDriver->Create(
+        GDALDataset* pOutDataSet = pDriver->Create(
                                        outPath_byte.constData(),
                                        nResampledWidth, nResampledHeight,
                                        meta.bandCount(),
@@ -146,17 +145,17 @@ void SOverviewBuilder::_build_overviews_tiff(const QString &imagePath, const QSt
     emit overviewsBuilt(dir.path());
 }
 
-int SOverviewBuilder::calcPyramidLevelCount(const SImageMeta &meta)
+int SOverviewBuilder::calcPyramidLevelCount(const SImageMeta& meta)
 {
     int maxWH = meta.width() > meta.height() ? meta.width() : meta.height();
 
     int levelCount{0};
-    while(maxWH > DEFAULT_LOGICAL_FRAGMENT_SIZE)
+    while (maxWH > DEFAULT_LOGICAL_FRAGMENT_SIZE)
         ++levelCount, maxWH = maxWH / 2;
     return levelCount + 1;
 }
 
-QString SOverviewBuilder::generateMetaString(const QString &oriImgPath, const QSize &oriImgSize, const QString &pyramidDirPath, int levelCount)
+QString SOverviewBuilder::generateMetaString(const QString& oriImgPath, const QSize& oriImgSize, const QString& pyramidDirPath, int levelCount)
 {
     QFileInfo fileInfo(oriImgPath);
     QString oriImgName = fileInfo.completeBaseName();
@@ -174,13 +173,13 @@ QString SOverviewBuilder::generateMetaString(const QString &oriImgPath, const QS
 
     stream << oriImgPath << '\n';
 
-    for(int i = 1; i < levelCount; ++i)
+    for (int i = 1; i < levelCount; ++i)
         stream << pyramidDirPath + '/' + oriImgName + "_" + QString::number(i) + ".tif\n";
 
     return metaString;
 }
 
-bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &pyramidDirPath)
+bool SOverviewBuilder::varifyPyramid(const QString& oriImgPath, const QString& pyramidDirPath)
 {
     //找到元数据文件
     QString oriImgName = QFileInfo(oriImgPath).completeBaseName();
@@ -189,7 +188,7 @@ bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &p
 
     //检查元数据文件是否存在
     QFile metaFile(metaPath);
-    if(!metaFile.open(QFile::ReadOnly))
+    if (!metaFile.open(QFile::ReadOnly))
         return false;
 
     //比对元数据字符串是否一致
@@ -197,7 +196,7 @@ bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &p
     int levelCount = calcPyramidLevelCount(meta);
 
     QString metaString = generateMetaString(oriImgPath, QSize(meta.width(), meta.height()), pyramidDirPath, levelCount);
-    if(metaFile.readAll() != metaString)
+    if (metaFile.readAll() != metaString)
     {
         metaFile.close();
         return false;
@@ -206,29 +205,29 @@ bool SOverviewBuilder::varifyPyramid(const QString &oriImgPath, const QString &p
     //处理字符串获得图像文件路径并比对
     QString buf;
     QTextStream stream(&metaString);
-    for(int i = 0; i < 5; ++i)  //当前元数据文件有2行注释和3行前置信息
+    for (int i = 0; i < 5; ++i) //当前元数据文件有2行注释和3行前置信息
         stream.readLine();
 
-    for(int i = 0; i < levelCount; ++i)
+    for (int i = 0; i < levelCount; ++i)
     {
         QString pyramidImagePath;
         stream >> pyramidImagePath;
-        if(!QFile(pyramidDirPath).exists())
+        if (!QFile(pyramidDirPath).exists())
             return false;
     }
 
     return true;
 }
 
-QString SOverviewBuilder::generatePyramidDir(const QString &oriImagePath, const QString &savePath)
+QString SOverviewBuilder::generatePyramidDir(const QString& oriImagePath, const QString& savePath)
 {
     return savePath + '/' + QFileInfo(oriImagePath).completeBaseName();
 }
 
-bool SOverviewBuilder::removeExistingPyramid(const QString &pyramidDir)
+bool SOverviewBuilder::removeExistingPyramid(const QString& pyramidDir)
 {
     QDir dir(pyramidDir);
-    if(dir.exists())
+    if (dir.exists())
         return dir.removeRecursively();
     return false;
 }

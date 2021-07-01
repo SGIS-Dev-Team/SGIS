@@ -87,7 +87,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFileTreeView" name="mFileTreeView">
+    <widget class="QTreeView" name="mFileTreeView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -121,7 +121,22 @@
       </font>
      </property>
      <property name="text">
-      <string>Selected Files</string>
+      <string>Selected Files (Drag or choose from above)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="mLabelSupportedTypes">
+     <property name="font">
+      <font>
+       <family>Microsoft Sans Serif</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>(*.gz)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -148,11 +163,6 @@
    <class>QFileListView</class>
    <extends>QListView</extends>
    <header>qfilelistview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QFileTreeView</class>
-   <extends>QTreeView</extends>
-   <header>qfiletreeview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

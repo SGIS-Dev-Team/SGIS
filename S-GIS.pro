@@ -10,6 +10,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    modules/algorithm/sarchiveextractor.cpp \
     modules/algorithm/soverviewbuilder.cpp \
     modules/algorithm/sslice.cpp \
     modules/doc/sdocument.cpp \
@@ -38,11 +39,11 @@ SOURCES += \
     modules/widget/wizard/extract/qextractwizardpageprogress.cpp \
     modules/widget/wizard/extract/qextractwizardpagetempdir.cpp \
     modules/widget/wizard/extract/qfilelistmodel.cpp \
-    modules/widget/wizard/extract/qfilelistview.cpp \
-    modules/widget/wizard/extract/qfiletreeview.cpp
+    modules/widget/wizard/extract/qfilelistview.cpp
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
+    modules/algorithm/sarchiveextractor.h \
     modules/algorithm/sequalizehist.h \
     modules/algorithm/soverviewbuilder.h \
     modules/algorithm/sslice.h \
@@ -73,8 +74,7 @@ HEADERS += \
     modules/widget/wizard/extract/qextractwizardpageprogress.h \
     modules/widget/wizard/extract/qextractwizardpagetempdir.h \
     modules/widget/wizard/extract/qfilelistmodel.h \
-    modules/widget/wizard/extract/qfilelistview.h \
-    modules/widget/wizard/extract/qfiletreeview.h
+    modules/widget/wizard/extract/qfilelistview.h
 
 FORMS += \
     modules/widget/mainwindow.ui \
@@ -95,14 +95,18 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+RESOURCES += \
+    Resource/Icons.qrc
+
+# GDAL Config
+
 INCLUDEPATH += \
     D:/GDAL/release-1928-x64/include
 
 LIBS += \
     D:/GDAL/release-1928-x64/lib/gdal_i.lib
 
-RESOURCES += \
-    Resource/Icons.qrc
+# Visual Leak Detector Config
 
 win32:CONFIG(release, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 else:win32:CONFIG(debug, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
@@ -110,3 +114,12 @@ else:unix: LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -l
 
 INCLUDEPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
 DEPENDPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
+
+# LibArchive Config
+
+win32:CONFIG(release, debug|release): LIBS += -LD:/LibArchive/lib/release/ -larchive
+else:win32:CONFIG(debug, debug|release): LIBS += -LD:/LibArchive/lib/debug/ -larchive
+else:unix: LIBS += -LD:/LibArchive/lib/ -larchive
+
+INCLUDEPATH += D:/LibArchive/include
+DEPENDPATH += D:/LibArchive/include

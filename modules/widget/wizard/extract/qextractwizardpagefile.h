@@ -3,7 +3,6 @@
 
 #include <QWizardPage>
 #include <QFileSystemModel>
-#include <QStringListModel>
 #include "qfilelistmodel.h"
 
 namespace Ui
@@ -16,7 +15,7 @@ class QExtractWizardPageFile : public QWizardPage
     Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QExtractWizardPageFile(QWidget *parent = nullptr);
+    explicit QExtractWizardPageFile(QWidget* parent = nullptr);
     virtual ~QExtractWizardPageFile();
 
     /*-----虚函数重载-----*/
@@ -30,7 +29,8 @@ signals:
 
     /*-----槽函数-----*/
 private slots:
-    void onFileSysViewItemDblClicked(const QModelIndex & index);
+    //文件系统视图双击事件响应
+    void onFileSysViewItemDblClicked(const QModelIndex& index);
 
     /*-----属性-----*/
 protected:
@@ -44,23 +44,27 @@ protected:
     //文件列表
     QStringList mStrFileList;
     //支持的档案后缀
-    QStringList mStrListValidFileSuffix{"zip", "gz"};
+private:
+    static QStringList strListValidFileSuffix;
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
 
     //[修改函数]
-    void addArchive(const QFileInfo &fileinfo);
-    void addArchive(const QString &path);
-    void addArchives(const QStringList &pathList);
-    void setArchives(const QStringList &pathList);
+    void addArchive(const QFileInfo& fileinfo);
+    void addArchive(const QString& path);
+    void addArchives(const QStringList& pathList);
+    void setArchives(const QStringList& pathList);
     void removeArchive(int idx);
     void removeArchives(QList<int> indices);
     void removeArchives(std::vector<int> indices);
 
     //[功能函数]
-    bool isValidArchive(const QFileInfo &fileinfo);
+    //检查是否为支持的档案类型
+    static bool isValidArchive(const QFileInfo& fileinfo);
+    //获取支持档案类型的文件过滤器列表(如"*.gz","*.zip"等)
+    static QStringList validArchiveNameFilters();
 
 private:
     void _initialize();
@@ -68,7 +72,7 @@ private:
 
     /*-----UI-----*/
 private:
-    Ui::QExtractWizardPageFile *ui;
+    Ui::QExtractWizardPageFile* ui;
 };
 
 #endif // QEXTRACTWIZARDPAGEFILE_H

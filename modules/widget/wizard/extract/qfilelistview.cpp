@@ -2,11 +2,20 @@
 #include <QAction>
 #include <QMouseEvent>
 #include <QMenu>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include "qextractwizard.h"
 
-QFileListView::QFileListView(QWidget *parent):
+QFileListView::QFileListView(QWidget* parent):
     QListView(parent)
 {
     _initialize();
+    this->setDragDropMode(QAbstractItemView::DragDropMode::DropOnly);
 }
 
 QFileListView::~QFileListView()
@@ -14,12 +23,12 @@ QFileListView::~QFileListView()
 
 }
 
-void QFileListView::mouseReleaseEvent(QMouseEvent *event)
+void QFileListView::mouseReleaseEvent(QMouseEvent* event)
 {
     QListView::mouseReleaseEvent(event);
     Q_ASSERT(model());
 
-    if(event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton)
     {
         //判断是否有选中对象
         QModelIndex index = this->indexAt(event->pos());
@@ -32,12 +41,64 @@ void QFileListView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void QFileListView::mousePressEvent(QMouseEvent *event)
+void QFileListView::mousePressEvent(QMouseEvent* event)
 {
     QListView::mousePressEvent(event);
 }
 
-const QAction *QFileListView::getAction(QFileListView::FileListViewMenuAction action)
+void QFileListView::onActionOpenInExplorerTriggered()
+{
+    Q_ASSERT(model());
+    QModelIndexList selectedList = this->selectedIndexes();
+    onDoubleClicked(selectedList.front());
+}
+
+void QFileListView::onActionPreviewArchiveTriggered()
+{
+
+}
+
+void QFileListView::onActionRemoveTriggered()
+{
+    Q_ASSERT(model());
+    QModelIndexList selectedList = this->selectedIndexes();
+    for (auto iter = selectedList.rbegin(); iter != selectedList.rend(); ++iter)
+        model()->removeRow((*iter).row());
+}
+
+void QFileListView::onActionAddArchiveTriggered()
+{
+    Q_ASSERT(model());
+    QString strValidFilter = QExtractWizardPageFile::validArchiveNameFilters().join(" ");
+    QStringList fileList = QFileDialog::getOpenFileNames(this, tr("Add Archives"), "", "archives (" + strValidFilter + ")");
+
+    //添加到文件列表
+    foreach (const auto& path, fileList)
+    {
+        model()->insertRow(model()->rowCount());
+        model()->setData(model()->index(model()->rowCount() - 1, 0), QVariant(path));
+    }
+}
+
+void QFileListView::onActionRemoveAllTriggered()
+{
+    Q_ASSERT(model());
+    model()->removeRows(0, model()->rowCount());
+}
+
+void QFileListView::onDoubleClicked(const QModelIndex& index)
+{
+    Q_ASSERT(model());
+    if (!index.isValid())
+        return;
+    //在资源管理器中打开目标文件
+    const QString& imagePath = model()->data(index).toString();
+    QDesktopServices::openUrl(QUrl(QFileInfo(imagePath).path()));
+    //清空选择
+    clearSelection();
+}
+
+const QAction* QFileListView::getAction(QFileListView::FileListViewMenuAction action)
 {
     switch (action)
     {
@@ -86,4 +147,21 @@ void QFileListView::_initialize()
 
 void QFileListView::_initializeConnections()
 {
+    //菜单
+    connect(this->mpActionOpenInExplorer, &QAction::triggered, this, &QFileListView::onActionOpenInExplorerTriggered);
+    connect(this->mpActionAddArchive, &QAction::triggered, this, &QFileListView::onActionAddArchiveTriggered);
+    connect(this->mpActionRemove, &QAction::triggered, this, &QFileListView::onActionRemoveTriggered);
+    connect(this->mpActionRemoveAll, &QAction::triggered, this, &QFileListView::onActionRemoveAllTriggered);
+    connect(this->mpActionPreviewArchive, &QAction::triggered, this, &QFileListView::onActionPreviewArchiveTriggered);
+
+    //双击
+    connect(this, &QFileListView::doubleClicked, this, &QFileListView::onDoubleClicked);
 }
+
+
+
+
+
+
+
+

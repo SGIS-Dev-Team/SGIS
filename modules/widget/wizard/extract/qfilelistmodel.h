@@ -1,19 +1,24 @@
-﻿#ifndef QFILELISTMODEL_H
+#ifndef QFILELISTMODEL_H
 #define QFILELISTMODEL_H
 
 #include <QStringListModel>
+#include <modules/global.h>
 
 class QFileListModel : public QStringListModel
 {
-    //Q_OBJECT
+    Q_OBJECT
+public:
 
     /*-----构造函数与析构函数-----*/
 public:
     explicit QFileListModel(QObject *parent = nullptr);
-    virtual ~QFileListModel();
+    virtual ~QFileListModel(){}
 
     /*-----虚函数重载-----*/
 protected:
+    virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+    virtual Qt::DropActions supportedDropActions() const override;
 
     /*-----信号-----*/
 signals:
@@ -35,16 +40,6 @@ public:
     //[修改函数]
 
     //[功能函数]
-
-    /*-----UI-----*/
-private:
-
-
-    // QAbstractItemModel interface
-public:
-    virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
-    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
-    virtual Qt::DropActions supportedDropActions() const override;
 };
 
 #endif // QFILELISTMODEL_H
