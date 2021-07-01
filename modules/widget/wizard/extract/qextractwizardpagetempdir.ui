@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>662</width>
-    <height>566</height>
+    <width>654</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -98,6 +98,9 @@
         <property name="text">
          <string>Extract to the same directory</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -109,6 +112,9 @@
         </property>
         <property name="text">
          <string>Using temporary directory:</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -138,6 +144,9 @@
       </property>
       <item>
        <widget class="QTextEdit" name="mTextEditTempDir">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -165,6 +174,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="mButtonOpen">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimumSize">
          <size>
           <width>50</width>
@@ -173,7 +185,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>80</width>
+          <width>100</width>
           <height>80</height>
          </size>
         </property>
@@ -184,6 +196,27 @@
         </property>
         <property name="text">
          <string>Open</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="mLabelDirInfo">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft Sans Serif</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Please select or enter the directory path</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>

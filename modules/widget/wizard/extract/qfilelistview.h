@@ -25,9 +25,13 @@ public:
 protected:
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void dragEnterEvent(QDragEnterEvent* event) override;
+    virtual void dropEvent(QDropEvent* event) override;
 
     /*-----信号-----*/
 signals:
+    //文件列表视图内容改变
+    void contentChanged();
 
     /*-----槽函数-----*/
 private slots:
@@ -45,7 +49,10 @@ protected:
 
     /*-----成员变量-----*/
 protected:
-
+    //右键菜单弹出时鼠标所在的列表项
+    QModelIndex mModelIndexOfPopMenu{};
+    //模型在拖放进入时的行数
+    int mnModelRowCountWhenDragEntered{};
 
     /*-----成员函数-----*/
 public:

@@ -1,7 +1,7 @@
 ﻿#include "qimagelistview.h"
 #include "QMouseEvent"
 
-QImageListView::QImageListView(QWidget *parent): QListView(parent)
+QImageListView::QImageListView(QWidget* parent): QListView(parent)
 {
     _initialize();
 }
@@ -11,12 +11,12 @@ QImageListView::~QImageListView()
 
 }
 
-void QImageListView::mouseReleaseEvent(QMouseEvent *event)
+void QImageListView::mouseReleaseEvent(QMouseEvent* event)
 {
     QListView::mouseReleaseEvent(event);
     Q_ASSERT(model());
 
-    if(event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton)
     {
         //判断是否有选中对象
         QModelIndex index = this->indexAt(event->pos());
@@ -30,23 +30,23 @@ void QImageListView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void QImageListView::mousePressEvent(QMouseEvent *event)
+void QImageListView::mousePressEvent(QMouseEvent* event)
 {
-    if(event->modifiers() == Qt::NoModifier)
-        if(event->button() == Qt::LeftButton)
+    if (event->modifiers() == Qt::NoModifier)
+        if (event->button() == Qt::LeftButton)
             this->clearSelection();
     QListView::mousePressEvent(event);
 }
 
-const QAction *QImageListView::getAction(QImageListView::ImageListViewMenuAction action)
+const QAction* QImageListView::getAction(QImageListView::ImageListViewMenuAction action)
 {
     switch (action)
     {
     case QImageListView::Add_Image:
         return mpActionAddImage;
         break;
-    case QImageListView::Add_Tarball:
-        return mpActionAddTarball;
+    case QImageListView::Add_Archive:
+        return mpActionAddArchive;
         break;
     case QImageListView::Remove:
         return mpActionRemove;
@@ -75,7 +75,7 @@ void QImageListView::_initialize()
 
     mpMenuAdd                = new QMenu(tr("Add..."),                  mpMenu);
     mpActionAddImage         = new QAction(tr("Add Image"),             mpMenuAdd);
-    mpActionAddTarball       = new QAction(tr("Add Tarball"),           mpMenuAdd);
+    mpActionAddArchive       = new QAction(tr("Add Archive"),           mpMenuAdd);
     mpActionOpenInExplorer   = new QAction(tr("Open In Explorer..."),   mpMenu);
     mpActionRebuildOverviews = new QAction(tr("Rebuild Overviews"),     mpMenu);
     mpActionRemove           = new QAction(tr("Remove"),                mpMenu);
@@ -89,7 +89,7 @@ void QImageListView::_initialize()
     mpMenu->addSeparator();
     //子菜单
     mpMenuAdd->addAction(mpActionAddImage);
-    mpMenuAdd->addAction(mpActionAddTarball);
+    mpMenuAdd->addAction(mpActionAddArchive);
     mpMenu->addMenu(mpMenuAdd);
     mpMenu->addAction(mpActionRemoveAll);
 }

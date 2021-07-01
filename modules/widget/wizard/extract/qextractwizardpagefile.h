@@ -4,6 +4,7 @@
 #include <QWizardPage>
 #include <QFileSystemModel>
 #include "qfilelistmodel.h"
+#include "modules/algorithm/sarchiveextractor.h"
 
 namespace Ui
 {
@@ -24,8 +25,11 @@ protected:
 public:
     virtual void initializePage() override;
     virtual bool isComplete() const override;
+
     /*-----信号-----*/
 signals:
+    //文件列表改变
+    void extractListChanged();
 
     /*-----槽函数-----*/
 private slots:
@@ -34,6 +38,7 @@ private slots:
 
     /*-----属性-----*/
 protected:
+    Q_PROPERTY(QStringList extractList READ extractList NOTIFY extractListChanged);
 
     /*-----成员变量-----*/
 protected:
@@ -41,30 +46,16 @@ protected:
     QFileSystemModel mFileSysModel;
     //文件列表模型
     QFileListModel mFileListModel;
-    //文件列表
-    QStringList mStrFileList;
-    //支持的档案后缀
+
 private:
-    static QStringList strListValidFileSuffix;
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
-
-    //[修改函数]
-    void addArchive(const QFileInfo& fileinfo);
-    void addArchive(const QString& path);
-    void addArchives(const QStringList& pathList);
-    void setArchives(const QStringList& pathList);
-    void removeArchive(int idx);
-    void removeArchives(QList<int> indices);
-    void removeArchives(std::vector<int> indices);
+    QStringList extractList()const {return mFileListModel.stringList();}
 
     //[功能函数]
-    //检查是否为支持的档案类型
-    static bool isValidArchive(const QFileInfo& fileinfo);
-    //获取支持档案类型的文件过滤器列表(如"*.gz","*.zip"等)
-    static QStringList validArchiveNameFilters();
+
 
 private:
     void _initialize();

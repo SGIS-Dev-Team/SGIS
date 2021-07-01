@@ -11,13 +11,13 @@ public:
 
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QFileListModel(QObject *parent = nullptr);
-    virtual ~QFileListModel(){}
+    explicit QFileListModel(QObject* parent = nullptr);
+    virtual ~QFileListModel() {}
 
     /*-----虚函数重载-----*/
 protected:
-    virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
-    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+    virtual bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
+    virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
     virtual Qt::DropActions supportedDropActions() const override;
 
     /*-----信号-----*/
@@ -38,6 +38,7 @@ public:
     //[访问函数]
 
     //[修改函数]
+    void append(const QString& string);
 
     //[功能函数]
 };

@@ -3,7 +3,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QMessageBox>
-#include "qextractwizardpagefile.h"
+#include "modules/algorithm/sarchiveextractor.h"
 
 QFileListModel::QFileListModel(QObject* parent) : QStringListModel(parent)
 {
@@ -19,15 +19,15 @@ bool QFileListModel::canDropMimeData(const QMimeData* data, Qt::DropAction actio
 bool QFileListModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
     QList<QUrl> urlList = data->urls();
-    //在url列表里面寻找tar.gz
-    bool hasTarball{false};
+    //在url列表里面寻找压缩档案
+    bool hasArchive{false};
     foreach (const auto& url, urlList)
     {
         QFileInfo fileInfo(url.toLocalFile());
         //判断格式是否受支持
-        if (QExtractWizardPageFile::isValidArchive(fileInfo))
+        if (SArchiveExtractor::isValidArchive(fileInfo))
         {
-            hasTarball = true;
+            hasArchive = true;
             //判断是否已存在
             bool exist = this->stringList().contains(fileInfo.filePath());
             //添加到模型中
@@ -39,13 +39,20 @@ bool QFileListModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
             }
         }
     }
-    if (!hasTarball)
+    if (!hasArchive)
         QMessageBox::information(nullptr, tr("Unsupported Archive"), tr("Please drag tarball archive files inside."));
 
-    return hasTarball;
+    return hasArchive;
 }
 
 Qt::DropActions QFileListModel::supportedDropActions() const
 {
     return Qt::DropAction::CopyAction;
+}
+
+void QFileListModel::append(const QString& string)
+{
+    int newRow = this->rowCount();
+    this->insertRow(newRow);
+    this->setData(this->index(newRow), string);
 }

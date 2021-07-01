@@ -10,7 +10,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    modules/algorithm/sarchiveextractor.cpp \
+    modules/algorithm/archive_extractor/sarchiveextractor.cpp \
     modules/algorithm/soverviewbuilder.cpp \
     modules/algorithm/sslice.cpp \
     modules/doc/sdocument.cpp \
@@ -43,7 +43,7 @@ SOURCES += \
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
-    modules/algorithm/sarchiveextractor.h \
+    modules/algorithm/archive_extractor/sarchiveextractor.h \
     modules/algorithm/sequalizehist.h \
     modules/algorithm/soverviewbuilder.h \
     modules/algorithm/sslice.h \

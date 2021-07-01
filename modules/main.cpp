@@ -4,8 +4,9 @@
 #include <QApplication>
 #include <QFileDialog>
 #include "modules/algorithm/soverviewbuilder.h"
+#include <QStyleFactory>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     GDALAllRegister();
 
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
     //VLDGlobalDisable();
 #endif
     QApplication app(argc, argv);
+    app.setStyle(QStyleFactory::create("mac"));
     //使得程序可以在系统托盘运行
     app.setQuitOnLastWindowClosed(false);
 

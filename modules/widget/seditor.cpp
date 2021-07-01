@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QMessageBox>
 
-SEditor::SEditor(QWidget *parent): QMainWindow(parent),
+SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
@@ -14,7 +14,10 @@ SEditor::SEditor(QWidget *parent): QMainWindow(parent),
 
 SEditor::~SEditor()
 {
-    //TODO:释放所有手动创建的控件指针
+    //TODO:释放所有手动创建且没有指定父控件的控件指针
+    if (mpImportDialog)delete mpImportDialog;
+    mpImportDialog = nullptr;
+
     delete ui;
 }
 
@@ -36,7 +39,7 @@ void SEditor::onActionCreateRectTriggered()
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SShape * rect = SShapeFactory::createShape(ShapeSet::Hexagon);
+    SShape* rect = SShapeFactory::createShape(ShapeSet::Hexagon);
     rect->setCenterPoint(QPoint(x, y));
     rect->scale(800, 800);
     rect->rotate(15);
@@ -52,7 +55,7 @@ void SEditor::onActionLoadImageTriggered()
     mpCurDoc->getLayerManager().clearSelection();
     QStringList pathList = QFileDialog::getOpenFileNames(this);
 
-    for(int i = 0; i < pathList.size(); ++i)
+    for (int i = 0; i < pathList.size(); ++i)
     {
         quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
@@ -74,7 +77,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     QFileInfo file_info(path);
 
-    if(path.isEmpty())
+    if (path.isEmpty())
         return;
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
@@ -82,7 +85,7 @@ void SEditor::onActionLoadFragmentsTriggered()
     pFragImg->setPyramidDir(file_info.filePath());
     pFragImg->loadMeta();
 
-    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
 
     pFragImg->setBandIndices(1, 2, 3);
 
@@ -94,17 +97,18 @@ void SEditor::onActionLoadFragmentsTriggered()
 #include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
-    if(mpImportDialog->isEmpty())
+    if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
         QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-        if(strImagePathList.isEmpty())
+        if (strImagePathList.isEmpty())
             return;
 
         mpImportDialog->addImagePaths(strImagePathList);
     }
     //打开数据导入向导对话框
-    mpImportDialog->open();
+    mpImportDialog->show();
+    mpImportDialog->raise();
 }
 
 void SEditor::onImportingData()
@@ -112,12 +116,12 @@ void SEditor::onImportingData()
     //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
-    auto &streamMetaVec = mpImportDialog->getStreamMetaVec();
-    for(auto &pStreamMeta : streamMetaVec)
+    auto& streamMetaVec = mpImportDialog->getStreamMetaVec();
+    for (auto& pStreamMeta : streamMetaVec)
     {
-        SImageStreamMeta &streamMeta = *pStreamMeta;
+        SImageStreamMeta& streamMeta = *pStreamMeta;
 
-        if(streamMeta.isImported())
+        if (streamMeta.isImported())
             continue;
 
         SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
@@ -219,13 +223,13 @@ void SEditor::onCanvasScaled(double value)
     mpStatLblCanvasScale->setText(QString::number(value * 100, 'f', 2) + "%");
 }
 
-void SEditor::onLayersUpdated(SLayerManager *which)
+void SEditor::onLayersUpdated(SLayerManager* which)
 {
-    if(mpCurCanvasArea)
+    if (mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
 }
 
-void SEditor::closeEvent(QCloseEvent *event)
+void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     emit closed();
@@ -244,7 +248,7 @@ void SEditor::initialize()
 
     /*-----初始化子窗口-----*/
     //数据导入向导
-    mpImportDialog = new QDataImportWizard(this);
+    mpImportDialog = new QDataImportWizard();
 
     /*-----创建绘图区-----*/
     createWorkspace();
@@ -283,10 +287,10 @@ void SEditor::initializeConnections()
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }
 
-void SEditor::createWorkspace(const QSize &CanvasSize)
+void SEditor::createWorkspace(const QSize& CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-    QCanvasArea * newCanvasArea = new QCanvasArea(CanvasSize);
+    QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
     std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());

@@ -74,10 +74,16 @@
 #define DEFAULT_LOGICAL_FRAGMENT_SIZE 800
 
 //文档位置
-#define SGIS_DOCUMENT_FOLDER QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis"
+#define SGIS_DOCUMENT_FOLDER QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgis/"
 
-//金字塔缓存文件夹
-#define PYRAMID_FOLDER_NAME "/pyramid"
+//默认金字塔缓存文件夹
+#define DEFAULT_PYRAMID_FOLDER_NAME "pyramid/"
+
+//默认解压缓存文件夹
+#define DEFAULT_EXTRACT_TEMP_DIR "extract/"
+
+//默认同时解压线程数
+#define DEFAULT_EXTRACT_THREAD_COUNT 4
 
 //绘图对象类名
 namespace sgis

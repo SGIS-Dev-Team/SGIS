@@ -11,6 +11,7 @@
 #include <modules/paint/sfragimage.h>
 #include <QStringListModel>
 #include <QItemSelectionModel>
+#include "modules/widget/wizard/extract/qextractwizard.h"
 
 namespace Ui
 {
@@ -23,8 +24,8 @@ class QDataImportWizard : public QDialog
 
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QDataImportWizard(QWidget *parent = nullptr);
-    explicit QDataImportWizard(const QStringList &imagePathList, QWidget *parent = nullptr);
+    explicit QDataImportWizard(QWidget* parent = nullptr);
+    explicit QDataImportWizard(const QStringList& imagePathList, QWidget* parent = nullptr);
     virtual ~QDataImportWizard();
 
     /*-----虚函数重载-----*/
@@ -54,11 +55,11 @@ private slots:
     //预览图加载完成
     void onPreviewImageLoaded();
     //图像列表双击事件
-    void onListItemDoubleClicked(const QModelIndex &index);
+    void onListItemDoubleClicked(const QModelIndex& index);
     //图像列表右键菜单触发
     void onListViewMenuActionOpenInExplorerTriggered();
     void onListViewMenuActionAddImageTriggered();
-    void onListViewMenuActionAddTarballTriggered();
+    void onListViewMenuActionAddArchiveTriggered();
     void onListViewMenuActionRemoveTriggered();
     void onListViewMenuActionRemoveAllTriggered();
     void onListViewMenuActionRebuildOverviewsTriggered();
@@ -77,7 +78,7 @@ protected:
     //当前正在加载预览图的对象
     int mnCurrentLoadingPreviewIndex{-1};
     //所有金字塔缓存目录(sgis/pyramid)
-    QString mStrPyramidSavePath = SGIS_DOCUMENT_FOLDER + PYRAMID_FOLDER_NAME;
+    QString mStrPyramidSavePath = SGIS_DOCUMENT_FOLDER + DEFAULT_PYRAMID_FOLDER_NAME;
     //是否根据选择框更新预览图像
     bool mbUpdatePreviewImg{false};
     //构建器线程
@@ -92,15 +93,15 @@ protected:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    inline const SImageStreamMeta &getStreamMeta(size_t idx)const {Q_ASSERT(idx < mStreamMetaVec.size()); return *mStreamMetaVec.at(idx);};
-    inline const std::vector<std::shared_ptr<SImageStreamMeta>> &getStreamMetaVec()const {return mStreamMetaVec;}
-    inline std::vector<std::shared_ptr<SImageStreamMeta>> &getStreamMetaVec() {return mStreamMetaVec;}
+    inline const SImageStreamMeta& getStreamMeta(size_t idx)const {Q_ASSERT(idx < mStreamMetaVec.size()); return *mStreamMetaVec.at(idx);};
+    inline const std::vector<std::shared_ptr<SImageStreamMeta>>& getStreamMetaVec()const {return mStreamMetaVec;}
+    inline std::vector<std::shared_ptr<SImageStreamMeta>>& getStreamMetaVec() {return mStreamMetaVec;}
     inline size_t getStreamMetaCount()const {return mStreamMetaVec.size();}
 
     //[修改函数]
     inline void removeStreamMeta(size_t idx) {mStreamMetaVec.erase(mStreamMetaVec.begin() + idx);}
-    void setImagePaths(const QStringList &imagePathList);
-    void addImagePaths(const QStringList &imagePathList);
+    void setImagePaths(const QStringList& imagePathList);
+    void addImagePaths(const QStringList& imagePathList);
     void removeStream(size_t idx);
     void removeStreams(std::vector<size_t> indices);
 
@@ -113,13 +114,16 @@ private:
     //设置当前预览的图像
     void _setCurrentImage(size_t idx);
     //根据当前预览的图像生成简略元数据信息文本
-    QString _generateMetaInfo(const SImageStreamMeta &streamMeta);
+    QString _generateMetaInfo(const SImageStreamMeta& streamMeta);
     void _releaseAll();
     //开临时线程加载预览图
     void _loadPreviewImage(size_t idx, int r = 0, int g = 0, int b = 0);
 
+    /*-----UI-----*/
 private:
-    Ui::QDataImportWizard *ui;
+    Ui::QDataImportWizard* ui;
+
+    QExtractWizard* pExtractWizard{nullptr};
 };
 
 #endif // QBANDSELECTDIALOG_H

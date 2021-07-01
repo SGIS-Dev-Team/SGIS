@@ -12,7 +12,7 @@ public:
     enum ImageListViewMenuAction
     {
         Add_Image,
-        Add_Tarball,
+        Add_Archive,
         Remove,
         Remove_All,
         Rebuild_Overviews,
@@ -22,13 +22,13 @@ public:
 
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QImageListView(QWidget *parent = nullptr);
+    explicit QImageListView(QWidget* parent = nullptr);
     virtual ~QImageListView();
 
     /*-----虚函数重载-----*/
 protected:
-    virtual void mouseReleaseEvent(QMouseEvent *event) override;
-    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
 
     /*-----信号-----*/
 signals:
@@ -46,7 +46,7 @@ protected:
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    const QAction *getAction(ImageListViewMenuAction action);
+    const QAction* getAction(ImageListViewMenuAction action);
 
     //[修改函数]
 
@@ -59,15 +59,15 @@ private:
 
     /*-----UI-----*/
 private:
-    QMenu *mpMenu;
-    QMenu *mpMenuAdd;
-    QAction *mpActionAddImage;
-    QAction *mpActionAddTarball;
-    QAction *mpActionRemove;
-    QAction *mpActionRebuildOverviews;
-    QAction *mpActionShowMetaData;
-    QAction *mpActionRemoveAll;
-    QAction *mpActionOpenInExplorer;
+    QMenu* mpMenu;
+    QMenu* mpMenuAdd;
+    QAction* mpActionAddImage;
+    QAction* mpActionAddArchive;
+    QAction* mpActionRemove;
+    QAction* mpActionRebuildOverviews;
+    QAction* mpActionShowMetaData;
+    QAction* mpActionRemoveAll;
+    QAction* mpActionOpenInExplorer;
 
 };
 

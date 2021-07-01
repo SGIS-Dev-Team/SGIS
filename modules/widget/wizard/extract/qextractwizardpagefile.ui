@@ -141,7 +141,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFileListView" name="mFileListView">
+    <widget class="QFileListView" name="mArchiveListView">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>

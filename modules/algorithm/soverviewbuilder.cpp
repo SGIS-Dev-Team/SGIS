@@ -221,7 +221,7 @@ bool SOverviewBuilder::varifyPyramid(const QString& oriImgPath, const QString& p
 
 QString SOverviewBuilder::generatePyramidDir(const QString& oriImagePath, const QString& savePath)
 {
-    return savePath + '/' + QFileInfo(oriImagePath).completeBaseName();
+    return savePath + QFileInfo(oriImagePath).completeBaseName();
 }
 
 bool SOverviewBuilder::removeExistingPyramid(const QString& pyramidDir)
