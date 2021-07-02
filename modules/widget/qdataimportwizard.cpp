@@ -274,7 +274,7 @@ void QDataImportWizard::_initialize()
     connect(&mOverviewBuilder, &SOverviewBuilder::overviewsBuilt, this, &QDataImportWizard::onOverviewBuilt);
     qRegisterMetaType<SOverviewBuilder::Format>("Format");
     connect(this, &QDataImportWizard::startBuildingThread, &mOverviewBuilder, &SOverviewBuilder::buildOverviews);
-    connect(&mBuilderThread, &QThread::finished, &mOverviewBuilder, &QObject::deleteLater);
+
     mBuilderThread.start();
 
     //------准备图像列表数据模型------//

@@ -5,35 +5,44 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <QFileInfo>
+#include "sarchivemeta.h"
+#include <QThread>
 
 #define MAX_FILENAME_LEN 1024
 
-//档案条目元数据
-class SArchiveEntryMeta
+class SArchiveExtractor;
+class SArchiveProgress;
+
+//档案进度信息结构
+class SArchiveProgress
 {
-private:
-    QString mStrEntryPath;          //条目路径（档案内部路径）
-    size_t  muEntrySize;            //解压大小
-    QString mStrLastModifiedTime;   //修改时间
-
 public:
-    //访问函数
-    const QString& entryPath()const {return mStrEntryPath;}
-    const QString& lastModifiedTime()const {return mStrLastModifiedTime;}
-    size_t size()const {return muEntrySize;}
-    //修改函数
-    void setEntryPath(const QString& path) {mStrEntryPath = path;}
-    void setLastModifiedTime(const QString& time) {mStrLastModifiedTime = time;}
-    void setUnpackSize(size_t sz) {muEntrySize = sz;}
+    SArchiveExtractor* mpExtractor;
+    struct archive* mpArchive;
+    struct archive_entry* mpEntry;
 
-public:
-    explicit SArchiveEntryMeta(const QString& _entryPath, size_t _size, const QString& _lastModifiedTime):
-        mStrEntryPath(_entryPath), muEntrySize(_size), mStrLastModifiedTime(_lastModifiedTime) {}
-    virtual ~SArchiveEntryMeta() {}
+    explicit SArchiveProgress() {}
+    explicit SArchiveProgress(SArchiveExtractor* _pExtractor, archive* _pArchive, archive_entry* _pEntry):
+        mpExtractor(_pExtractor), mpArchive(_pArchive), mpEntry(_pEntry) {}
+    virtual ~SArchiveProgress() {}
 };
 
 
-//档案解压器
+//-----------------------------------
+//              档案解压器
+//          SArchiveExtractor
+//  该类为多线程设计，提供解压档案和预览档案条目
+//的功能。
+//
+//  槽函数doExtract和doReadMeta的第一个参数
+//[pExtractorThread]用于标识执行解压的线程
+//若传入的线程指针和当前线程指针不一致，则不做
+//任何操作，这是为了一个信号连接到多个解压线程
+//的槽函数时能够区分设计的。
+//
+//
+//-----------------------------------
+
 class SArchiveExtractor : public QObject
 {
     Q_OBJECT
@@ -45,13 +54,21 @@ public:
 
     /*-----信号-----*/
 signals:
-    void extractComplete(QString strExtractPath, int flag);
-    void readArchiveMetaComplete(QList<SArchiveEntryMeta> metaList, int flag);
+    //解压完成
+    void extractComplete(QThread* pExtractorThread, const QString& strExtractPath, int flag);
+    //预览完成
+    void archiveMetaRead(QThread* pExtractorThread, const SArchiveMeta& metaList, int flag);
+    //解压进度条更新
+    void extractProgressUpdated(QThread* pExtractorThread, int progress);
+    //预览进度条更新
+    void readArchiveMetaProgressUpdated(QThread* pExtractThread, int progress);
 
     /*-----槽函数-----*/
-private slots:
-    void doExtract(QString strArchivePath, QString strExtractDir);
-    void doReadMeta(QString strArchivePath);
+public slots:
+    //解压
+    void doExtract(QThread* pExtractorThread, const QString& strArchivePath, const QString& strExtractDir);
+    //预览
+    void doReadMeta(QThread* pExtractorThread, const QString& strArchivePath);
 
     /*-----属性-----*/
 protected:
@@ -73,9 +90,22 @@ public:
     static QStringList validArchiveNameFilters();
 
     //[功能函数]
+private:
     //在两个档案之间拷贝数据
-    static int copyData(struct archive* pArchiveRead, struct archive* pArchiveWrite);
+    static int _copyData(struct archive* pArchiveRead, struct archive* pArchiveWrite);
 
+    //发射解压进度更新信号
+    void _updateExtractProgress(int progress) {emit extractProgressUpdated(QThread::currentThread(), progress);}
+    //发射预览进度更新信号
+    void _updateReadMetaProgress(int progress) {emit readArchiveMetaProgressUpdated(QThread::currentThread(), progress);}
+
+    //解压进度条回调函数
+    static void _extractProgressCallBackFunc(void* pIndicator);
+    //预览进度条回调函数
+    static void _readMetaProgressCallBackFunc(void* pIndicator);
+
+    //计算解压进度
+    static int _calcProgress(SArchiveProgress* pIndicator);
 };
 
 #endif // SARCHIVEEXTRACTOR_H

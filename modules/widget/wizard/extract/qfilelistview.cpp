@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include "modules/algorithm/sarchiveextractor.h"
+#include "modules/algorithm/archive_extractor/sarchiveextractor.h"
 
 QFileListView::QFileListView(QWidget* parent):
     QListView(parent)
@@ -28,7 +28,7 @@ void QFileListView::mouseReleaseEvent(QMouseEvent* event)
     QListView::mouseReleaseEvent(event);
     Q_ASSERT(model());
 
-    if (event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton && mbPopMenuEnabled)
     {
         //判断是否有选中对象
         mModelIndexOfPopMenu = this->indexAt(event->pos());
@@ -147,6 +147,11 @@ const QAction* QFileListView::getAction(QFileListView::FileListViewMenuAction ac
     default:
         Q_ASSERT(0);
     }
+}
+
+void QFileListView::setPopMenuEnabled(bool enable)
+{
+    mbPopMenuEnabled = enable;
 }
 
 void QFileListView::_initialize()

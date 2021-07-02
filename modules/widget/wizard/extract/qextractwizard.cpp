@@ -2,7 +2,7 @@
 #include "ui_qextractwizard.h"
 #include "qextractwizardpagefile.h"
 
-QExtractWizard::QExtractWizard(QWidget *parent) :
+QExtractWizard::QExtractWizard(QWidget* parent) :
     QWizard(parent),
     ui(new Ui::QExtractWizard)
 {
@@ -22,6 +22,7 @@ void QExtractWizard::_initialize()
     mpPageFile      = new QExtractWizardPageFile();
     mpPageTempDir   = new QExtractWizardPageTempDir();
     mpPageProgress  = new QExtractWizardPageProgress();
+    mpPageProgress->setWizard(this);
     //添加页面
     addPage(mpPageIntro);
     addPage(mpPageFile);

@@ -3,7 +3,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QMessageBox>
-#include "modules/algorithm/sarchiveextractor.h"
+#include "modules/algorithm/archive_extractor/sarchiveextractor.h"
 
 QFileListModel::QFileListModel(QObject* parent) : QStringListModel(parent)
 {

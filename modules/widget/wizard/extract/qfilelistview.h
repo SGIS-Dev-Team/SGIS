@@ -44,8 +44,10 @@ private slots:
 
     //文件列表视图双击事件响应
     void onDoubleClicked(const QModelIndex& index);
+
     /*-----属性-----*/
 protected:
+    bool mbPopMenuEnabled{true};
 
     /*-----成员变量-----*/
 protected:
@@ -62,6 +64,7 @@ public:
     //[修改函数]
 
     //[功能函数]
+    void setPopMenuEnabled(bool enable);
 public:
 
 private:

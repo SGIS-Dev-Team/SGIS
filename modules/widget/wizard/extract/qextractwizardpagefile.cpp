@@ -32,6 +32,8 @@ void QExtractWizardPageFile::onFileSysViewItemDblClicked(const QModelIndex& inde
         return;
 
     mFileListModel.append(fileinfo.filePath());
+
+    emit completeChanged();
 }
 
 void QExtractWizardPageFile::_initialize()

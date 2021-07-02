@@ -3,29 +3,43 @@
 #include <archive_entry.h>
 #include <QStringList>
 #include <QDateTime>
+#include <QDir>
 
 QStringList SArchiveExtractor::strListValidFileSuffix = {"gz", "zip"};
 
-void SArchiveExtractor::doExtract(QString strArchivePath, QString strExtractDir)
+void SArchiveExtractor::doExtract(QThread* pExtractorThread, const QString& strArchivePath, const QString& strExtractDir)
 {
+    if (pExtractorThread != QThread::currentThread())
+        return;
+
     //初始化档案指针
     struct archive* pArchiveRead = archive_read_new();
     struct archive* pArchiveWrite = archive_write_disk_new();
+    int flag{};
 
     //支持所有格式
     archive_read_support_compression_all(pArchiveRead);
     archive_read_support_format_all(pArchiveRead);
 
-    //打开档案文件
+    //路径字符串转换
     QByteArray strArchivePath_byte = strArchivePath.toUtf8();
-    int block_size = 10240;
-    int flag = archive_read_open_filename(pArchiveRead, strArchivePath_byte.data(), block_size);
+    QString strExtractPath = (strExtractDir + "/" + QFileInfo(strArchivePath).fileName()).toUtf8();
+    QDir().mkpath(strExtractPath);
 
+    //打开文件
+    int block_size = 10240;
+    flag = archive_read_open_filename(pArchiveRead, strArchivePath_byte.constData(), block_size);
     if (flag != ARCHIVE_OK)
     {
         archive_read_free(pArchiveRead);
-        emit extractComplete({}, flag);
+        archive_write_free(pArchiveWrite);
+        emit extractComplete(pExtractorThread, {}, flag);
+        return;
     }
+
+    //设置进度回调函数
+    SArchiveProgress progressIndicator(this, pArchiveRead, nullptr);
+    archive_read_extract_set_progress_callback(pArchiveRead, SArchiveExtractor::_extractProgressCallBackFunc, (void*)&progressIndicator);
 
     //循环读取每个条目
     for (;;)
@@ -38,13 +52,21 @@ void SArchiveExtractor::doExtract(QString strArchivePath, QString strExtractDir)
         if (flag == ARCHIVE_EOF || flag != ARCHIVE_OK)
             break;
 
+        //更改条目路径
+        QString entryPath = archive_entry_pathname(pEntry);
+        QString extractedEntryPath = strExtractPath + "/" + entryPath;
+        QByteArray extractedEntryPath_byte = extractedEntryPath.toUtf8();
+        archive_entry_set_pathname(pEntry, extractedEntryPath_byte.constData());
+
+        progressIndicator.mpEntry = pEntry;
+
         //写入条目数据标头
         flag = archive_write_header(pArchiveWrite, pEntry);
         if (flag != ARCHIVE_OK)
             break;
 
         //拷贝条目数据
-        copyData(pArchiveRead, pArchiveWrite);
+        _copyData(pArchiveRead, pArchiveWrite);
 
         //结束条目
         flag = archive_write_finish_entry(pArchiveWrite);
@@ -56,13 +78,16 @@ void SArchiveExtractor::doExtract(QString strArchivePath, QString strExtractDir)
     archive_write_close(pArchiveWrite);
     archive_write_free(pArchiveWrite);
 
-    emit extractComplete(strExtractDir, flag);
+    emit extractComplete(pExtractorThread, strExtractDir, flag);
 }
 
-void SArchiveExtractor::doReadMeta(QString strArchivePath)
+void SArchiveExtractor::doReadMeta(QThread* pExtractorThread, const QString& strArchivePath)
 {
+    if (pExtractorThread != QThread::currentThread())
+        return;
+
     //描述数据列表
-    QList<SArchiveEntryMeta> metaList;
+    std::vector<SArchiveEntryMeta> metaList;
 
     //档案对象
     struct archive* pArchive;
@@ -86,7 +111,7 @@ void SArchiveExtractor::doReadMeta(QString strArchivePath)
     if (flag != ARCHIVE_OK)
     {
         archive_read_free(pArchive);
-        emit readArchiveMetaComplete({}, flag);
+        emit archiveMetaRead(pExtractorThread, SArchiveMeta(), flag);
         return;
     }
 
@@ -98,7 +123,7 @@ void SArchiveExtractor::doReadMeta(QString strArchivePath)
         QDateTime modifTime(QDateTime::fromTime_t(archive_entry_mtime(pEntry)));
         QString strModifTime = modifTime.toString("yyyy/MM/dd hh:mm::ss");
         //构造元数据类
-        metaList << SArchiveEntryMeta(strEntryPath, entrySize, strModifTime);
+        metaList.emplace_back(strEntryPath, entrySize, strModifTime);
         //跳过读取条目数据
         archive_read_data_skip(pArchive);
     }
@@ -107,7 +132,9 @@ void SArchiveExtractor::doReadMeta(QString strArchivePath)
     archive_read_close(pArchive);
     archive_read_free(pArchive);
 
-    emit readArchiveMetaComplete(metaList, flag);
+    emit archiveMetaRead(pExtractorThread,
+                         SArchiveMeta(metaList, QFileInfo(strArchivePath).size()),
+                         flag);
 }
 
 bool SArchiveExtractor::isValidArchive(const QFileInfo& fileinfo)
@@ -134,8 +161,7 @@ QStringList SArchiveExtractor::validArchiveNameFilters()
     return filterList;
 }
 
-
-int SArchiveExtractor::copyData(struct archive* pArchiveRead, struct archive* pArchiveWrite)
+int SArchiveExtractor::_copyData(struct archive* pArchiveRead, struct archive* pArchiveWrite)
 {
     int flag;
     const void* dataBuffer;
@@ -156,6 +182,38 @@ int SArchiveExtractor::copyData(struct archive* pArchiveRead, struct archive* pA
         if (flag != ARCHIVE_OK)
             return flag;
     }
+}
+
+int SArchiveExtractor::_calcProgress(SArchiveProgress* pProgressIndicator)
+{
+    struct archive* pArchive = pProgressIndicator->mpArchive;
+
+    uint64_t comp, uncomp;
+    int progress{0};
+
+    if (pArchive != nullptr)
+    {
+        comp = archive_filter_bytes(pArchive, -1);
+        uncomp = archive_filter_bytes(pArchive, 0);
+        if (comp > uncomp)
+            progress = 0;
+        else
+            progress = (int)((uncomp - comp) * 100 / uncomp);
+    }
+
+    return progress;
+}
+
+void SArchiveExtractor::_extractProgressCallBackFunc(void* pIndicator)
+{
+    SArchiveProgress* pProgressIndicator = static_cast<SArchiveProgress*>(pIndicator);
+    pProgressIndicator->mpExtractor->_updateExtractProgress(_calcProgress(pProgressIndicator));
+}
+
+void SArchiveExtractor::_readMetaProgressCallBackFunc(void* pIndicator)
+{
+    SArchiveProgress* pProgressIndicator = static_cast<SArchiveProgress*>(pIndicator);
+    pProgressIndicator->mpExtractor->_updateReadMetaProgress(_calcProgress(pProgressIndicator));
 }
 
 

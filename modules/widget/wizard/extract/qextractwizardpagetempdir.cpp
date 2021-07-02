@@ -38,7 +38,7 @@ void QExtractWizardPageTempDir::onRadioButtonEmplaceToggled(bool isChecked)
 void QExtractWizardPageTempDir::onRadioButtonUseBelowToggled(bool isChecked)
 {
     ui->mButtonOpen->setEnabled(isChecked);
-    ui->mTextEditTempDir->setEnabled(isChecked);
+    ui->mLineEditTempDir->setEnabled(isChecked);
 
     emit completeChanged();
 }
@@ -52,7 +52,7 @@ void QExtractWizardPageTempDir::onPushButtonOpenClicked()
     QString selectedPath = QFileDialog::getExistingDirectory(this, tr("Select a temporary directory for extraction"), mDefaultTempDir.path());
     if (!selectedPath.isEmpty())
     {
-        ui->mTextEditTempDir->setPlainText(selectedPath);
+        ui->mLineEditTempDir->setText(selectedPath);
         emit completeChanged();
     }
 }
@@ -62,7 +62,7 @@ void QExtractWizardPageTempDir::onTextEditTempDirTextChanged()
     QString strInfoText{};
     QString strStyleString{};
 
-    if (!ui->mTextEditTempDir->toPlainText().isEmpty())
+    if (!ui->mLineEditTempDir->text().isEmpty())
     {
         if (!_validateTempDir())
         {
@@ -90,7 +90,7 @@ void QExtractWizardPageTempDir::onTextEditTempDirTextChanged()
 bool QExtractWizardPageTempDir::_validateTempDir() const
 {
     //检查当前文本框内的路径是否合法
-    QString tmpPath = ui->mTextEditTempDir->toPlainText();
+    QString tmpPath = ui->mLineEditTempDir->text();
 
     QDir tempDir(tmpPath);
 
@@ -104,7 +104,7 @@ void QExtractWizardPageTempDir::_initialize()
 {
     //初始化路径文本框
     mDefaultTempDir.setPath(SGIS_DOCUMENT_FOLDER + DEFAULT_EXTRACT_TEMP_DIR);
-    ui->mTextEditTempDir->setPlainText(mDefaultTempDir.path());
+    ui->mLineEditTempDir->setText(mDefaultTempDir.path());
     onTextEditTempDirTextChanged();
 
     ui->mRadioButtonEmplace->setChecked(true);
@@ -112,7 +112,7 @@ void QExtractWizardPageTempDir::_initialize()
     //注册域
     registerField("extractEmplace", ui->mRadioButtonEmplace);
     registerField("extractInSpecifiedDir", ui->mRadioButtonUseBelow);
-    registerField("tempDir", ui->mTextEditTempDir);
+    registerField("tempDir", ui->mLineEditTempDir);
 
     _initializeConnections();
 }
@@ -124,7 +124,7 @@ void QExtractWizardPageTempDir::_initializeConnections()
     connect(ui->mRadioButtonUseBelow, &QRadioButton::toggled, this, &QExtractWizardPageTempDir::onRadioButtonUseBelowToggled);
     connect(ui->mButtonOpen, &QPushButton::clicked, this, &QExtractWizardPageTempDir::onPushButtonOpenClicked);
     //链接文本框事件响应
-    connect(ui->mTextEditTempDir, &QTextEdit::textChanged, this, &QExtractWizardPageTempDir::onTextEditTempDirTextChanged);
+    connect(ui->mLineEditTempDir, &QLineEdit::textChanged, this, &QExtractWizardPageTempDir::onTextEditTempDirTextChanged);
 }
 
 

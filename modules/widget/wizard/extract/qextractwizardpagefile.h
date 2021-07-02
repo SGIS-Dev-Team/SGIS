@@ -4,7 +4,7 @@
 #include <QWizardPage>
 #include <QFileSystemModel>
 #include "qfilelistmodel.h"
-#include "modules/algorithm/sarchiveextractor.h"
+#include "modules/algorithm/archive_extractor/sarchiveextractor.h"
 
 namespace Ui
 {
