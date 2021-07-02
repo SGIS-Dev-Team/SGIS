@@ -5,52 +5,7 @@
 #include "QImage"
 #include <QMutex>
 #include "gdal_priv.h"
-
-//------------------------
-//      SImageMeta类
-//      图像元数据类
-//------------------------
-
-class SImageMeta
-{
-private:
-    int mnWidth{0}, mnHeight{0}, mnBandCount{0};
-    GDALDataType mnDataType{GDT_Byte};
-public:
-    explicit SImageMeta(int width, int height, int bandCount, GDALDataType dataType):
-        mnWidth(width), mnHeight(height), mnBandCount(bandCount), mnDataType(dataType)
-    {
-        Q_ASSERT(mnWidth > 0 && mnHeight > 0 && mnBandCount >= 0);
-        Q_ASSERT(mnDataType >= 0 && mnDataType < GDT_TypeCount);
-    }
-    explicit SImageMeta(const QSize &imageSize, int bandCount, GDALDataType dataType):
-        mnWidth(imageSize.width()), mnHeight(imageSize.height()), mnBandCount(bandCount), mnDataType(dataType)
-    {
-        Q_ASSERT(mnWidth > 0 && mnHeight > 0 && mnBandCount >= 0);
-        Q_ASSERT(mnDataType >= 0 && mnDataType < GDT_TypeCount);
-    }
-    explicit SImageMeta() = default;
-    SImageMeta(const SImageMeta &meta) = default;
-    SImageMeta &operator=(const SImageMeta &meta) = default;
-    virtual ~SImageMeta() {}
-
-public:
-    inline int width() const {return mnWidth;}
-    inline int height() const {return mnHeight;}
-    inline QSize imageSize()const {return QSize(mnWidth, mnHeight);}
-    inline int bandCount() const {return mnBandCount;}
-    inline GDALDataType dataType() const {return mnDataType;}
-
-    inline int &rWidth() {return mnWidth;}
-    inline int &rHeight() {return mnHeight;}
-    inline void setImageSize(int w, int h) {Q_ASSERT(w > 0 && h > 0); mnWidth = w; mnHeight = h;}
-    inline void setImageSize(const QSize &sz) {Q_ASSERT(sz.width() > 0 && sz.height() > 0); mnWidth = sz.width(); mnHeight = sz.height();}
-    inline int &rBandCount() {return mnBandCount;}
-    inline GDALDataType &rDataType() {return mnDataType;}
-
-    inline bool isEmpty()const {return mnWidth == 0 || mnHeight == 0 || mnBandCount == 0;}
-    inline void clear() {mnWidth = 0; mnHeight = 0; mnBandCount = 0; mnDataType = GDT_Byte;}
-};
+#include "simagemeta.h"
 
 //------------------------
 //      SImage类
@@ -70,14 +25,14 @@ public:
     SImage(const SImage& theImage);
     virtual ~SImage();
 
-    SImage &operator=(const SImage& theImage);
+    SImage& operator=(const SImage& theImage);
 
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter,
+    virtual void paint(QPainter& painter,
                        bool doTranslate = true,
-                       const QRectF &viewLogicalArea = QRectF(),
+                       const QRectF& viewLogicalArea = QRectF(),
                        double scaleValue = 0,
                        PaintTrigger trigger = User_Trigger)const;
     //获取包围矩形
@@ -115,7 +70,7 @@ private:
     //图像文件路径
     QString mStrImagePath{};
     //图像
-    QPixmap *mpImage{nullptr};
+    QPixmap* mpImage{nullptr};
     //图像在无缩放无旋转下的包围矩形
     QRectF mImageRect;
     //图像的包围控制点（变换后）
@@ -140,37 +95,37 @@ public:
     void getHistEqFunc(std::shared_ptr<void> pEqFunc[])const;
 
     int getBandCount() const;
-    void getBandIdices(int *pRGBIdx) const;
+    void getBandIdices(int* pRGBIdx) const;
 
     int redBandIdx() const;
     int greenBandIdx() const;
     int blueBandIdx() const;
     bool isMultiBand()const;
 
-    const QRect &getLoadRegionRect()const;
-    const QSize &getLoadResampledSize()const;
+    const QRect& getLoadRegionRect()const;
+    const QSize& getLoadResampledSize()const;
 
     //[修改函数]
 
     // 区域读取函数：使用set后的参数读取
-    void load(const QString &imagePath = "");
+    void load(const QString& imagePath = "");
 
     // 区域读取函数
-    void load(int x_off, int y_off, int x_span, int y_span, const QString &imagePath = "");
+    void load(int x_off, int y_off, int x_span, int y_span, const QString& imagePath = "");
 
     // 区域读取函数
-    void load(const QRect &rect, const QString &imagePath = "");
+    void load(const QRect& rect, const QString& imagePath = "");
 
     // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
     void load(int x_off, int y_off, int x_span, int y_span,
               int image_width, int image_height,
-              const QString &imagePath = "");
+              const QString& imagePath = "");
 
     // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
-    void load(const QRect &rect, double resampling_ratio, const QString &imagePath = "");
+    void load(const QRect& rect, double resampling_ratio, const QString& imagePath = "");
 
     // 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
-    void load(int x_off, int y_off, int x_span, int y_span, double resampling_ratio, const QString &imagePath = "");
+    void load(int x_off, int y_off, int x_span, int y_span, double resampling_ratio, const QString& imagePath = "");
 
     /* 区域读取函数，该函数可以对超大图像进行采样，保证内存能够容纳采样后图像数据即可
      * @param   x_off           读取区域横向偏移量，即起始列号，为0时从图像最左一列开始读取
@@ -183,7 +138,7 @@ public:
      */
     void load(int x_off, int y_off, int x_span, int y_span,
               int image_width, int image_height,
-              GDALDataset *pDataSet);
+              GDALDataset* pDataSet);
 
 
     bool save(const QString& _savePath);
@@ -213,40 +168,40 @@ public:
     //设置均衡化函数
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
     //设置图像读取区域
-    void setLoadRegionRect(const QRect &rect);
+    void setLoadRegionRect(const QRect& rect);
     //设置图像读取区域采样大小
-    void setLoadRegionResampledSize(const QSize &size);
+    void setLoadRegionResampledSize(const QSize& size);
 
     //[功能函数]
 
 public:
     //读取特定波段数据
     static std::unique_ptr<uchar[], std::default_delete<uchar[]>> loadBand(int x_off, int y_off, int x_span, int y_span,
-            int image_width, int image_height,
-            const QString &imagePath, int bandIdx, GDALDataType dataType,
-            std::shared_ptr<void> pEqFunc = nullptr);
+                                                                           int image_width, int image_height,
+                                                                           const QString& imagePath, int bandIdx, GDALDataType dataType,
+                                                                           std::shared_ptr<void> pEqFunc = nullptr);
 
     static std::unique_ptr<uchar[], std::default_delete<uchar[]>> loadBand(int x_off, int y_off, int x_span, int y_span,
-            int image_width, int image_height,
-            GDALDataset *pDataSet, int bandIdx, GDALDataType dataType,
-            std::shared_ptr<void> pEqFunc = nullptr);
+                                                                           int image_width, int image_height,
+                                                                           GDALDataset* pDataSet, int bandIdx, GDALDataType dataType,
+                                                                           std::shared_ptr<void> pEqFunc = nullptr);
 
     //融合为逐像素存储图像
-    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> merge(const uchar *pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> merge(const uchar* pBandData[], GDALDataType dataType, int pixelCount, int bandCount = 3);
     //计算直方图均衡化函数
     static std::shared_ptr<void> calcHistEqFunc(GDALDataType type, const uchar* pBandData, size_t count);
     //对波段执行直方图均衡化
-    static void histEqualize(GDALDataType type, uchar *pBandData, size_t count, const void *pEqFunc);
+    static void histEqualize(GDALDataType type, uchar* pBandData, size_t count, const void* pEqFunc);
     //对波段进行8位转换;算法:按数值范围比例缩放
-    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> to8bit(GDALDataType type, const uchar *pBandData, size_t count);
+    static std::unique_ptr<uchar[], std::default_delete<uchar[]>> to8bit(GDALDataType type, const uchar* pBandData, size_t count);
     //获取目标影像的描述数据
     static SImageMeta getMetaOf(QString imagePath);
-    static SImageMeta getMetaOf(GDALDataset *pDataSet);
+    static SImageMeta getMetaOf(GDALDataset* pDataSet);
 
 private:
-    void _initializeWith(const SImage &theImage);
+    void _initializeWith(const SImage& theImage);
     //打开数据集
-    static GDALDataset *_getOpenDataSet(const QString &imagePath, GDALAccess access = GA_ReadOnly);
+    static GDALDataset* _getOpenDataSet(const QString& imagePath, GDALAccess access = GA_ReadOnly);
     //重新加载波段:channel取0（RED），1(GREEN)，2(BLUE)
     void _reloadChannel(int channel, int newBandIdx, std::shared_ptr<void> pHistEqFunc = nullptr);
     //更新图像原始坐标矩形和边界点

@@ -4,7 +4,8 @@
 #include <QDir>
 #include <QMessageBox>
 
-SEditor::SEditor(QWidget *parent): QMainWindow(parent),
+
+SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
@@ -36,7 +37,7 @@ void SEditor::onActionCreateRectTriggered()
     quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
     quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
 
-    SShape * rect = SShapeFactory::createShape(ShapeSet::Hexagon);
+    SShape* rect = SShapeFactory::createShape(ShapeSet::Hexagon);
     rect->setCenterPoint(QPoint(x, y));
     rect->scale(800, 800);
     rect->rotate(15);
@@ -52,7 +53,7 @@ void SEditor::onActionLoadImageTriggered()
     mpCurDoc->getLayerManager().clearSelection();
     QStringList pathList = QFileDialog::getOpenFileNames(this);
 
-    for(int i = 0; i < pathList.size(); ++i)
+    for (int i = 0; i < pathList.size(); ++i)
     {
         quint32 x = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().width());
         quint32 y = QRandomGenerator::system()->bounded(0, mpCurCanvasArea->canvas()->logicalSize().height());
@@ -74,7 +75,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     QFileInfo file_info(path);
 
-    if(path.isEmpty())
+    if (path.isEmpty())
         return;
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
@@ -82,23 +83,25 @@ void SEditor::onActionLoadFragmentsTriggered()
     pFragImg->setPyramidDir(file_info.filePath());
     pFragImg->loadMeta();
 
-    pFragImg->setCenterPoint(QPointF( (DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
 
     pFragImg->setBandIndices(1, 2, 3);
 
     pFragImg->setHoldTopPyramidEnabled(true);
 
     mpCurDoc->getLayerManager().addLayer(pFragImg);
+
+
 }
 
 #include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
-    if(mpImportDialog->isEmpty())
+    if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
         QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-        if(strImagePathList.isEmpty())
+        if (strImagePathList.isEmpty())
             return;
 
         mpImportDialog->addImagePaths(strImagePathList);
@@ -112,17 +115,55 @@ void SEditor::onImportingData()
     //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
 
-    auto &streamMetaVec = mpImportDialog->getStreamMetaVec();
-    for(auto &pStreamMeta : streamMetaVec)
+    auto& streamMetaVec = mpImportDialog->getStreamMetaVec();
+    for (auto& pStreamMeta : streamMetaVec)
     {
-        SImageStreamMeta &streamMeta = *pStreamMeta;
+        SImageStreamMeta& streamMeta = *pStreamMeta;
 
-        if(streamMeta.isImported())
+        if (streamMeta.isImported())
             continue;
 
         SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
 
-        pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+        //更新坐标映射
+        if (mpCurDoc->getCoordinate().isEmpty())
+        {
+            pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
+            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
+            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
+            QString proRef = SImage::getMetaOf(pFragImg->getLargestImgPath()).projRef();
+
+
+            mpCurDoc->getCoordinate() = SCoordinate(pFragImg->centerPoint(), QPointF(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2), geoTrans[1], geoTrans[5], proRef);
+            if (geoTrans != nullptr)
+                delete[] geoTrans;
+
+            //获取了投影坐标和像素分辨率
+            mpStatLblGSD->setText("1:" + QString::number(mpCurDoc->getCoordinate().deltaX()) + "meter");
+            mpStatLblProjCS->setText(mpCurDoc->getCoordinate().projCS());
+
+            //调整影像位置
+            double min = mpCurCanvasArea->horizontalScrollBar()->pageStep() * 1.0 / nWidth;
+            if (min > mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight)
+                min = mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight;
+            mpCurCanvasArea->canvas()->setScaleValue(0.9 * min);
+            mpCurCanvasArea->horizontalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().width() - 0.5 * mpCurCanvasArea->horizontalScrollBar()->pageStep());
+            mpCurCanvasArea->verticalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().height() - 0.5 * mpCurCanvasArea->verticalScrollBar()->pageStep());
+        }
+        else
+        {
+            //强制根据地理坐标设置像素坐标，和缩放像素分辨率
+            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
+            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
+            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
+            double logicX, logicY;
+            mpCurDoc->getCoordinate().geo2logic(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
+            pFragImg->setCenterPoint(QPointF(logicX, logicY));
+            pFragImg->scale(geoTrans[1] / mpCurDoc->getCoordinate().deltaX(), geoTrans[5] / mpCurDoc->getCoordinate().deltaY());
+            if (geoTrans != nullptr)
+                delete[] geoTrans;
+        }
 
         //强制加载ImageMeta
         streamMeta.imageMeta();
@@ -137,6 +178,7 @@ void SEditor::onImportingData()
         mpCurDoc->getLayerManager().addLayer(pFragImg);
         streamMeta.setImported(true);
     }
+
 }
 
 #include <QTextEdit>
@@ -211,7 +253,18 @@ void SEditor::onTabSwitched()
 
 void SEditor::onCanvasMouseMoved(QPointF Log_pos)
 {
-    mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
+    double x = 0, y = 0;
+    if (mpCurDoc->getCoordinate().isEmpty())
+    {
+        //未建立坐标映射，显示逻辑坐标
+        mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
+    }
+    else
+    {
+        //已建立坐标映射，显示投身坐标
+        mpCurDoc->getCoordinate().logic2geo(Log_pos.x(), Log_pos.y(), x, y);
+        mpStatLblCursorPos->setText("(" + QString::number(x, 'f', 3) + "," + QString::number(y, 'f', 3) + ")meter");
+    }
 }
 
 void SEditor::onCanvasScaled(double value)
@@ -219,13 +272,13 @@ void SEditor::onCanvasScaled(double value)
     mpStatLblCanvasScale->setText(QString::number(value * 100, 'f', 2) + "%");
 }
 
-void SEditor::onLayersUpdated(SLayerManager *which)
+void SEditor::onLayersUpdated(SLayerManager* which)
 {
-    if(mpCurCanvasArea)
+    if (mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
 }
 
-void SEditor::closeEvent(QCloseEvent *event)
+void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     emit closed();
@@ -238,9 +291,17 @@ void SEditor::initialize()
     mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
     //鼠标逻辑位置
     mpStatLblCursorPos = new QLabel(ui->mStatusBar);
+    //影像的GSD
+    mpStatLblGSD = new QLabel(ui->mStatusBar);
+    //投影坐标
+    mpStatLblProjCS = new QLabel(ui->mStatusBar);
 
+
+    ui->mStatusBar->addPermanentWidget(mpStatLblProjCS);
+    ui->mStatusBar->addPermanentWidget(mpStatLblGSD);
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
+
 
     /*-----初始化子窗口-----*/
     //数据导入向导
@@ -283,10 +344,10 @@ void SEditor::initializeConnections()
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }
 
-void SEditor::createWorkspace(const QSize &CanvasSize)
+void SEditor::createWorkspace(const QSize& CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-    QCanvasArea * newCanvasArea = new QCanvasArea(CanvasSize);
+    QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
     std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());

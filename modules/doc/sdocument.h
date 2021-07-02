@@ -4,6 +4,7 @@
 #include <modules/global.h>
 #include <modules/doc/slayermanager.h>
 #include <modules/paint/sfragloader.h>
+#include <modules/algorithm/scoordinate.h>
 
 class QCanvas;
 class SDocument: public QObject
@@ -12,9 +13,9 @@ class SDocument: public QObject
     /*-----构造函数与析构函数-----*/
 public:
     //构造一个空文档，绑定一个画布对象
-    explicit SDocument(QCanvas * pCanvas);
+    explicit SDocument(QCanvas* pCanvas);
     //从文件构建文档，绑定一个画布对象
-    explicit SDocument(QCanvas * pCanvas, const QString& path);
+    explicit SDocument(QCanvas* pCanvas, const QString& path);
     virtual ~SDocument();
 
     /*-----信号-----*/
@@ -28,32 +29,37 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
-    QCanvas * mpCanvas;
+    QCanvas* mpCanvas;
     //图层管理器
     SLayerManager mLayerMgr;
     //分片读取器
     SFragLoader mFragLoader;
     //读取器线程
     QThread mLoaderThread;
+    //像素坐标与地理坐标间的映射
+    SCoordinate mCoordinate;
 
     /*-----成员函数-----*/
 public:
 
     //-----访问与修改函数-----//
     //指定画布
-    void setCanvas(QCanvas * canvas);
+    void setCanvas(QCanvas* canvas);
 
     //获取画布
-    QCanvas * getCanvas();
+    QCanvas* getCanvas();
 
     //获取图层管理器
-    SLayerManager &getLayerManager();
+    SLayerManager& getLayerManager();
 
     //获取分片读取器
-    SFragLoader &getFragLoader();
+    SFragLoader& getFragLoader();
+
+    //获取坐标映射
+    SCoordinate& getCoordinate();
 
     //在画布上绘制图层
-    void paint(QPainter &painter, const QRectF &viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);
+    void paint(QPainter& painter, const QRectF& viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);
 
     //------功能函数------//
 private:

@@ -7,6 +7,8 @@
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
 #include <modules/widget/qdataimportwizard.h>
+#include <QScrollBar>
+#include "modules/global.h"
 
 namespace Ui
 {
@@ -18,7 +20,7 @@ class SEditor : public QMainWindow
     Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SEditor(QWidget *parent = nullptr);
+    explicit SEditor(QWidget* parent = nullptr);
     virtual ~SEditor();
 
     /*-----信号-----*/
@@ -72,11 +74,11 @@ private:
     //[Me]
     QString Me = QString("SEditor");
     //[当前绘图区]
-    QCanvasArea * mpCurCanvasArea{};
+    QCanvasArea* mpCurCanvasArea{};
     //[当前文档]
     std::shared_ptr<SDocument> mpCurDoc{};
     //[已打开并加载的绘图区]
-    std::vector<QCanvasArea *> mpCanvasAreaVec{};
+    std::vector<QCanvasArea*> mpCanvasAreaVec{};
     //[已打开并加载的文档]
     std::vector<std::shared_ptr<SDocument>> mpDocVec{};
 
@@ -91,12 +93,14 @@ public:
 
     /*-----UI与控件-----*/
 private:
-    Ui::SEditor * ui;
+    Ui::SEditor* ui;
     //[状态栏控件]
-    QLabel *mpStatLblCursorPos;
-    QLabel *mpStatLblCanvasScale;
+    QLabel* mpStatLblCursorPos;
+    QLabel* mpStatLblCanvasScale;
+    QLabel* mpStatLblGSD;      //先用GSD代替比例尺
+    QLabel* mpStatLblProjCS;
     //[数据导入向导]
-    QDataImportWizard *mpImportDialog;
+    QDataImportWizard* mpImportDialog;
 };
 
 #endif // SEditor_H
