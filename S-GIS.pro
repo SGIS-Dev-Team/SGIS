@@ -1,3 +1,5 @@
+Q
+
 RESOURCES += \
     Resource/Icons.qrc
 
@@ -42,7 +44,6 @@ HEADERS += \
     modules/slogger.h \
     modules/widget/mainwindow.h \
     modules/widget/qbandselectdialog.h \
-    modules/widget/qcanvas.cpp.orig \
     modules/widget/qcanvas.h \
     modules/widget/qcanvasarea.h \
     modules/widget/qlayerview.h \
@@ -83,3 +84,42 @@ SOURCES += \
     modules/widget/sotherinfowidget.cpp \
     modules/widget/sprojectioninfowidget.cpp \
     modules/widget/straymgr.cpp
+
+
+TRANSLATIONS += \
+    S-GIS_zh_CN.ts
+
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    Resource/Icons.qrc
+
+# GDAL Config
+
+INCLUDEPATH += \
+    D:/GDAL/release-1928-x64/include
+
+LIBS += \
+    D:/GDAL/release-1928-x64/lib/gdal_i.lib
+
+# Visual Leak Detector Config
+
+win32:CONFIG(release, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+else:win32:CONFIG(debug, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+else:unix: LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+
+INCLUDEPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
+DEPENDPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
+
+# LibArchive Config
+
+win32:CONFIG(release, debug|release): LIBS += -LD:/LibArchive/lib/release/ -larchive
+else:win32:CONFIG(debug, debug|release): LIBS += -LD:/LibArchive/lib/debug/ -larchive
+else:unix: LIBS += -LD:/LibArchive/lib/ -larchive
+
+INCLUDEPATH += D:/LibArchive/include
+DEPENDPATH += D:/LibArchive/include
