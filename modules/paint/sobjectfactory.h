@@ -8,7 +8,7 @@ class SObjectFactory : public QObject
     Q_OBJECT
 private:
     SObjectFactory();
-    virtual ~SObjectFactory();
+
 public:
     static void releaseObject(SObject *&pObj)
     {

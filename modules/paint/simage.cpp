@@ -2,6 +2,10 @@
 #include <QFileInfo>
 #include <modules/algorithm/sequalizehist.h>
 
+#include "gdal.h"
+#include "gdal_priv.h"
+#include "gdal_alg.h"
+#include <QJsonArray>
 SImage::SImage(const QString& _imagePath, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
     : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
@@ -189,10 +193,70 @@ void SImage::setLoadRegionResampledSize(const QSize& size)
     mImageSize = size;
 }
 
-std::unique_ptr<uchar[], std::default_delete<uchar[]>> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
-                                                                        int image_width, int image_height,
-                                                                        const QString& imagePath, int bandIdx, GDALDataType dataType,
-                                                                        std::shared_ptr<void> pEqFunc)
+QJsonObject SImage::getRawMetaInfo()
+{
+	GDALDataset* poDataset = SImage::_getOpenDataSet(mStrImagePath);
+	if (poDataset == NULL)
+	{
+		return QJsonObject();
+	}
+	QJsonObject obj;
+	//获取图像波段 
+	//我不知道这些是啥意义
+	GDALRasterBand* poBand1 = poDataset->GetRasterBand(1);
+	auto nX = poBand1->GetXSize();
+	auto nY = poBand1->GetYSize();
+	auto nBand = poBand1->GetBand();
+	//
+	obj["Band"] = nBand;
+	obj["BandXSize"] = nX;
+	obj["BandYSize"] = nY;
+
+	//获取图像的尺寸 
+	int nImgSizeX = poDataset->GetRasterXSize();
+	int nImgSizeY = poDataset->GetRasterYSize();
+
+	//
+	obj["RasterXSize"] = nImgSizeX;
+	obj["RasterYSize"] = nImgSizeY;
+	//
+	//获取坐标变换系数 
+	double trans[6];
+	CPLErr aaa = poDataset->GetGeoTransform(trans);
+	QJsonArray transArray;
+	for (auto i = 0; i < sizeof(trans) / sizeof(trans[0]); i++)
+	{
+		transArray.append(trans[i]);
+	}
+	obj["GeoTransform"] = transArray;
+
+	//读取图像高程数据 
+	QJsonArray geoArray;
+	auto pafScanblock1 = (unsigned char*)CPLMalloc(sizeof(char) * (nImgSizeX) * (nImgSizeY));
+	poBand1->RasterIO(GF_Read, 0, 0, nImgSizeX, nImgSizeY, pafScanblock1, nImgSizeX, nImgSizeY, GDALDataType(poBand1->GetRasterDataType()), 0, 0);
+	for (int i = 0; i < (nImgSizeX - 5990); i++)
+	{
+		for (int j = 0; j < (nImgSizeY - 5990); j++)
+		{
+			auto elevation = *pafScanblock1;
+			auto Xgeo = trans[0] + i * trans[1] + j * trans[2];
+			auto Ygeo = trans[3] + i * trans[4] + j * trans[5];
+			pafScanblock1++;
+			QJsonObject geo;
+			geo["XGeo"] = Xgeo;
+			geo["YGeo"] = Ygeo;
+			geo["Elevation"] = elevation;
+			geoArray.append(Xgeo);
+		}
+	}
+	obj["Geo"] = geoArray;
+	return obj;
+}
+
+std::unique_ptr<uchar> SImage::loadBand(int x_off, int y_off, int x_span, int y_span,
+                                        int image_width, int image_height,
+                                        const QString &imagePath, int bandIdx, GDALDataType dataType,
+                                        std::shared_ptr<void> pEqFunc)
 {
     GDALDataset* pDataSet = SImage::_getOpenDataSet(imagePath);
     std::unique_ptr<uchar[], std::default_delete<uchar[]>> pBandData = loadBand(x_off, y_off, x_span, y_span,

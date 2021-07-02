@@ -68,9 +68,9 @@ void SObject::paintBoundRect(QPainter &painter, double scaleValue, int lineWidth
         painter.scale(-1, 1);
 
 
-    QSvgRenderer rotate_icon(QString(":/WidgetIcon/WidgetIcon/rotate.svg"));
+   //QSvgRenderer rotate_icon(QString(":/WidgetIcon/WidgetIcon/rotate.svg"));
 
-    rotate_icon.render(&painter, ROTATE_ICON_RECT);
+    //rotate_icon.render(&painter, ROTATE_ICON_RECT);
 
     //绘制一条链接线（上边中点到旋转符号）
     pen.setWidth(BOUND_RECT_PEN_WIDTH);

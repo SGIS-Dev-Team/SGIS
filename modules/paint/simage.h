@@ -6,6 +6,7 @@
 #include <QMutex>
 #include "gdal_priv.h"
 #include "simagemeta.h"
+#include <QJsonObject>
 
 //------------------------
 //      SImage类
@@ -173,7 +174,7 @@ public:
     void setLoadRegionResampledSize(const QSize& size);
 
     //[功能函数]
-
+	QJsonObject getRawMetaInfo();
 public:
     //读取特定波段数据
     static std::unique_ptr<uchar[], std::default_delete<uchar[]>> loadBand(int x_off, int y_off, int x_span, int y_span,

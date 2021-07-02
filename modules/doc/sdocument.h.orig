@@ -13,10 +13,17 @@ class SDocument: public QObject
     /*-----构造函数与析构函数-----*/
 public:
     //构造一个空文档，绑定一个画布对象
+<<<<<<< HEAD
     explicit SDocument(QCanvas* pCanvas);
     //从文件构建文档，绑定一个画布对象
     explicit SDocument(QCanvas* pCanvas, const QString& path);
     virtual ~SDocument();
+=======
+    explicit SDocument(std::shared_ptr<QCanvas> pCanvas);
+    //从文件构建文档，绑定一个画布对象
+    explicit SDocument(std::shared_ptr<QCanvas> pCanvas, const QString& path);
+    ~SDocument();
+>>>>>>> Krista_Info_Err_Wnd
 
     /*-----信号-----*/
 signals:
@@ -29,37 +36,48 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
+<<<<<<< HEAD
     QCanvas* mpCanvas;
+=======
+    std::shared_ptr<QCanvas> mpCanvas;
+>>>>>>> Krista_Info_Err_Wnd
     //图层管理器
     SLayerManager mLayerMgr;
     //分片读取器
     SFragLoader mFragLoader;
+<<<<<<< HEAD
     //读取器线程
     QThread mLoaderThread;
     //像素坐标与地理坐标间的映射
     SCoordinate mCoordinate;
+=======
+>>>>>>> Krista_Info_Err_Wnd
 
     /*-----成员函数-----*/
 public:
 
     //-----访问与修改函数-----//
     //指定画布
+<<<<<<< HEAD
     void setCanvas(QCanvas* canvas);
 
     //获取画布
     QCanvas* getCanvas();
+=======
+    void setCanvas(std::shared_ptr<QCanvas> canvas);
+
+    //获取画布
+    std::shared_ptr<QCanvas> getCanvas();
+>>>>>>> Krista_Info_Err_Wnd
 
     //获取图层管理器
     SLayerManager& getLayerManager();
 
     //获取分片读取器
     SFragLoader& getFragLoader();
-<<<<<<< HEAD
-=======
 
     //获取坐标映射
     SCoordinate& getCoordinate();
->>>>>>> Acqua_coordinate
 
     //在画布上绘制图层
     void paint(QPainter& painter, const QRectF& viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);

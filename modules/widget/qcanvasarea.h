@@ -19,7 +19,7 @@ public:
     explicit QCanvasArea(const QSize& CanvasSize, QWidget *parent = Q_NULLPTR);
     //使用默认尺寸创建新绘图区
     explicit QCanvasArea(QWidget *parent = Q_NULLPTR);
-    virtual ~QCanvasArea();
+    ~QCanvasArea();
 
     /*-----虚函数重载-----*/
 public:
@@ -40,14 +40,14 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
-    QCanvas *mpCanvas{};
+    std::shared_ptr<QCanvas> mpCanvas{};
     //画布尺寸
     QSize mCanvasSize{};
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    QCanvas * canvas()const;
+    std::shared_ptr<QCanvas> canvas()const;
     //获取视图区逻辑坐标矩形
     QRectF viewArea()const;
 

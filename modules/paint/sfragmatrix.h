@@ -15,7 +15,7 @@ public:
     explicit SFragMatrix(size_t _rows, size_t _cols);
     //拷贝构造函数
     SFragMatrix(const SFragMatrix& mat);
-    virtual ~SFragMatrix();
+    ~SFragMatrix();
 
     //赋值运算符函数
     SFragMatrix& operator=(const SFragMatrix& mat);
@@ -94,7 +94,7 @@ public:
     //[功能函数]
 public:
     //在中心坐标系下的逻辑绘图区域绘图
-    void paint(QPainter &painter, const QRectF &viewLgcArea_centered = QRectF())const;
+    void paint(QPainter &painter, const QRectF &viewLgcArea_centered)const;
 
 private:
     //根据元数据计算第row行第col列的分片影像的中心坐标(金字塔对应原图像的)

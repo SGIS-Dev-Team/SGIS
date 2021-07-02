@@ -31,10 +31,8 @@
 
 using namespace sgis;
 
-class SObject: public QObject
+class SObject
 {
-    Q_OBJECT
-
     friend class SObjectFactory;
 public:
     enum PaintTrigger

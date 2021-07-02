@@ -38,7 +38,7 @@ void SOverviewBuilder::_build_overviews_tiff(const QString& imagePath, const QSt
 
     //-----创建路径-----//
     QDir dir;
-    if (dir.exists(savePath))
+    if(dir.exists(savePath))
         SLogger::getLogger()->addEntry(Me, SLogger::RunningStatus, "Overview dir exists.");
     else
         dir.mkdir(savePath);
