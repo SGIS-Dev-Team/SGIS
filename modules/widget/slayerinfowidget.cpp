@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include "gdal_priv.h" 
 #include "ogrsf_frmts.h"
+
 LayerInfoWidget::LayerInfoWidget(QWidget *parent)
 	: QWidget(parent)
 {
@@ -10,7 +11,7 @@ LayerInfoWidget::LayerInfoWidget(QWidget *parent)
 	
 	//
 	auto pLineLayout = new QHBoxLayout();
-	pLineLayout->addWidget(new QLabel("Width:"));
+    pLineLayout->addWidget(new QLabel(tr("Width:")));
 	pLineLayout->addWidget(mpWidthLabel = new QLabel(""));
 	pLineLayout->addSpacing(10);
 	pLineLayout->addWidget(new QLabel("Height:"));

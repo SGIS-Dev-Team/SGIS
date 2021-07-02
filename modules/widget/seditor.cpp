@@ -293,8 +293,6 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
-
-
 }
 
 void SEditor::createWorkspace(const QSize &CanvasSize)
