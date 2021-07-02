@@ -131,7 +131,7 @@ public:
     {
         if (SEditor->objectName().isEmpty())
             SEditor->setObjectName(QString::fromUtf8("SEditor"));
-        SEditor->resize(1100, 650);
+        SEditor->resize(1193, 653);
         mActionNewTemplate = new QAction(SEditor);
         mActionNewTemplate->setObjectName(QString::fromUtf8("mActionNewTemplate"));
         mActionOpenTemplate = new QAction(SEditor);
@@ -294,7 +294,7 @@ public:
         SEditor->setCentralWidget(mCentralWidget);
         mMenuBar = new QMenuBar(SEditor);
         mMenuBar->setObjectName(QString::fromUtf8("mMenuBar"));
-        mMenuBar->setGeometry(QRect(0, 0, 1100, 26));
+        mMenuBar->setGeometry(QRect(0, 0, 1193, 26));
         mMenuFile = new QMenu(mMenuBar);
         mMenuFile->setObjectName(QString::fromUtf8("mMenuFile"));
         mMenuEdit = new QMenu(mMenuBar);
@@ -338,6 +338,7 @@ public:
         mDockLayer->setObjectName(QString::fromUtf8("mDockLayer"));
         mDockLayerWidget = new QWidget();
         mDockLayerWidget->setObjectName(QString::fromUtf8("mDockLayerWidget"));
+        mDockLayerWidget->setMinimumSize(QSize(300, 0));
         horizontalLayout_2 = new QHBoxLayout(mDockLayerWidget);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout_2->setContentsMargins(1, 1, 1, 1);

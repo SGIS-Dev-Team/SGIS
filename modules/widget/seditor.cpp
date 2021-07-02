@@ -3,15 +3,22 @@
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
 #include <QMessageBox>
+#include <QListWidgetItem>
 #include <vld.h>
 #include "../paint/simage.h"
-#include <QJsonDocument>
+#include "simageinfowidget.h"
 SEditor::SEditor(QWidget *parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
 	initCustomDock();
 	initialize();
+	showMaximized();
+	//根据调用函数时发生错误的不同类型，修改字符串
+	SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("YYY", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("AAA", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("BBB", SLogger::LocalError, "Loading meta : meta text not exists.");
 }
 
 SEditor::~SEditor()
@@ -212,39 +219,31 @@ void SEditor::onLayersUpdated(SLayerManager *which)
 {
     if(mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
-	//更新图片信息
-	m_pTiffImageInfoEdit->clear();
-	auto lstSelectLayout = which->getSelectedLayerIterList();
-	for (auto it : lstSelectLayout)
-	{
-		auto pLayout = *it;
-		auto type = pLayout->getType();
-		if (type != ImageBase)
-		{
-			continue;
-		}
-		//
-		if (auto pImage = dynamic_cast<SImage*>(pLayout))
-		{
-			m_pTiffImageInfoEdit->appendPlainText(pImage->getImagePath());
-			m_pTiffImageInfoEdit->appendPlainText("\n");
-			auto obj = pImage->getRawMetaInfo();
-			for (auto key : obj.keys())
-			{
-				m_pTiffImageInfoEdit->appendPlainText(key);
-				m_pTiffImageInfoEdit->appendPlainText(":");
-				m_pTiffImageInfoEdit->appendPlainText(obj[key].toString());
-				m_pTiffImageInfoEdit->appendPlainText("\n");
-			}
-		}
-		m_pTiffImageInfoEdit->appendPlainText("\n\n");
-	}
 }
 
 void SEditor::onOutput(const QString& entry)
 {
-	m_pOutputEdit->appendPlainText(entry);
-	m_pOutputEdit->appendPlainText("\n");
+	//添加logger到输出窗口
+	mpOutputListWidget->insertItem(-1, entry);
+}
+
+void SEditor::updateTiffLayoutInfo(SLayerManager* which)
+{
+	//更新Tiff图片信息
+	//获取当前选择的图层 -- 后续可能需要随着实现更改
+
+	QString strSelectImageFilePath;
+	//遍历当前选中图层，选择第一个图片图层
+	auto lstSelectLayout = which->getSelectedLayerIterList();
+	for (auto it : lstSelectLayout)
+	{
+		if (auto pImage = dynamic_cast<SImage*>(*it))
+		{
+			strSelectImageFilePath = pImage->getImagePath();
+			break;
+		}
+	}
+	mpImageInfoWidget->fillByImageFilePath(strSelectImageFilePath);
 }
 
 void SEditor::closeEvent(QCloseEvent *event)
@@ -316,7 +315,10 @@ void SEditor::createWorkspace(const QSize &CanvasSize)
     //链接绘图区信息显示
     connect(mpCurCanvasArea->canvas().get(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
     connect(mpCurCanvasArea->canvas().get(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
-    connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
+	//SLayerManager 图层更新时会调用 SEditor::onLayersUpdated
+	connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
+	//更新图片信息- 但是为了更明确下，就独立出来了 - 后续有可能有更好的时机（添加更合适的信号）来更新图片信息，
+	connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::updateTiffLayoutInfo);
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
@@ -324,14 +326,16 @@ void SEditor::createWorkspace(const QSize &CanvasSize)
 
 void SEditor::initCustomDock()
 {
-	//
+	//创建tiff信息窗口
 	auto pDock = new QDockWidget("ImageInfo");
-	pDock->setWidget(m_pTiffImageInfoEdit = new QPlainTextEdit());
+	pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
 	addDockWidget(Qt::RightDockWidgetArea, pDock);
+
+	//创建输出信息窗口
+	pDock = new QDockWidget("Output");
+	pDock->setWidget(mpOutputListWidget = new QListWidget());
+	addDockWidget(Qt::RightDockWidgetArea, pDock);
+	//绑定 logger日志 添加信号
 	QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
 		this, &SEditor::onOutput);
-	//
-	pDock = new QDockWidget("Output");
-	pDock->setWidget(m_pOutputEdit = new QPlainTextEdit());
-	addDockWidget(Qt::RightDockWidgetArea, pDock);
 }

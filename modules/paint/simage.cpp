@@ -4,6 +4,7 @@
 #include "gdal.h"
 #include "gdal_priv.h"
 #include "gdal_alg.h"
+#include <QJsonArray>
 SImage::SImage(const QString &_imagePath, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
     : SObject(PaintObject::ImageBase, _selected, center, _layerName, _layerDiscription, _layerColor)
 {
@@ -189,31 +190,36 @@ QJsonObject SImage::getRawMetaInfo()
 	}
 	QJsonObject obj;
 	//获取图像波段 
+	//我不知道这些是啥意义
 	GDALRasterBand* poBand1 = poDataset->GetRasterBand(1);
 	auto nX = poBand1->GetXSize();
 	auto nY = poBand1->GetYSize();
 	auto nBand = poBand1->GetBand();
-	obj[QString::fromWCharArray(L"图像波段")]
-		= QString("XSize:%0,YSize:%1,Band:%2").arg(nX).arg(nY).arg(nBand);
+	//
+	obj["Band"] = nBand;
+	obj["BandXSize"] = nX;
+	obj["BandYSize"] = nY;
+
 	//获取图像的尺寸 
 	int nImgSizeX = poDataset->GetRasterXSize();
 	int nImgSizeY = poDataset->GetRasterYSize();
-	obj[QString::fromWCharArray(L"图像尺寸")]
-		= QString("XSize:%0,YSize:%1").arg(nImgSizeX).arg(nImgSizeY);
+
+	//
+	obj["RasterXSize"] = nImgSizeX;
+	obj["RasterYSize"] = nImgSizeY;
+	//
 	//获取坐标变换系数 
 	double trans[6];
 	CPLErr aaa = poDataset->GetGeoTransform(trans);
-	obj[QString::fromWCharArray(L"坐标变换系数")]
-		= QString("%0,%1,%2,%3,%4,%5")
-		.arg(trans[0])
-		.arg(trans[1])
-		.arg(trans[2])
-		.arg(trans[3])
-		.arg(trans[4])
-		.arg(trans[5]);
+	QJsonArray transArray;
+	for (auto i = 0; i < sizeof(trans) / sizeof(trans[0]); i++)
+	{
+		transArray.append(trans[i]);
+	}
+	obj["GeoTransform"] = transArray;
+
 	//读取图像高程数据 
-	QStringList lstValues;
-	double Xgeo, Ygeo;
+	QJsonArray geoArray;
 	auto pafScanblock1 = (unsigned char*)CPLMalloc(sizeof(char) * (nImgSizeX) * (nImgSizeY));
 	poBand1->RasterIO(GF_Read, 0, 0, nImgSizeX, nImgSizeY, pafScanblock1, nImgSizeX, nImgSizeY, GDALDataType(poBand1->GetRasterDataType()), 0, 0);
 	for (int i = 0; i < (nImgSizeX - 5990); i++)
@@ -221,14 +227,17 @@ QJsonObject SImage::getRawMetaInfo()
 		for (int j = 0; j < (nImgSizeY - 5990); j++)
 		{
 			auto elevation = *pafScanblock1;
-			Xgeo = trans[0] + i * trans[1] + j * trans[2];
-			Ygeo = trans[3] + i * trans[4] + j * trans[5];
+			auto Xgeo = trans[0] + i * trans[1] + j * trans[2];
+			auto Ygeo = trans[3] + i * trans[4] + j * trans[5];
 			pafScanblock1++;
-
-			lstValues<<QString("%0,%1,%2").arg(Xgeo).arg(Ygeo).arg(elevation);
+			QJsonObject geo;
+			geo["XGeo"] = Xgeo;
+			geo["YGeo"] = Ygeo;
+			geo["Elevation"] = elevation;
+			geoArray.append(Xgeo);
 		}
 	}
-	obj[QString::fromWCharArray(L"高程数据")] = lstValues.join("|");
+	obj["Geo"] = geoArray;
 	return obj;
 }
 
@@ -292,12 +301,16 @@ std::unique_ptr<uchar> SImage::merge(const uchar *pBandData[], GDALDataType data
     //合成逐像素存储图像数据
     for(int i = 0; i < bandCount; ++i)
     {
-        uchar *pm = pMergedData.get() + i;
-        std::unique_ptr<uchar> pBand8Bit = to8bit(dataType, pBandData[i], pixelCount);
-        uchar *pb = pBand8Bit.get();
-        uchar *pbEnd = pb + pixelCount;
-        for(; pb != pbEnd; pm += bandCount, ++pb)
-            * pm = *pb;
+		if (pBandData[i] == nullptr)
+		{
+			continue;
+		}
+		uchar* pm = pMergedData.get() + i;
+		std::unique_ptr<uchar> pBand8Bit = to8bit(dataType, pBandData[i], pixelCount);
+		uchar* pb = pBand8Bit.get();
+		uchar* pbEnd = pb + pixelCount;
+		for (; pb != pbEnd; pm += bandCount, ++pb)
+			* pm = *pb;
     }
 
     return pMergedData;
@@ -434,15 +447,17 @@ void SImage::load(int x_off, int y_off, int x_span, int y_span, int image_width,
         int pBandIdx[3] = {mnRedBandIdx, mnGreenBandIdx, mnBlueBandIdx};
         for(int i = 0; i < 3; ++i)
         {
-            mpBandData[i] = this->loadBand(x_off, y_off, x_span, y_span,
-                                           image_width, image_height,
-                                           pDataSet,
-                                           pBandIdx[i],
-                                           mnDataType);
-            //直方图均衡化
-            if(!mpEqualizeFunc[i])
-                mpEqualizeFunc[i] = SImage::calcHistEqFunc(mnDataType, mpBandData[i].get(), nPixels);
-            SImage::histEqualize(mnDataType, mpBandData[i].get(), nPixels, mpEqualizeFunc[i].get());
+			if (mpBandData[i] = this->loadBand(x_off, y_off, x_span, y_span,
+				image_width, image_height,
+				pDataSet,
+				pBandIdx[i],
+				mnDataType))
+			{
+				//直方图均衡化
+				if (!mpEqualizeFunc[i])
+					mpEqualizeFunc[i] = SImage::calcHistEqFunc(mnDataType, mpBandData[i].get(), nPixels);
+				SImage::histEqualize(mnDataType, mpBandData[i].get(), nPixels, mpEqualizeFunc[i].get());
+			}
         }
 
         //融合图像，并创建QImage用于显示

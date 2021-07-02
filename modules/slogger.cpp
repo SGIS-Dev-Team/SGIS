@@ -99,6 +99,7 @@ void SLogger::addEntry(const QString &id, LogType type, const QString& entry)
     }
 	textStream << entry ;
 	mLogStream << strLogLine << "\n\n";
+	//发送添加日志信号
 	emit signalAddEntry(strLogLine);
 }
 
