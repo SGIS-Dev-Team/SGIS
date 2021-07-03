@@ -7,15 +7,16 @@
 //  金字塔层数包含原图层。
 //
 //  --------------------------------------------------------------------------------------------------
-//  变量             描述           示例
-//  savePath        保存路径        通常为 [文档路径]/sgis/pyramid
-//  pyramidDirPath  金字塔路径      通常为 [文档路径]/sgis/pyramid/[原始图像名称]
-//  metaFilePath    元数据文件路径   通常为 [文档路径]/sgis/pyramid/[原始图像名称]/[原始图像名称]_Meta.txt
+//  变量                    描述           示例
+//  (original)imagePath   源图像路径       xxx/xxx/xxx.tif(.tiff)
+//  savePath              保存路径         通常为 [文档路径]/sgis/pyramid
+//  pyramidDir            金字塔路径       通常为 [文档路径]/sgis/pyramid/[原始图像名称]
+//  metaFilePath          元数据文件路径    通常为 [文档路径]/sgis/pyramid/[原始图像名称]/[原始图像名称]_Meta.txt
 //  --------------------------------------------------------------------------------------------------
 //-----------------------------------
 
 #include <QObject>
-#include "gdal_priv.h"
+#include <gdal_priv.h>
 #include "modules/paint/simage.h"
 
 class SOverviewBuilder : public QObject
@@ -29,7 +30,6 @@ public:
         TIFF
     };
 
-
 public:
     explicit SOverviewBuilder(QObject *parent = nullptr);
     virtual ~SOverviewBuilder() {}
@@ -39,7 +39,7 @@ signals:
     //进度和提示信息
     void progressUpdated(int progress, QString info);
     //金字塔文件夹的路径
-    void overviewsBuilt(QString pyramidDirPath);
+    void overviewsBuilt(QString pyramidDir);
 
     /*-----槽-----*/
 public slots:
@@ -58,7 +58,6 @@ protected:
     //[Me]
     const QString Me = "SOverviewBuilder";
 
-
 public:
     //[访问函数]
     const QString &getImagePath()const {return mStrImagePath;}
@@ -69,7 +68,7 @@ public:
     //计算金字塔层数
     static int calcPyramidLevelCount(const SImageMeta &meta);
     //生成元数据字符串
-    static QString generateMetaString(const QString &oriImgPath, const QSize &oriImgSize, const QString &pyramidDirPath, int levelCount);
+    static QString generateMetaString(const QString &oriImgPath, const QSize &oriImgSize, const QString &pyramidDir, int levelCount);
 
     /*检查金字塔是否已经构建，使得金字塔失效的情况：
      * 1. 原始图像文件被移动、重命名或删除
@@ -78,10 +77,16 @@ public:
      * 4. 金字塔影像被移动、重命名或删除
      * 函数不会检查金字塔影像内容是否被编辑过
      * @param   oriImgPath      原始图像文件路径
-     * @param   pyramidDirPath  金字塔目录路径（通常为pyramid/xxxxx(图像文件名)）
+     * @param   pyramidDir  金字塔目录路径（通常为pyramid/xxxxx(图像文件名)）
      * @return  是否为有效金字塔
      */
-    static bool varifyPyramid(const QString &oriImgPath, const QString &pyramidDirPath);
+    static bool varifyPyramid(const QString &oriImgPath, const QString &pyramidDir);
+
+    //根据源图像路径和金字塔保存路径生成目标金字塔文件夹路径，详见"SOverviewBuilder.h"最顶上的说明
+    static QString generatePyramidDir(const QString &oriImagePath, const QString &savePath);
+
+    //删除该目录下的金字塔，返回删除操作是否成功
+    static bool removeExistingPyramid(const QString &pyramidDir);
 };
 
 Q_DECLARE_METATYPE(SOverviewBuilder::Format);
