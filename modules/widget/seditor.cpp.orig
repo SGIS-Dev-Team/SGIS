@@ -4,7 +4,10 @@
 #include <QDir>
 #include <QMessageBox>
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> Acqua_coordinate
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {

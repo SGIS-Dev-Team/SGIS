@@ -97,8 +97,11 @@ private:
     //[状态栏控件]
     QLabel* mpStatLblCursorPos;
     QLabel* mpStatLblCanvasScale;
+<<<<<<< HEAD
+=======
     QLabel* mpStatLblGSD;      //先用GSD代替比例尺
     QLabel* mpStatLblProjCS;
+>>>>>>> Acqua_coordinate
     //[数据导入向导]
     QDataImportWizard* mpImportDialog;
 };

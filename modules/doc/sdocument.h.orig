@@ -54,9 +54,12 @@ public:
 
     //获取分片读取器
     SFragLoader& getFragLoader();
+<<<<<<< HEAD
+=======
 
     //获取坐标映射
     SCoordinate& getCoordinate();
+>>>>>>> Acqua_coordinate
 
     //在画布上绘制图层
     void paint(QPainter& painter, const QRectF& viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);
