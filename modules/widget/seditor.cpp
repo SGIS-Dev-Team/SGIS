@@ -3,14 +3,22 @@
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
-
+#include "../paint/simage.h"
+#include "simageinfowidget.h"
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
-    initialize();
-
+	initCustomDock();
+	initialize();
+	showMaximized();
+	//根据调用函数时发生错误的不同类型，修改字符串
+	SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("YYY", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("AAA", SLogger::LocalError, "Loading meta : meta text not exists.");
+	SLogger::getLogger()->addEntry("BBB", SLogger::LocalError, "Loading meta : meta text not exists.");
 }
 
 SEditor::~SEditor()
@@ -282,6 +290,31 @@ void SEditor::onLayersUpdated(SLayerManager* which)
         mpCurCanvasArea->canvas()->repaint();
 }
 
+void SEditor::onOutput(const QString& entry)
+{
+	//添加logger到输出窗口
+	mpOutputListWidget->insertItem(-1, entry);
+}
+
+void SEditor::updateTiffLayoutInfo(SLayerManager* which)
+{
+	//更新Tiff图片信息
+	//获取当前选择的图层 -- 后续可能需要随着实现更改
+
+	QString strSelectImageFilePath;
+	//遍历当前选中图层，选择第一个图片图层
+	auto lstSelectLayout = which->getSelectedLayerIterList();
+	for (auto it : lstSelectLayout)
+	{
+		if (auto pImage = dynamic_cast<SImage*>(*it))
+		{
+			strSelectImageFilePath = pImage->getImagePath();
+			break;
+		}
+	}
+	mpImageInfoWidget->fillByImageFilePath(strSelectImageFilePath);
+}
+
 void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
@@ -370,4 +403,20 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
+}
+
+void SEditor::initCustomDock()
+{
+	//创建tiff信息窗口
+	auto pDock = new QDockWidget("ImageInfo");
+	pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
+	addDockWidget(Qt::RightDockWidgetArea, pDock);
+
+	//创建输出信息窗口
+	pDock = new QDockWidget("Output");
+	pDock->setWidget(mpOutputListWidget = new QListWidget());
+	addDockWidget(Qt::RightDockWidgetArea, pDock);
+	//绑定 logger日志 添加信号
+	QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
+		this, &SEditor::onOutput);
 }

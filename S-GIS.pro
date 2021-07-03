@@ -80,6 +80,13 @@ HEADERS += \
     modules/widget/wizard/extract/qextractwizardpageprogress.h \
     modules/widget/wizard/extract/qextractwizardpagetempdir.h \
     modules/widget/wizard/extract/qfilelistmodel.h \
+    modules/widget/sfileinfowidget.h \
+    modules/widget/simageinfowidget.h \
+    modules/widget/slayerinfowidget.h \
+    modules/widget/sotherinfowidget.h \
+    modules/widget/sprojectioninfowidget.h \
+    modules/widget/straymgr.h
+
     modules/widget/wizard/extract/qfilelistview.h
 
 FORMS += \
@@ -107,10 +114,10 @@ RESOURCES += \
 # GDAL Config
 
 INCLUDEPATH += \
-    E:/study/GDAL1928/release-1928-x64/include
+    D:/GDAL/release-1928-x64/include
 
 LIBS += \
-    E:/study/GDAL1928/release-1928-x64/lib/gdal_i.lib
+    D:/GDAL/release-1928-x64/lib/gdal_i.lib
 
 # Visual Leak Detector Config
 

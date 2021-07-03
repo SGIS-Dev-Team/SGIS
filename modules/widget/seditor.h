@@ -7,7 +7,9 @@
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
 #include <modules/widget/qdataimportwizard.h>
+#include <QPlainTextEdit>
 #include <QScrollBar>
+#include <QListWidget>
 #include "modules/global.h"
 
 namespace Ui
@@ -15,6 +17,7 @@ namespace Ui
 class SEditor;
 }
 
+class ImageInfoWidget;
 class SEditor : public QMainWindow
 {
     Q_OBJECT
@@ -65,6 +68,11 @@ private slots:
     //[图层事件响应]
     void onLayersUpdated(SLayerManager* which);
 
+	//更新tiff图层信息
+	void updateTiffLayoutInfo(SLayerManager* which);
+	//输出日志信息
+	void onOutput(const QString& entry);
+
     /*-----虚函数重载-----*/
 public:
     void closeEvent(QCloseEvent* event)override;
@@ -91,6 +99,8 @@ public:
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
 
+	//创建输出和Tiff信息窗口
+	void initCustomDock();
     /*-----UI与控件-----*/
 private:
     Ui::SEditor* ui;
@@ -99,6 +109,9 @@ private:
     QLabel* mpStatLblCanvasScale;
     QLabel* mpStatLblGSD;      //先用GSD代替比例尺
     QLabel* mpStatLblProjCS;
+	//
+	ImageInfoWidget* mpImageInfoWidget;
+	QListWidget* mpOutputListWidget;
     //[数据导入向导]
     QDataImportWizard* mpImportDialog;
 };

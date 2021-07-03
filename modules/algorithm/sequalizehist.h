@@ -32,7 +32,7 @@ void equalizeHist(T *pData, size_t count, const T* equalizeFunction)
  * @return  均衡化函数指针
  */
 template<typename T>
-std::shared_ptr<T> getEqualizeFunction(const T *pData, size_t count)
+T* getEqualizeFunction(const T *pData, size_t count)
 {
     //检查类型是否符合要求
     const type_info& DataType = typeid (T);
@@ -49,15 +49,14 @@ std::shared_ptr<T> getEqualizeFunction(const T *pData, size_t count)
 
     //计算灰度概率分布函数，并生成均衡化函数
     double* CDFn = new double[Max + 1] {T(0)};
-    std::shared_ptr<T> EqFn(new T[Max + 1] {T(0)}, [](T * pData) {delete []pData;});
+    T* EqFn = new T[Max + 1] {T(0)};
     CDFn[0] = double(Distribution[0]) / double(count);
-    T* pEqFn = EqFn.get();
-    pEqFn[0] = round(CDFn[0] * Max);
+    EqFn[0] = round(CDFn[0] * Max);
 
     for(unsigned int i = 1; i <= Max; ++i)
     {
         CDFn[i] += CDFn[i - 1] + double(Distribution[i]) / double(count);
-        pEqFn[i] = round(CDFn[i] * Max);
+        EqFn[i] = round(CDFn[i] * Max);
     }
 
     delete [] Distribution;
