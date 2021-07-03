@@ -4,7 +4,6 @@
 #include <QDir>
 #include <QMessageBox>
 
-
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
@@ -93,8 +92,6 @@ void SEditor::onActionLoadFragmentsTriggered()
     pFragImg->setHoldTopPyramidEnabled(true);
 
     mpCurDoc->getLayerManager().addLayer(pFragImg);
-
-
 }
 
 #include "qdataimportwizard.h"
@@ -129,45 +126,7 @@ void SEditor::onImportingData()
 
         SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
 
-        //更新坐标映射
-        if (mpCurDoc->getCoordinate().isEmpty())
-        {
-            pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
-            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
-            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
-            QString proRef = SImage::getMetaOf(pFragImg->getLargestImgPath()).projRef();
-
-
-            mpCurDoc->getCoordinate() = SCoordinate(pFragImg->centerPoint(), QPointF(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2), geoTrans[1], geoTrans[5], proRef);
-            if (geoTrans != nullptr)
-                delete[] geoTrans;
-
-            //获取了投影坐标和像素分辨率
-            mpStatLblGSD->setText("1:" + QString::number(mpCurDoc->getCoordinate().deltaX()) + "meter");
-            mpStatLblProjCS->setText(mpCurDoc->getCoordinate().projCS());
-
-            //调整影像位置
-            double min = mpCurCanvasArea->horizontalScrollBar()->pageStep() * 1.0 / nWidth;
-            if (min > mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight)
-                min = mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight;
-            mpCurCanvasArea->canvas()->setScaleValue(0.9 * min);
-            mpCurCanvasArea->horizontalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().width() - 0.5 * mpCurCanvasArea->horizontalScrollBar()->pageStep());
-            mpCurCanvasArea->verticalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().height() - 0.5 * mpCurCanvasArea->verticalScrollBar()->pageStep());
-        }
-        else
-        {
-            //强制根据地理坐标设置像素坐标，和缩放像素分辨率
-            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
-            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
-            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
-            double logicX, logicY;
-            mpCurDoc->getCoordinate().geo2logic(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
-            pFragImg->setCenterPoint(QPointF(logicX, logicY));
-            pFragImg->scale(geoTrans[1] / mpCurDoc->getCoordinate().deltaX(), geoTrans[5] / mpCurDoc->getCoordinate().deltaY());
-            if (geoTrans != nullptr)
-                delete[] geoTrans;
-        }
+        pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
 
         //强制加载ImageMeta
         streamMeta.imageMeta();
@@ -182,7 +141,6 @@ void SEditor::onImportingData()
         mpCurDoc->getLayerManager().addLayer(pFragImg);
         streamMeta.setImported(true);
     }
-
 }
 
 #include <QTextEdit>
@@ -257,18 +215,7 @@ void SEditor::onTabSwitched()
 
 void SEditor::onCanvasMouseMoved(QPointF Log_pos)
 {
-    double x = 0, y = 0;
-    if (mpCurDoc->getCoordinate().isEmpty())
-    {
-        //未建立坐标映射，显示逻辑坐标
-        mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
-    }
-    else
-    {
-        //已建立坐标映射，显示投身坐标
-        mpCurDoc->getCoordinate().logic2geo(Log_pos.x(), Log_pos.y(), x, y);
-        mpStatLblCursorPos->setText("(" + QString::number(x, 'f', 3) + "," + QString::number(y, 'f', 3) + ")meter");
-    }
+    mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
 }
 
 void SEditor::onCanvasScaled(double value)
@@ -295,17 +242,9 @@ void SEditor::initialize()
     mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
     //鼠标逻辑位置
     mpStatLblCursorPos = new QLabel(ui->mStatusBar);
-    //影像的GSD
-    mpStatLblGSD = new QLabel(ui->mStatusBar);
-    //投影坐标
-    mpStatLblProjCS = new QLabel(ui->mStatusBar);
 
-
-    ui->mStatusBar->addPermanentWidget(mpStatLblProjCS);
-    ui->mStatusBar->addPermanentWidget(mpStatLblGSD);
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
-
 
     /*-----初始化子窗口-----*/
     //数据导入向导

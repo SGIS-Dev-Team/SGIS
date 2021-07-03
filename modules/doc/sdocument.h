@@ -4,7 +4,6 @@
 #include <modules/global.h>
 #include <modules/doc/slayermanager.h>
 #include <modules/paint/sfragloader.h>
-#include <modules/algorithm/scoordinate.h>
 
 class QCanvas;
 class SDocument: public QObject
@@ -36,8 +35,6 @@ private:
     SFragLoader mFragLoader;
     //读取器线程
     QThread mLoaderThread;
-    //像素坐标与地理坐标间的映射
-    SCoordinate mCoordinate;
 
     /*-----成员函数-----*/
 public:
@@ -54,9 +51,6 @@ public:
 
     //获取分片读取器
     SFragLoader& getFragLoader();
-
-    //获取坐标映射
-    SCoordinate& getCoordinate();
 
     //在画布上绘制图层
     void paint(QPainter& painter, const QRectF& viewArea, double scaleValue, SObject::PaintTrigger trigger = SObject::User_Trigger);

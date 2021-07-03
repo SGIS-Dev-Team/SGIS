@@ -7,8 +7,6 @@
 #include"modules/widget/qcanvas.h"
 #include<QLabel>
 #include <modules/widget/qdataimportwizard.h>
-#include <QScrollBar>
-#include "modules/global.h"
 
 namespace Ui
 {
@@ -97,8 +95,6 @@ private:
     //[状态栏控件]
     QLabel* mpStatLblCursorPos;
     QLabel* mpStatLblCanvasScale;
-    QLabel* mpStatLblGSD;      //先用GSD代替比例尺
-    QLabel* mpStatLblProjCS;
     //[数据导入向导]
     QDataImportWizard* mpImportDialog;
 };

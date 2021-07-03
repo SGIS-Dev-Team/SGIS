@@ -29,8 +29,8 @@ public:
                         const QString& _layerName = "",
                         const QString& _layerDiscription = "",
                         const QColor& _layerColor = "");
-    explicit SFragImage(const SImageStreamMeta& _streamMeta,
-                        SFragLoader& _loader,
+    explicit SFragImage(const SImageStreamMeta &_streamMeta,
+                        SFragLoader &_loader,
                         bool _selected = true,
                         QPointF center = QPointF(),
                         const QString& _layerName = "",
@@ -40,9 +40,9 @@ public:
     /*-----虚函数重载-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter& painter,
+    virtual void paint(QPainter &painter,
                        bool doTranslate = true,
-                       const QRectF& viewLogicalArea = QRectF(),
+                       const QRectF & viewLogicalArea = QRectF(),
                        double scaleValue = 0,
                        PaintTrigger trigger = User_Trigger)const;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
@@ -63,7 +63,7 @@ private:
 
     /*-----信号-----*/
 signals:
-    void paintFrag(QPainter& painter)const;
+    void paintFrag(QPainter &painter)const;
     void loadFrag()const;
 
     /*-----槽函数-----*/
@@ -95,11 +95,9 @@ public:
     //[访问函数]
     inline int width()const;
     inline int height()const;
-    inline const QSize& size()const;
-    inline SFragLoader& getFragLoader() {return this->mFragLoader;}
-    inline const SFragLoader& getFragLoader()const {return this->mFragLoader;}
-    //获取底层影像的路径
-    const QString getLargestImgPath()const {return mFragMatVec[0].getData()->getImagePath();}
+    inline const QSize &size()const;
+    inline SFragLoader &getFragLoader() {return this->mFragLoader;}
+    inline const SFragLoader &getFragLoader()const {return this->mFragLoader;}
 
     //[修改函数]
     //设置影像金字塔文件路径，影像文件名（不要带格式后缀）
@@ -112,7 +110,7 @@ public:
     //[功能函数]
 public:
     //读取元数据
-    void loadMeta(const QString& pyramidDir = "");
+    void loadMeta(const QString &pyramidDir = "");
 private:
     //初始化链接
     void _initializeConnections();
