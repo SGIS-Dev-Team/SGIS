@@ -1,42 +1,78 @@
+<<<<<<< HEAD:main.cpp
+﻿#include "mainwindow.h"
+#include "global.h"
+#include "slogger.h"
+#include "gdal_priv.h"
+=======
 ﻿#include "modules/widget/mainwindow.h"
 #include "modules/global.h"
-#include "gdal_priv.h"
+#include "modules/slogger.h"
+
+>>>>>>> main:modules/main.cpp
 #include <QApplication>
 #include <QFileDialog>
-#include "modules/algorithm/soverviewbuilder.h"
-<<<<<<< HEAD
-#include <QStyleFactory>
+#include "sslice.h"
 
-int main(int argc, char* argv[])
-=======
-#include "./modules//algorithm/sdecompression.h"
+
+
 int main(int argc, char *argv[])
->>>>>>> Krista_Info_Err_Wnd
 {
-#ifndef QT_NO_DEBUG
-    //VLDGlobalDisable();
-#endif
-
-	Sdecompression s("F:/SGIS_Dev/zlib-1.2.11.tar.gz", "D:/456");
-	//Sdecompression s("F:/SGIS_Dev/123.zip", "D:/456");
- 	auto lstFiles = s.preview();
- 	s.unTar();
-// 
-// 	Sdecompression s1("D:/456/zlib-1.2.11.tar", "D:/789");
-// 	s1.unZip();
-
-	//QStringList list = JlCompress::extractDir("F:/SGIS_Dev/zlib-1.2.11.tar.gz", "D:/456");
     QApplication app(argc, argv);
-    app.setStyle(QStyleFactory::create("mac"));
     //使得程序可以在系统托盘运行
     app.setQuitOnLastWindowClosed(false);
 
     //启动主程序
     MainWindow wnd;
 
-    GDALAllRegister();
-    qRegisterMetaType<SOverviewBuilder::Format>("Format");
+    QString  qstr=QFileDialog::getOpenFileName();
+    QString out = SSlice::getOverviewsSlice(qstr);
+
+#ifdef USE
+    int a = 0;
+
+    const char* fileName = ch;
+
+    GDALAllRegister();  // 注册所有支持的数据格式驱动
+    GDALDataset* poDataset = static_cast<GDALDataset*>(GDALOpen(fileName, GA_Update));  // 打开给定的数据文件
+    if (!poDataset)
+    {
+
+        return EXIT_FAILURE;
+    }
+
+    int anOverviewList[3] = { 2, 4, 8 };
+    poDataset->BuildOverviews("NEAREST", 3, anOverviewList, 0, nullptr,
+        GDALDummyProgress, nullptr);
+    a = poDataset->GetRasterCount();
+    GDALClose(poDataset); // 关闭数据集
 
 
+
+    int iRatio = 2;
+    GDALDataset* pSet = (GDALDataset*)GDALOpen(fileName, GA_ReadOnly);
+
+    GDALRasterBand* pBand = pSet->GetRasterBand(1);
+    int iX = pSet->GetRasterXSize();
+    int iY = pSet->GetRasterYSize();
+    int nBand = pSet->GetRasterCount();
+    nBand = 3;
+    unsigned char* pData = new unsigned char[iX * iY * nBand];
+
+    pSet->RasterIO(GF_Read, 0, 0, iX, iY, pData, iX / iRatio, iY /iRatio, GDT_Byte, nBand, NULL, nBand, iX * nBand, 1);
+    GDALClose(pSet);
+
+
+
+    const char* fileName1 = "G:/new1.tif";
+    GDALDriver* pDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
+    GDALDataset* pSetWrite = pDriver->Create(fileName1, iX / iRatio, iY / iRatio, nBand, GDT_Byte, NULL);
+
+
+    pSetWrite->RasterIO(GF_Write, 0, 0, iX / iRatio, iY / iRatio, pData, iX / iRatio, iY / iRatio, GDT_Byte, nBand, NULL, nBand, iX * nBand, 1);
+    GDALClose(pSetWrite);
+
+
+    delete[] pData;
+#endif
     return app.exec();
 }

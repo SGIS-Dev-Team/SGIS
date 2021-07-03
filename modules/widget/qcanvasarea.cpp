@@ -14,7 +14,7 @@ QCanvasArea::~QCanvasArea()
 {
 }
 
-std::shared_ptr<QCanvas> QCanvasArea::canvas()const
+QCanvas * QCanvasArea::canvas()const
 {
     return mpCanvas;
 }
@@ -31,14 +31,14 @@ QRectF QCanvasArea::viewArea() const
 void QCanvasArea::_initialize()
 {
     //创建画布
-    mpCanvas = std::make_shared<QCanvas>(this, mCanvasSize);
+    mpCanvas = new QCanvas(this, mCanvasSize);
     //链接事件响应
-    connect(mpCanvas.get(), &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
+    connect(mpCanvas, &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
     connect(this->horizontalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
     //调整对齐
     setAlignment(Qt::Alignment(Qt::AlignHCenter | Qt::AlignVCenter));
-    this->setWidget(mpCanvas.get());
+    this->setWidget(mpCanvas);
     mpCanvas->setViewArea(viewArea());
 }
 

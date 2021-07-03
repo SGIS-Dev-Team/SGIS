@@ -3,28 +3,17 @@
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
 #include <QMessageBox>
+
 <<<<<<< HEAD
-
-
-SEditor::SEditor(QWidget* parent): QMainWindow(parent),
 =======
-#include <QListWidgetItem>
-#include <vld.h>
-#include "../paint/simage.h"
-#include "simageinfowidget.h"
-SEditor::SEditor(QWidget *parent): QMainWindow(parent),
->>>>>>> Krista_Info_Err_Wnd
+
+>>>>>>> Acqua_coordinate
+SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
-	initCustomDock();
-	initialize();
-	showMaximized();
-	//根据调用函数时发生错误的不同类型，修改字符串
-	SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
-	SLogger::getLogger()->addEntry("YYY", SLogger::LocalError, "Loading meta : meta text not exists.");
-	SLogger::getLogger()->addEntry("AAA", SLogger::LocalError, "Loading meta : meta text not exists.");
-	SLogger::getLogger()->addEntry("BBB", SLogger::LocalError, "Loading meta : meta text not exists.");
+    initialize();
+
 }
 
 SEditor::~SEditor()
@@ -81,7 +70,6 @@ void SEditor::onActionLoadImageTriggered()
 
         mpCurDoc->getLayerManager().addLayer(pImg);
     }
-
 }
 
 #include <modules/paint/sfragimage.h>
@@ -98,7 +86,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
 
-    pFragImg->setFragmentPath(file_info.filePath());
+    pFragImg->setPyramidDir(file_info.filePath());
     pFragImg->loadMeta();
 
     pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
@@ -112,10 +100,9 @@ void SEditor::onActionLoadFragmentsTriggered()
 
 }
 
-#include "qbandselectdialog.h"
+#include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
-<<<<<<< HEAD
     if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
@@ -184,44 +171,21 @@ void SEditor::onImportingData()
             if (geoTrans != nullptr)
                 delete[] geoTrans;
         }
-=======
-    //获取要读取的文件路径
-    QString strImagePath = QFileDialog::getOpenFileName(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
-    if(strImagePath.isEmpty())
-        return;
 
-    //打开波段预览对话框
-    QBandSelectDialog dialog(strImagePath, this);
-    dialog.exec();
+        //强制加载ImageMeta
+        streamMeta.imageMeta();
+        pFragImg->setBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
 
-    if(dialog.getPyramidDirPath().isEmpty())
-    {
-        QMessageBox::critical(this, tr("File Invalid or Cancelled by user."), tr(""));
-        return;
-    }
+        pFragImg->setHoldTopPyramidEnabled(true);
 
-    //选择完成：将影像读入
-    mpCurDoc->getLayerManager().clearSelection();
->>>>>>> Krista_Info_Err_Wnd
+        std::shared_ptr<void> pEqFunc[3] {nullptr};
+        streamMeta.getHistEqFunc(pEqFunc);
+        pFragImg->setHistEqFunc(pEqFunc);
 
-    SFragImage* pFragImg = new SFragImage(mpCurDoc->getFragLoader());
-
-    QFileInfo file_info(dialog.getPyramidDirPath());
-    pFragImg->setFragmentPath(file_info.filePath());
-    pFragImg->loadMeta();
-
-    pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
-    pFragImg->setHoldTopPyramidEnabled(true);
-    pFragImg->setBandIndices(dialog.getRedBandIdx(), dialog.getGreenBandIdx(), dialog.getBlueBandIdx());
-
-<<<<<<< HEAD
         mpCurDoc->getLayerManager().addLayer(pFragImg);
         streamMeta.setImported(true);
     }
 
-=======
-    mpCurDoc->getLayerManager().addLayer(pFragImg);
->>>>>>> Krista_Info_Err_Wnd
 }
 
 #include <QTextEdit>
@@ -321,36 +285,7 @@ void SEditor::onLayersUpdated(SLayerManager* which)
         mpCurCanvasArea->canvas()->repaint();
 }
 
-<<<<<<< HEAD
 void SEditor::closeEvent(QCloseEvent* event)
-=======
-void SEditor::onOutput(const QString& entry)
-{
-	//添加logger到输出窗口
-	mpOutputListWidget->insertItem(-1, entry);
-}
-
-void SEditor::updateTiffLayoutInfo(SLayerManager* which)
-{
-	//更新Tiff图片信息
-	//获取当前选择的图层 -- 后续可能需要随着实现更改
-
-	QString strSelectImageFilePath;
-	//遍历当前选中图层，选择第一个图片图层
-	auto lstSelectLayout = which->getSelectedLayerIterList();
-	for (auto it : lstSelectLayout)
-	{
-		if (auto pImage = dynamic_cast<SImage*>(*it))
-		{
-			strSelectImageFilePath = pImage->getImagePath();
-			break;
-		}
-	}
-	mpImageInfoWidget->fillByImageFilePath(strSelectImageFilePath);
-}
-
-void SEditor::closeEvent(QCloseEvent *event)
->>>>>>> Krista_Info_Err_Wnd
 {
     Q_UNUSED(event);
     emit closed();
@@ -359,7 +294,9 @@ void SEditor::closeEvent(QCloseEvent *event)
 void SEditor::initialize()
 {
     /*-----初始化状态栏-----*/
+    //画布缩放等级
     mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
+    //鼠标逻辑位置
     mpStatLblCursorPos = new QLabel(ui->mStatusBar);
     //影像的GSD
     mpStatLblGSD = new QLabel(ui->mStatusBar);
@@ -372,14 +309,11 @@ void SEditor::initialize()
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
-<<<<<<< HEAD
 
     /*-----初始化子窗口-----*/
     //数据导入向导
     mpImportDialog = new QDataImportWizard();
 
-=======
->>>>>>> Krista_Info_Err_Wnd
     /*-----创建绘图区-----*/
     createWorkspace();
 
@@ -392,11 +326,12 @@ void SEditor::initializeConnections()
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
     connect(ui->mActionCreateRect, &QAction::triggered, this, &SEditor::onActionCreateRectTriggered);
 
-    //[测试用链接]
+    //-----测试用链接-----//
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
     connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
     connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
+    //-----测试用链接-----//
 
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
@@ -412,51 +347,30 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
+    //数据导入向导对话框事件响应
+    connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }
 
 void SEditor::createWorkspace(const QSize& CanvasSize)
 {
     //创建新的绘图区控件,保存绘图区控件指针
-<<<<<<< HEAD
     QCanvasArea* newCanvasArea = new QCanvasArea(CanvasSize);
-=======
-    std::shared_ptr<QCanvasArea> newCanvasArea = std::make_shared<QCanvasArea>(CanvasSize);
->>>>>>> Krista_Info_Err_Wnd
     mpCanvasAreaVec.push_back(newCanvasArea);
     //创建新的工作区文档,保存文档指针
     std::shared_ptr<SDocument> newDocument = std::make_shared<SDocument>(newCanvasArea->canvas());
     this->mpDocVec.push_back(newDocument);
     //添加Tab页面并激活
     //TODO:解决重名问题
-    int newIdx = ui->mTabWidget->addTab(newCanvasArea.get(), tr("Untitled Workspace"));
+    int newIdx = ui->mTabWidget->addTab(newCanvasArea, tr("Untitled Workspace"));
     ui->mTabWidget->setCurrentIndex(newIdx);
     //设置为当前激活的绘图区
     mpCurCanvasArea = newCanvasArea;
     mpCurDoc = newDocument;
     //链接绘图区信息显示
-    connect(mpCurCanvasArea->canvas().get(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
-    connect(mpCurCanvasArea->canvas().get(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
-	//SLayerManager 图层更新时会调用 SEditor::onLayersUpdated
-	connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
-	//更新图片信息- 但是为了更明确下，就独立出来了 - 后续有可能有更好的时机（添加更合适的信号）来更新图片信息，
-	connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::updateTiffLayoutInfo);
+    connect(mpCurCanvasArea->canvas(), &QCanvas::mouseMoved, this, &SEditor::onCanvasMouseMoved);
+    connect(mpCurCanvasArea->canvas(), &QCanvas::scaled, this, &SEditor::onCanvasScaled);
+    connect(&mpCurDoc->getLayerManager(), &SLayerManager::layersUpdated, this, &SEditor::onLayersUpdated);
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
-}
-
-void SEditor::initCustomDock()
-{
-	//创建tiff信息窗口
-	auto pDock = new QDockWidget("ImageInfo");
-	pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
-	addDockWidget(Qt::RightDockWidgetArea, pDock);
-
-	//创建输出信息窗口
-	pDock = new QDockWidget("Output");
-	pDock->setWidget(mpOutputListWidget = new QListWidget());
-	addDockWidget(Qt::RightDockWidgetArea, pDock);
-	//绑定 logger日志 添加信号
-	QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
-		this, &SEditor::onOutput);
 }

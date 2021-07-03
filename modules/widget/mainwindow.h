@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow
     /*-----构造与析构函数-----*/
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    virtual ~MainWindow();
 
     /*-----虚函数重载-----*/
 public:

@@ -1,16 +1,20 @@
-﻿#ifndef CLASSANNOTATIONTEMPLATE_H
-#define CLASSANNOTATIONTEMPLATE_H
+﻿#ifndef QEXTRACTWIZARDPAGEINTRO_H
+#define QEXTRACTWIZARDPAGEINTRO_H
 
-//  CLASS
+#include <QWizardPage>
 
-class CLASS : public //QObject
+namespace Ui
 {
-    //Q_OBJECT
+class QExtractWizardPageIntro;
+}
 
+class QExtractWizardPageIntro : public QWizardPage
+{
+    Q_OBJECT
     /*-----构造函数与析构函数-----*/
 public:
-    explicit CLASS();
-    virtual ~CLASS();
+    explicit QExtractWizardPageIntro(QWidget *parent = nullptr);
+    virtual ~QExtractWizardPageIntro();
 
     /*-----虚函数重载-----*/
 protected:
@@ -27,7 +31,6 @@ protected:
     /*-----成员变量-----*/
 protected:
 
-
     /*-----成员函数-----*/
 public:
     //[访问函数]
@@ -38,6 +41,7 @@ public:
 
     /*-----UI-----*/
 private:
-
+    Ui::QExtractWizardPageIntro *ui;
 };
-#endif // CLASSANNOTATIONTEMPLATE_H
+
+#endif // QEXTRACTWIZARDPAGEINTRO_H

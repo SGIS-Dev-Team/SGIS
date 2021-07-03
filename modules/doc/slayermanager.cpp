@@ -9,6 +9,15 @@ SLayerManager::SLayerManager()
     mLayerModel.setHorizontalHeaderLabels(header);
 }
 
+SLayerManager::~SLayerManager()
+{
+    for(auto &pObj : mLayerList)
+        SObjectFactory::releaseObject(pObj);
+    mLayerList.clear();
+    mLayerModel.clear();
+    mSelectedLayerIterList.clear();
+}
+
 void SLayerManager::onLayerViewClicked(const QModelIndex &index)
 {
     if(index.model() != &this->mLayerModel)

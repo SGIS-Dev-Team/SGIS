@@ -63,44 +63,41 @@ void SLogger::addEntry(const QString &id, LogType type, const QString& entry)
         newLog();
 
     /*-----写入日志条目-----*/
-	QString strLogLine;
-	QTextStream textStream(&strLogLine);
-	textStream.setFieldWidth(0);
+
+    mLogStream.setFieldWidth(0);
     //输出时间信息和条目创建者
-	textStream << QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss")
+    mLogStream << QDateTime::currentDateTime().toString("yyyy_MM_dd-hh_mm_ss")
                << "\n[" << id << "]\t";
     //输出条目号码
-	textStream.setFieldWidth((int)log10(LOG_MAX_ENTRY_COUNT) + 1);
-	textStream.setFieldAlignment(QTextStream::FieldAlignment::AlignRight);
-	textStream.setPadChar('0');
-	textStream << muEntry++;
+    mLogStream.setFieldWidth((int)log10(LOG_MAX_ENTRY_COUNT) + 1);
+    mLogStream.setFieldAlignment(QTextStream::FieldAlignment::AlignRight);
+    mLogStream.setPadChar('0');
+    mLogStream << muEntry++;
     //输出条目类型和主体内容
-	textStream.setFieldWidth(0);
-	textStream << '\n';
+    mLogStream.setFieldWidth(0);
+    mLogStream << '\n';
     switch (type)
     {
     case DebugInfo:
-		textStream << "Debug_Info : ";
+        mLogStream << "Debug_Info : ";
         break;
     case UserAction:
-		textStream << "User_Action : ";
+        mLogStream << "User_Action : ";
         break;
     case LocalError:
-		textStream << "Local_Error : ";
+        mLogStream << "Local_Error : ";
         break;
     case RemoteError:
-		textStream << "Remote_Error : ";
+        mLogStream << "Remote_Error : ";
         break;
     case RunningStatus:
-		textStream << "Running_Status : ";
+        mLogStream << "Running_Status : ";
         break;
     default:
         break;
     }
-	textStream << entry ;
-	mLogStream << strLogLine << "\n\n";
-	//发送添加日志信号
-	emit signalAddEntry(strLogLine);
+
+    mLogStream << entry << "\n\n";
 }
 
 void SLogger::addSeperator()

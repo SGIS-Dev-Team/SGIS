@@ -4,9 +4,9 @@
 //Visual Leak Detector内存泄露探查器
 #pragma comment(lib,"vld.lib")
 #ifndef QT_NO_DEBUG
-//#include <vld.h>
+#include <vld.h>
 #endif
-//仅在Debug模式下使用，调用VLDReportLeak()在应用程序输出中查看内存泄露报告
+//仅在Debug模式下使用，调用VLDReportLeak()在保存内存泄露报告
 
 #include"slogger.h"
 #include <QStandardPaths>
@@ -32,12 +32,22 @@
 #define LAYER_ICON_SIZE QSize(32,32)
 //debug流辅助宏函数
 #define SSTR(expr)#expr
-#define SDBG(expr)SSTR(expr)<<expr<<"\n"
+#define SDBG(expr)"var ["<<SSTR(expr)<<"]"<<expr<<"\n"
 #define S2DBG(expr1,expr2)SDBG(expr1)<<SDBG(expr2)
 #define S3DBG(expr1,expr2,expr3)S2DBG(expr1,expr2)<<SDBG(expr3)
 #define S4DBG(expr1,expr2,expr3,expr4)S3DBG(expr1,expr2,expr3)<<SDBG(expr4)
 #define S5DBG(expr1,expr2,expr3,expr4,expr5)S4DBG(expr1,expr2,expr3,expr4)<<SDBG(expr5)
 #define S6DBG(expr1,expr2,expr3,expr4,expr5,expr6)S5DBG(expr1,expr2,expr3,expr4,expr5)<<SDBG(expr6)
+//debug计时器
+#include <ctime>
+#ifndef QT_NO_DEBUG
+#define CLOCK_START(N)     std::clock_t start ## N = clock();
+#define CLOCK_STOP(N)      qDebug() << "Clock "<<N<<" Elapsed Time at "<<__FILE__<<"["<<__LINE__<<"] :" << std::clock() - start ## N <<" ms";
+#else
+#define CLOCK_START(N)
+#define CLOCK_STOP(N)
+#endif
+
 //默认分片影像读取栈大小
 #define DEFAULT_FRAG_TEMP_SIZE 20
 #define DEFAULT_READ_IN_STACK_SIZE 100
