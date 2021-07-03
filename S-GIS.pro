@@ -34,6 +34,11 @@ SOURCES += \
     modules/widget/qimagelistview.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
+    modules/widget/sfileinfowidget.cpp \
+    modules/widget/simageinfowidget.cpp \
+    modules/widget/slayerinfowidget.cpp \
+    modules/widget/sotherinfowidget.cpp \
+    modules/widget/sprojectioninfowidget.cpp \
     modules/widget/straymgr.cpp \
     modules/widget/wizard/extract/qextractwizard.cpp \
     modules/widget/wizard/extract/qextractwizardpagefile.cpp \

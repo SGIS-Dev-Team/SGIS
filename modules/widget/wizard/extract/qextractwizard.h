@@ -15,10 +15,18 @@ class QExtractWizard;
 class QExtractWizard : public QWizard
 {
     Q_OBJECT
+public:
+    enum ExtractWizardPages
+    {
+        IntroPage,
+        FilePage,
+        TempDirPage,
+        ProgressPage,
+    };
 
     /*-----构造函数与析构函数-----*/
 public:
-    explicit QExtractWizard(QWidget *parent = nullptr);
+    explicit QExtractWizard(QWidget* parent = nullptr);
     virtual ~QExtractWizard();
 
     /*-----虚函数重载-----*/
@@ -41,6 +49,7 @@ protected:
 public:
     //[访问函数]
 
+
     //[修改函数]
 
     //[功能函数]
@@ -51,11 +60,11 @@ private:
 
     /*-----UI-----*/
 private:
-    Ui::QExtractWizard *ui;
-    QExtractWizardPageIntro    *mpPageIntro;
-    QExtractWizardPageFile     *mpPageFile;
-    QExtractWizardPageTempDir  *mpPageTempDir;
-    QExtractWizardPageProgress *mpPageProgress;
+    Ui::QExtractWizard* ui;
+    QExtractWizardPageIntro*    mpPageIntro;
+    QExtractWizardPageFile*     mpPageFile;
+    QExtractWizardPageTempDir*  mpPageTempDir;
+    QExtractWizardPageProgress* mpPageProgress;
 
 };
 

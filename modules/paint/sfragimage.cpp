@@ -63,7 +63,6 @@ void SFragImage::paint(QPainter& painter, bool doTranslate, const QRectF& viewLo
 
     //还原变换
     painter.setTransform(oldTransform);
-
 }
 
 void SFragImage::setPyramidDir(const QString& dirPath)
