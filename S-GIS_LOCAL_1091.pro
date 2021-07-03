@@ -45,7 +45,6 @@ SOURCES += \
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
     modules/algorithm/archive_extractor/sarchiveentrymeta.h \
-    modules/algorithm/scoordinate.h \
     modules/algorithm/archive_extractor/sarchiveextractor.h \
     modules/algorithm/archive_extractor/sarchivemeta.h \
     modules/algorithm/archive_extractor/sarchivestreammeta.h \
@@ -60,7 +59,6 @@ HEADERS += \
     modules/paint/sfragloader.h \
     modules/paint/sfragmatrix.h \
     modules/paint/simage.h \
-    modules/paint/simagemeta.h \
     modules/paint/sobject.h \
     modules/paint/sobjectfactory.h \
     modules/paint/sshape.h \

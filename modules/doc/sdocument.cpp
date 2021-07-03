@@ -1,9 +1,9 @@
 ﻿#include "sdocument.h"
 
 
-SDocument::SDocument(QCanvas * pCanvas)
+SDocument::SDocument(QCanvas* pCanvas)
 {
-    if(!pCanvas)
+    if (!pCanvas)
         return;
     setCanvas(pCanvas);
     pCanvas->setDocument(this);
@@ -14,7 +14,7 @@ SDocument::SDocument(QCanvas * pCanvas)
     _initializeConnections();
 }
 
-SDocument::SDocument(QCanvas * pCanvas, const QString &path): SDocument(pCanvas)
+SDocument::SDocument(QCanvas* pCanvas, const QString& path): SDocument(pCanvas)
 {
 
 }
@@ -24,39 +24,44 @@ SDocument::~SDocument()
     _disconnectCanvas();
 }
 
-void SDocument::onImageLoaded(SImage *pImage)
+void SDocument::onImageLoaded(SImage* pImage)
 {
     Q_UNUSED(pImage);
     mpCanvas->setPaintTrigger(SObject::Loaded_Trigger);
     emit updateCanvas();
 }
 
-void SDocument::setCanvas(QCanvas * pCanvas)
+void SDocument::setCanvas(QCanvas* pCanvas)
 {
     _disconnectCanvas();
     this->mpCanvas = pCanvas;
 }
 
-SLayerManager &SDocument::getLayerManager()
+SLayerManager& SDocument::getLayerManager()
 {
     return mLayerMgr;
 }
 
-SFragLoader &SDocument::getFragLoader()
+SFragLoader& SDocument::getFragLoader()
 {
     return mFragLoader;
 }
 
-void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleValue, SObject::PaintTrigger trigger)
+SCoordinate& SDocument::getCoordinate()
+{
+    return mCoordinate;
+}
+
+void SDocument::paint(QPainter& painter, const QRectF& viewArea, double scaleValue, SObject::PaintTrigger trigger)
 {
     const layer_list layerList = mLayerMgr.getLayerList();
 
     //自底向上绘制图层
     std::list<SObject*>::const_iterator iter = layerList.begin();
-    for(iter = layerList.begin(); iter != layerList.end(); ++iter)
+    for (iter = layerList.begin(); iter != layerList.end(); ++iter)
     {
         SObject* obj = *iter;
-        if(obj->isVisible())
+        if (obj->isVisible())
             obj->paint(painter, true, viewArea, scaleValue, trigger);
     }
 
@@ -65,7 +70,7 @@ void SDocument::paint(QPainter &painter, const QRectF &viewArea, double scaleVal
     //现在只单独绘制选框
     std::list<list_iterator> selectedLayerIterList = mLayerMgr.getSelectedLayerIterList();
     painter.setRenderHint(QPainter::Antialiasing);
-    for(auto& iter : selectedLayerIterList)
+    for (auto& iter : selectedLayerIterList)
         (*iter)->paintBoundRect(painter, scaleValue);
 
 }
@@ -78,7 +83,7 @@ void SDocument::_initializeConnections()
 
 void SDocument::_disconnectCanvas()
 {
-    if(!mpCanvas)
+    if (!mpCanvas)
         disconnect(this, &SDocument::updateCanvas, mpCanvas, &QCanvas::doUpdate);
 }
 
