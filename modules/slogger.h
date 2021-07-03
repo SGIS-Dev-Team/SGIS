@@ -25,7 +25,8 @@ public:
         LocalError,     //本地错误
         RemoteError     //远程错误
     };
-
+signals:
+	void signalAddEntry(const QString& entry);
     //构造函数与析构函数
 private:
     SLogger();
