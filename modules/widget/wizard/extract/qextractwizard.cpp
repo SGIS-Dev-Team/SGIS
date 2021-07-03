@@ -24,10 +24,10 @@ void QExtractWizard::_initialize()
     mpPageProgress  = new QExtractWizardPageProgress();
     mpPageProgress->setWizard(this);
     //添加页面
-    addPage(mpPageIntro);
-    addPage(mpPageFile);
-    addPage(mpPageTempDir);
-    addPage(mpPageProgress);
+    setPage(IntroPage,       mpPageIntro);
+    setPage(FilePage,        mpPageFile);
+    setPage(TempDirPage,     mpPageTempDir);
+    setPage(ProgressPage,    mpPageProgress);
     //设置图像
 
 }

@@ -142,6 +142,15 @@ void QDataImportWizard::onListViewMenuActionAddArchiveTriggered()
     //初始化解压向导
     if (!pExtractWizard)
         pExtractWizard = new QExtractWizard();
+    else
+    {
+        if (pExtractWizard->page(QExtractWizard::ProgressPage)->isComplete())
+        {
+            delete pExtractWizard;
+            pExtractWizard = new QExtractWizard;
+        }
+    }
+
     pExtractWizard->show();
     pExtractWizard->raise();
 }

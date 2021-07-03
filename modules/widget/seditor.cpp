@@ -3,13 +3,23 @@
 #include <modules/paint/sshapefactory.h>
 #include <QDir>
 #include <QMessageBox>
+#include <QListWidgetItem>
+
+#include "../paint/simage.h"
+#include "simageinfowidget.h"
 
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
+    initCustomDock();
     initialize();
-
+    showMaximized();
+    //根据调用函数时发生错误的不同类型，修改字符串
+    SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
+    SLogger::getLogger()->addEntry("YYY", SLogger::LocalError, "Loading meta : meta text not exists.");
+    SLogger::getLogger()->addEntry("AAA", SLogger::LocalError, "Loading meta : meta text not exists.");
+    SLogger::getLogger()->addEntry("BBB", SLogger::LocalError, "Loading meta : meta text not exists.");
 }
 
 SEditor::~SEditor()
@@ -92,6 +102,8 @@ void SEditor::onActionLoadFragmentsTriggered()
     pFragImg->setHoldTopPyramidEnabled(true);
 
     mpCurDoc->getLayerManager().addLayer(pFragImg);
+
+
 }
 
 #include "qdataimportwizard.h"
@@ -126,7 +138,45 @@ void SEditor::onImportingData()
 
         SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
 
-        pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+        //更新坐标映射
+        if (mpCurDoc->getCoordinate().isEmpty())
+        {
+            pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
+            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
+            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
+            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
+            QString proRef = SImage::getMetaOf(pFragImg->getLargestImgPath()).projRef();
+
+
+            mpCurDoc->getCoordinate() = SCoordinate(pFragImg->centerPoint(), QPointF(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2), geoTrans[1], geoTrans[5], proRef);
+            if (geoTrans != nullptr)
+                delete[] geoTrans;
+
+            //获取了投影坐标和像素分辨率
+            mpStatLblGSD->setText("1:" + QString::number(mpCurDoc->getCoordinate().deltaX()) + "meter");
+            mpStatLblProjCS->setText(mpCurDoc->getCoordinate().projCS());
+
+            //调整影像位置
+            double min = mpCurCanvasArea->horizontalScrollBar()->pageStep() * 1.0 / nWidth;
+            if (min > mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight)
+                min = mpCurCanvasArea->verticalScrollBar()->pageStep() * 1.0 / nHeight;
+            mpCurCanvasArea->canvas()->setScaleValue(0.9 * min);
+            mpCurCanvasArea->horizontalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().width() - 0.5 * mpCurCanvasArea->horizontalScrollBar()->pageStep());
+            mpCurCanvasArea->verticalScrollBar()->setValue(0.5 * mpCurCanvasArea->canvas()->actualSize().height() - 0.5 * mpCurCanvasArea->verticalScrollBar()->pageStep());
+        }
+        else
+        {
+            //强制根据地理坐标设置像素坐标，和缩放像素分辨率
+            double* geoTrans = SImage::getMetaOf(pFragImg->getLargestImgPath()).geoTransform();
+            double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
+            double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
+            double logicX, logicY;
+            mpCurDoc->getCoordinate().geo2logic(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
+            pFragImg->setCenterPoint(QPointF(logicX, logicY));
+            pFragImg->scale(geoTrans[1] / mpCurDoc->getCoordinate().deltaX(), geoTrans[5] / mpCurDoc->getCoordinate().deltaY());
+            if (geoTrans != nullptr)
+                delete[] geoTrans;
+        }
 
         //强制加载ImageMeta
         streamMeta.imageMeta();
@@ -141,6 +191,7 @@ void SEditor::onImportingData()
         mpCurDoc->getLayerManager().addLayer(pFragImg);
         streamMeta.setImported(true);
     }
+
 }
 
 #include <QTextEdit>
@@ -215,7 +266,18 @@ void SEditor::onTabSwitched()
 
 void SEditor::onCanvasMouseMoved(QPointF Log_pos)
 {
-    mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
+    double x = 0, y = 0;
+    if (mpCurDoc->getCoordinate().isEmpty())
+    {
+        //未建立坐标映射，显示逻辑坐标
+        mpStatLblCursorPos->setText("(" + QString::number(Log_pos.x()) + "," + QString::number(Log_pos.y()) + ")");
+    }
+    else
+    {
+        //已建立坐标映射，显示投身坐标
+        mpCurDoc->getCoordinate().logic2geo(Log_pos.x(), Log_pos.y(), x, y);
+        mpStatLblCursorPos->setText("(" + QString::number(x, 'f', 3) + "," + QString::number(y, 'f', 3) + ")meter");
+    }
 }
 
 void SEditor::onCanvasScaled(double value)
@@ -227,6 +289,31 @@ void SEditor::onLayersUpdated(SLayerManager* which)
 {
     if (mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
+}
+
+void SEditor::onOutput(const QString& entry)
+{
+    //添加logger到输出窗口
+    mpOutputListWidget->insertItem(-1, entry);
+}
+
+void SEditor::updateTiffLayoutInfo(SLayerManager* which)
+{
+    //更新Tiff图片信息
+    //获取当前选择的图层 -- 后续可能需要随着实现更改
+
+    QString strSelectImageFilePath;
+    //遍历当前选中图层，选择第一个图片图层
+    auto lstSelectLayout = which->getSelectedLayerIterList();
+    for (auto it : lstSelectLayout)
+    {
+        if (auto pImage = dynamic_cast<SImage*>(*it))
+        {
+            strSelectImageFilePath = pImage->getImagePath();
+            break;
+        }
+    }
+    mpImageInfoWidget->fillByImageFilePath(strSelectImageFilePath);
 }
 
 void SEditor::closeEvent(QCloseEvent* event)
@@ -242,9 +329,17 @@ void SEditor::initialize()
     mpStatLblCanvasScale = new QLabel(ui->mStatusBar);
     //鼠标逻辑位置
     mpStatLblCursorPos = new QLabel(ui->mStatusBar);
+    //影像的GSD
+    mpStatLblGSD = new QLabel(ui->mStatusBar);
+    //投影坐标
+    mpStatLblProjCS = new QLabel(ui->mStatusBar);
 
+
+    ui->mStatusBar->addPermanentWidget(mpStatLblProjCS);
+    ui->mStatusBar->addPermanentWidget(mpStatLblGSD);
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
+
 
     /*-----初始化子窗口-----*/
     //数据导入向导
@@ -309,4 +404,20 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
+}
+
+void SEditor::initCustomDock()
+{
+    //创建tiff信息窗口
+    auto pDock = new QDockWidget("ImageInfo");
+    pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
+    addDockWidget(Qt::RightDockWidgetArea, pDock);
+
+    //创建输出信息窗口
+    pDock = new QDockWidget("Output");
+    pDock->setWidget(mpOutputListWidget = new QListWidget());
+    addDockWidget(Qt::RightDockWidgetArea, pDock);
+    //绑定 logger日志 添加信号
+    QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
+                     this, &SEditor::onOutput);
 }

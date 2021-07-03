@@ -4,18 +4,18 @@
 #include <qdir.h>
 #include <ctime>
 
-SFragImage::SFragImage(SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+SFragImage::SFragImage(SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
     : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 }
 
-SFragImage::SFragImage(const SImageStreamMeta &_streamMeta, SFragLoader &_loader, bool _selected, QPointF center, const QString &_layerName, const QString &_layerDiscription, const QColor &_layerColor)
+SFragImage::SFragImage(const SImageStreamMeta& _streamMeta, SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
     : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 
-    if(_streamMeta.isOverviewsReady())
+    if (_streamMeta.isOverviewsReady())
         onOverviewsReady(_streamMeta.pyramidDirPath());
     else
         connect(&_streamMeta, &SImageStreamMeta::overviewsBuilt, this, &SFragImage::onOverviewsReady);
@@ -27,27 +27,29 @@ SFragImage::~SFragImage()
     _destroyConnections();
 }
 
-void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLogicalArea, double scaleValue, PaintTrigger trigger)const
+void SFragImage::paint(QPainter& painter, bool doTranslate, const QRectF& viewLogicalArea, double scaleValue, PaintTrigger trigger)const
 {
     //检测视图显示区域是否与图像区域重合
-    if(!intersect(viewLogicalArea))
+    if (!intersect(viewLogicalArea))
         return;
 
     //确定金字塔层级
     double level = log(scaleValue) / log(0.5);
-    if(level < 0) level = 0;
-    if(level > this->mFragMatVec.size() - 1) level = this->mFragMatVec.size() - 1;
+    if (level < 0)
+        level = 0;
+    if (level > this->mFragMatVec.size() - 1)
+        level = this->mFragMatVec.size() - 1;
     size_t idx = round(level);
 
     //加载当前层区域的分片
-    if(trigger == User_Trigger)
+    if (trigger == User_Trigger)
         mFragMatVec[idx].loadBlockArea(viewLogicalArea.translated(-mPtCenter), mFragLoader);
     emit loadFrag();
     //保存原来的变换
     QTransform oldTransform = painter.transform();
 
     //平移到中心点
-    if(doTranslate)
+    if (doTranslate)
         painter.translate(mPtCenter);
 
     //执行变换
@@ -55,52 +57,51 @@ void SFragImage::paint(QPainter &painter, bool doTranslate, const QRectF &viewLo
 
     //-----绘图-----//
     //从下往上绘制各层金字塔影像
-    for(int i = mFragMatVec.size() - 1; i >= 0; --i)
+    for (int i = mFragMatVec.size() - 1; i >= 0; --i)
         mFragMatVec[i].paint(painter, viewLogicalArea.translated(-mPtCenter));
     //-----绘图-----//
 
     //还原变换
     painter.setTransform(oldTransform);
-
 }
 
-void SFragImage::setPyramidDir(const QString &dirPath)
+void SFragImage::setPyramidDir(const QString& dirPath)
 {
     this->mStrDirPath = dirPath;
 }
 
 void SFragImage::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 {
-    for(auto& mat : mFragMatVec)
+    for (auto& mat : mFragMatVec)
         mat.setHistEqFunc(pEqFunc);
 }
 
 void SFragImage::setBandIndices(int r, int g, int b)
 {
-    for(auto& mat : mFragMatVec)
+    for (auto& mat : mFragMatVec)
         mat.setBandIndices(r, g, b);
 }
 
 void SFragImage::setHoldTopPyramidEnabled(bool hold)
 {
     mbHoldTopPyramid = hold;
-    if(mFragMatVec.empty())
+    if (mFragMatVec.empty())
         return;
-    if(hold)
+    if (hold)
         this->mFragMatVec.back().loadAll();
     else
         this->mFragMatVec.back().getData()->releaseImage();
 }
 
-void SFragImage::loadMeta(const QString &pyramidDir)
+void SFragImage::loadMeta(const QString& pyramidDir)
 {
-    if(!pyramidDir.isEmpty())
+    if (!pyramidDir.isEmpty())
         mStrDirPath = pyramidDir;
     Q_ASSERT(!mStrDirPath.isEmpty());
 
     //打开元数据文本文件
     QFile file(mStrDirPath + '/' + QFileInfo(mStrDirPath).fileName() + "_Meta.txt");
-    if(!file.open(QFile::ReadOnly))
+    if (!file.open(QFile::ReadOnly))
     {
         Q_ASSERT(0);
         SLogger::getLogger()->addEntry(Me, SLogger::LocalError, "Loading meta : meta text not exists.");
@@ -122,7 +123,7 @@ void SFragImage::loadMeta(const QString &pyramidDir)
     mFragMatVec.clear();
     mFragMatVec.reserve(nLevel);
     stream.readLine();  //将最后一行的换行符读取掉
-    for(int i = 0; i < nLevel; ++i)
+    for (int i = 0; i < nLevel; ++i)
     {
         //生成该层分片影像列表
         QString levelPath = stream.readLine();
@@ -152,22 +153,22 @@ void SFragImage::_destroyConnections()
 QPolygonF SFragImage::boundingRect() const
 {
     return QPolygonF(QVector<QPointF>(
-    {mpBoundPt[0], mpBoundPt[1], mpBoundPt[2], mpBoundPt[3]} ))
+    {mpBoundPt[0], mpBoundPt[1], mpBoundPt[2], mpBoundPt[3]}))
     .translated(mPtCenter);
 }
 
-bool SFragImage::contains(const QPointF &pt, bool isInBoundRect) const
+bool SFragImage::contains(const QPointF& pt, bool isInBoundRect) const
 {
     Q_UNUSED(isInBoundRect);
     return this->boundingRect().containsPoint(pt, Qt::WindingFill);
 }
 
-void SFragImage::writeBinaryData(QDataStream &stream) const
+void SFragImage::writeBinaryData(QDataStream& stream) const
 {
 
 }
 
-void SFragImage::readBinaryData(QDataStream &stream)
+void SFragImage::readBinaryData(QDataStream& stream)
 {
 
 }
@@ -193,12 +194,12 @@ QIcon SFragImage::icon() const
     //-----绘图-----//
     SImage* pFragImage = fragMat.getData();
 
-    if(pFragImage->isNull())
+    if (pFragImage->isNull())
         pFragImage->load();
 
     pFragImage->paint(iconPainter);
 
-    if(!mbHoldTopPyramid)
+    if (!mbHoldTopPyramid)
         pFragImage->releaseImage();
 
     //-----绘图-----//
@@ -227,3 +228,4 @@ void SFragImage::onOverviewsReady(QString pyramidDir)
     this->setPyramidDir(pyramidDir);
     this->loadMeta();
 }
+

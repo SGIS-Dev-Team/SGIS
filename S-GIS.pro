@@ -16,6 +16,7 @@ SOURCES += \
     modules/algorithm/sslice.cpp \
     modules/doc/sdocument.cpp \
     modules/doc/simagestreammeta.cpp \
+    modules/doc/simagestreammeta.cpp \
     modules/doc/slayermanager.cpp \
     modules/main.cpp \
     modules/paint/sfragimage.cpp \
@@ -33,9 +34,15 @@ SOURCES += \
     modules/widget/qimagelistview.cpp \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
+    modules/widget/sfileinfowidget.cpp \
+    modules/widget/simageinfowidget.cpp \
+    modules/widget/slayerinfowidget.cpp \
+    modules/widget/sotherinfowidget.cpp \
+    modules/widget/sprojectioninfowidget.cpp \
     modules/widget/straymgr.cpp \
     modules/widget/wizard/extract/qextractwizard.cpp \
     modules/widget/wizard/extract/qextractwizardpagefile.cpp \
+    modules/widget/wizard/extract/qextractwizardpageintro.cpp \
     modules/widget/wizard/extract/qextractwizardpageintro.cpp \
     modules/widget/wizard/extract/qextractwizardpageprogress.cpp \
     modules/widget/wizard/extract/qextractwizardpagetempdir.cpp \
@@ -44,6 +51,7 @@ SOURCES += \
 
 HEADERS += \
     modules/ClassAnnotationTemplate.h \
+    modules/algorithm/scoordinate.h \
     modules/algorithm/archive_extractor/sarchiveentrymeta.h \
     modules/algorithm/archive_extractor/sarchiveextractor.h \
     modules/algorithm/archive_extractor/sarchivemeta.h \
@@ -53,12 +61,14 @@ HEADERS += \
     modules/algorithm/sslice.h \
     modules/doc/sdocument.h \
     modules/doc/simagestreammeta.h \
+    modules/doc/simagestreammeta.h \
     modules/doc/slayermanager.h \
     modules/global.h \
     modules/paint/sfragimage.h \
     modules/paint/sfragloader.h \
     modules/paint/sfragmatrix.h \
     modules/paint/simage.h \
+    modules/paint/simagemeta.h \
     modules/paint/sobject.h \
     modules/paint/sobjectfactory.h \
     modules/paint/sshape.h \
@@ -73,19 +83,32 @@ HEADERS += \
     modules/widget/seditor.h \
     modules/widget/straymgr.h \
     modules/widget/wizard/extract/qextractwizard.h \
+    modules/widget/wizard/extract/qextractwizard.h \
     modules/widget/wizard/extract/qextractwizardpagefile.h \
+    modules/widget/wizard/extract/qextractwizardpageintro.h \
     modules/widget/wizard/extract/qextractwizardpageintro.h \
     modules/widget/wizard/extract/qextractwizardpageprogress.h \
     modules/widget/wizard/extract/qextractwizardpagetempdir.h \
     modules/widget/wizard/extract/qfilelistmodel.h \
+    modules/widget/sfileinfowidget.h \
+    modules/widget/simageinfowidget.h \
+    modules/widget/slayerinfowidget.h \
+    modules/widget/sotherinfowidget.h \
+    modules/widget/sprojectioninfowidget.h \
+    modules/widget/straymgr.h \
+    modules/widget/wizard/extract/qfilelistview.h
+
     modules/widget/wizard/extract/qfilelistview.h
 
 FORMS += \
     modules/widget/mainwindow.ui \
+    modules/widget/qdataimportwizard.ui \
     modules/widget/seditor.ui \
     modules/widget/qdataimportwizard.ui \
     modules/widget/wizard/extract/qextractwizard.ui \
+    modules/widget/wizard/extract/qextractwizard.ui \
     modules/widget/wizard/extract/qextractwizardpagefile.ui \
+    modules/widget/wizard/extract/qextractwizardpageintro.ui \
     modules/widget/wizard/extract/qextractwizardpageintro.ui \
     modules/widget/wizard/extract/qextractwizardpageprogress.ui \
     modules/widget/wizard/extract/qextractwizardpagetempdir.ui
