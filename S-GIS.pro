@@ -123,7 +123,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    Resource/Icons.qrc
+    Resource/Icons.qrc \
+    Resource/images.qrc
 
 # GDAL Config
 

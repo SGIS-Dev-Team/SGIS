@@ -13,7 +13,7 @@ SEditor::SEditor(QWidget* parent): QMainWindow(parent),
 {
     ui->setupUi(this);
     initCustomDock();
-    initialize();
+    _initialize();
     showMaximized();
     //根据调用函数时发生错误的不同类型，修改字符串
     SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
@@ -109,6 +109,12 @@ void SEditor::onActionLoadFragmentsTriggered()
 #include "qdataimportwizard.h"
 void SEditor::onActionLoadHugeImageTriggered()
 {
+    if (!mpImportDialog)
+    {
+        mpImportDialog = new QDataImportWizard();
+        _connectDataImportWizard();
+    }
+
     if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
@@ -118,6 +124,7 @@ void SEditor::onActionLoadHugeImageTriggered()
 
         mpImportDialog->addImagePaths(strImagePathList);
     }
+
     //打开数据导入向导对话框
     mpImportDialog->show();
     mpImportDialog->raise();
@@ -322,7 +329,7 @@ void SEditor::closeEvent(QCloseEvent* event)
     emit closed();
 }
 
-void SEditor::initialize()
+void SEditor::_initialize()
 {
     /*-----初始化状态栏-----*/
     //画布缩放等级
@@ -334,24 +341,22 @@ void SEditor::initialize()
     //投影坐标
     mpStatLblProjCS = new QLabel(ui->mStatusBar);
 
-
     ui->mStatusBar->addPermanentWidget(mpStatLblProjCS);
     ui->mStatusBar->addPermanentWidget(mpStatLblGSD);
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
-
     /*-----初始化子窗口-----*/
-    //数据导入向导
-    mpImportDialog = new QDataImportWizard();
 
     /*-----创建绘图区-----*/
     createWorkspace();
 
-    initializeConnections();
+    _initializeConnections();
+
+    emit initComplete();
 }
 
-void SEditor::initializeConnections()
+void SEditor::_initializeConnections()
 {
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
@@ -378,6 +383,12 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
+
+    if (mpImportDialog) _connectDataImportWizard();
+}
+
+void SEditor::_connectDataImportWizard()
+{
     //数据导入向导对话框事件响应
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }

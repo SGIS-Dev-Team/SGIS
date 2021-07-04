@@ -30,6 +30,8 @@ QDataImportWizard::QDataImportWizard(const QStringList& imagePathList, QWidget* 
 QDataImportWizard::~QDataImportWizard()
 {
     mBuilderThread.quit();
+    mBuilderThread.wait();
+
     _releaseAll();
     delete ui;
 }

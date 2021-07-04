@@ -13,19 +13,21 @@ class MainWindow;
 QT_END_NAMESPACE
 
 
+//
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
     /*-----构造与析构函数-----*/
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
     /*-----虚函数重载-----*/
 public:
     //窗口关闭事件重载
-    void closeEvent(QCloseEvent *event)override;
+    void closeEvent(QCloseEvent* event)override;
     //窗口显示状态变化事件重载
     void setVisible(bool visible)override;
     //窗口状态变化事件重载
@@ -41,6 +43,8 @@ private slots:
     void onButtonEditorClicked();
     //编辑器关闭事件响应
     void onEditorClosed();
+    //编辑器初始化完毕
+    void onEditorInitComplete();
 
     /*-----成员变量-----*/
 private:
@@ -53,7 +57,7 @@ private:
 
     /*-----主窗口管理的窗口-----*/
 private:
-    SEditor* mWndEditor{nullptr};
+    SEditor* mEditor{nullptr};
 
 
 private:
@@ -61,11 +65,13 @@ private:
     /*-----成员函数-----*/
 private:
     //[界面与托盘初始化]
-    void initialize();
+    void _initialize();
+    void _initializeConnections();
+    void _connectEditor();
 
     //UI界面
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
 };
 
 

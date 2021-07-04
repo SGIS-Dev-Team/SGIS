@@ -16,11 +16,12 @@ SDocument::SDocument(QCanvas* pCanvas)
 
 SDocument::SDocument(QCanvas* pCanvas, const QString& path): SDocument(pCanvas)
 {
-
 }
 
 SDocument::~SDocument()
 {
+    mLoaderThread.quit();
+    mLoaderThread.wait();
     _disconnectCanvas();
 }
 
