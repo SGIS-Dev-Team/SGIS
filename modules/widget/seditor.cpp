@@ -4,15 +4,16 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QListWidgetItem>
-
+#include <QFileInfo>
+#include <QDateTime>
 #include "../paint/simage.h"
 #include "simageinfowidget.h"
-
+#include "ogrsf_frmts.h"
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
 {
     ui->setupUi(this);
-    initCustomDock();
+    //initCustomDock();
     initialize();
     showMaximized();
     //根据调用函数时发生错误的不同类型，修改字符串
@@ -289,33 +290,143 @@ void SEditor::onLayersUpdated(SLayerManager* which)
 {
     if (mpCurCanvasArea)
         mpCurCanvasArea->canvas()->repaint();
+    //更新图层变更图像信息
+    updateImageInfo(which);
 }
 
 void SEditor::onOutput(const QString& entry)
 {
     //添加logger到输出窗口
-    mpOutputListWidget->insertItem(-1, entry);
+    ui->mpOutputListWidget->insertItem(-1, entry);
 }
 
-void SEditor::updateTiffLayoutInfo(SLayerManager* which)
+void SEditor::updateImageInfo(SLayerManager* which)
 {
     //更新Tiff图片信息
     //获取当前选择的图层 -- 后续可能需要随着实现更改
-
     QString strSelectImageFilePath;
     //遍历当前选中图层，选择第一个图片图层
     auto lstSelectLayout = which->getSelectedLayerIterList();
     for (auto it : lstSelectLayout)
     {
-        if (auto pImage = dynamic_cast<SImage*>(*it))
+        auto pLayer = *it;
+        if (pLayer->isVisible())
         {
-            strSelectImageFilePath = pImage->getImagePath();
-            break;
+            if (auto pImage = dynamic_cast<SImage*>(pLayer))
+            {
+                strSelectImageFilePath = pImage->getImagePath();
+                break;
+            }
         }
     }
-    mpImageInfoWidget->fillByImageFilePath(strSelectImageFilePath);
+    fillByImageFilePath(strSelectImageFilePath);
 }
 
+void SEditor::fillByImageFilePath(QString strFilePath)
+{
+    if (auto pDataset = (GDALDataset *)GDALOpen(strFilePath.toUtf8().data(), GA_ReadOnly))
+    {
+        fillImageFileInfo(pDataset);
+        fillImageLayerInfo(pDataset);
+        fillImageProjectionInfo(pDataset);
+        GDALClose(pDataset);
+    }
+    else
+    {
+        //
+        ui->mpLayerNameLabel->clear();
+        ui->mpFileTypeLabel->clear();
+        ui->mpLastModifyTimeLabel->clear();
+        ui->mpLayerCountLabel->clear();
+        ui->mpAuxiliaryFilesComboBox->clear();
+        ui->mpFileSizeLabel->clear();
+        //
+        ui->mpWidthLabel->clear();
+        ui->mpHeightLabel->clear();
+        ui->mpTypeLabel->clear();
+        ui->mpBlockWidthLabel->clear();
+        ui->mpBlockHeightLabel->clear();
+        ui->mpDataTypeLabel->clear();
+        ui->mpCompressionLabel->clear();
+        ui->mpDataOrderLabel->clear();
+        ui->mpPyramidLayerAlgorithmLabel->clear();
+        //
+        ui->mpProjectionRefTextEdit->clear();
+        ui->mpGeoTransformCombox->clear();
+    }
+}
+//
+static QString formatFileSize(quint64 size)
+{
+    if (size < 1024 * 1024)
+    {
+        return QString::number((float)size / (1024.0), 'f', 2) + "K";
+    }
+    else if (size < 1024 * 1024 * 1024)
+    {
+        return QString::number((float)size / (1024.0 * 1024), 'f', 2) + "M";
+    }
+    return QString::number((float)size / (1024.0 * 1024 * 1024), 'f', 2) + "G";
+}
+
+void SEditor::fillImageFileInfo(GDALDataset* pGDALDataset)
+{
+    auto nLayerCount = pGDALDataset->GetLayerCount();
+    auto pLayer = nLayerCount == 0 ? nullptr : pGDALDataset->GetLayer(0);
+    auto strLayerName = pLayer != nullptr ? QString::fromUtf8(pLayer->GetName()) : "";
+    ui->mpLayerNameLabel->setText(strLayerName);
+
+    auto pGDALDriver = pGDALDataset->GetDriver();
+    auto strType = pGDALDriver != nullptr ? QString::fromUtf8(pGDALDriver->GetDescription()) : "";
+    ui->mpFileTypeLabel->setText(strType);
+
+    QFileInfo fileInfo(pGDALDataset->GetFileList()[0]);
+    ui->mpLastModifyTimeLabel->setText(fileInfo.lastModified().toString("ddd MMMM hh:mm:ss yyyy"));
+    //
+    ui->mpFileSizeLabel->setText(formatFileSize(fileInfo.size()));
+    //
+    ui->mpLayerCountLabel->setText(QString::number(nLayerCount));
+}
+
+void SEditor::fillImageLayerInfo(GDALDataset* pGDALDataset)
+{
+    //根据从GDALDataset读取到的实际信息填充 - 这里具体 都是代表啥意义 得你完善一下
+
+    //比如 --下面这个我查了下是指图像像素值宽高
+    ui->mpWidthLabel->setText(QString::number(pGDALDataset->GetRasterXSize()));
+    ui->mpHeightLabel->setText(QString::number(pGDALDataset->GetRasterYSize()));
+    //
+    QString strBlockWidth, strBlockHeight, strDataType, strDataOrder;
+    if (auto nRasterCount = pGDALDataset->GetRasterCount())
+    {
+        if (auto pRasterBand = pGDALDataset->GetRasterBand(1))
+        {
+            int nBlockWidth = 0, nBlockHeight = 0;
+            pRasterBand->GetBlockSize(&nBlockWidth, &nBlockHeight);
+            strBlockWidth = QString::number(nBlockWidth);
+            strBlockHeight = QString::number(nBlockHeight);
+            strDataType = GDALGetDataTypeName(pRasterBand->GetRasterDataType());
+            strDataOrder = GDALGetColorInterpretationName(pRasterBand->GetColorInterpretation());
+        }
+    }
+    ui->mpBlockWidthLabel->setText(strBlockWidth);
+    ui->mpBlockHeightLabel->setText(strBlockHeight);
+    ui->mpDataTypeLabel->setText(strDataType);
+    ui->mpDataOrderLabel->setText(strDataOrder);
+}
+void SEditor::fillImageProjectionInfo(GDALDataset* pGDALDataset)
+{
+    //获取仿射矩阵信息
+    double trans[6];
+    pGDALDataset->GetGeoTransform(trans);
+    for (size_t i = 0; i < sizeof(trans) / sizeof(trans[0]); i++)
+    {
+        ui->mpGeoTransformCombox->addItem(QString::number(trans[i], 'f', 2));
+    }
+    //获取投影信息
+    auto strProjectionRef = QString::fromUtf8(pGDALDataset->GetProjectionRef());
+    ui->mpProjectionRefTextEdit->setPlainText(strProjectionRef);
+}
 void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
@@ -380,6 +491,9 @@ void SEditor::initializeConnections()
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
     //数据导入向导对话框事件响应
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
+
+    //绑定 logger日志 添加信号
+    QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry, this, &SEditor::onOutput);
 }
 
 void SEditor::createWorkspace(const QSize& CanvasSize)
@@ -404,20 +518,4 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
-}
-
-void SEditor::initCustomDock()
-{
-    //创建tiff信息窗口
-    auto pDock = new QDockWidget("ImageInfo");
-    pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
-    addDockWidget(Qt::RightDockWidgetArea, pDock);
-
-    //创建输出信息窗口
-    pDock = new QDockWidget("Output");
-    pDock->setWidget(mpOutputListWidget = new QListWidget());
-    addDockWidget(Qt::RightDockWidgetArea, pDock);
-    //绑定 logger日志 添加信号
-    QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
-                     this, &SEditor::onOutput);
 }

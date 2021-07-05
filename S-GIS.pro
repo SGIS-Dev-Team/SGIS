@@ -128,25 +128,25 @@ RESOURCES += \
 # GDAL Config
 
 INCLUDEPATH += \
-    D:/GDAL/release-1928-x64/include
+    F:\GDAL\x64\include
 
 LIBS += \
-    D:/GDAL/release-1928-x64/lib/gdal_i.lib
+    F:\GDAL\x64\lib\Release\gdal_i.lib
 
 # Visual Leak Detector Config
 
-win32:CONFIG(release, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
+win32:CONFIG(release, debug|release): LIBS += -L'F:\Visual Leak Detector\lib\Win64' -lvld
 else:win32:CONFIG(debug, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 else:unix: LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 
-INCLUDEPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
+INCLUDEPATH += 'F:\Visual Leak Detector\include'
 DEPENDPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
 
 # LibArchive Config
 
-win32:CONFIG(release, debug|release): LIBS += -LD:/LibArchive/lib/release/ -larchive
+win32:CONFIG(release, debug|release): LIBS += -LD:\Personal\Desktop\sundry\libarchive\Libarchive-build\lib\Release -larchive
 else:win32:CONFIG(debug, debug|release): LIBS += -LD:/LibArchive/lib/debug/ -larchive
-else:unix: LIBS += -LD:/LibArchive/lib/ -larchive
+else:unix: LIBS += -LD:/Personal/Desktop/sundry/libarchive/Libarchive-build/lib -larchive
 
-INCLUDEPATH += D:/LibArchive/include
+INCLUDEPATH += D:\Personal\Desktop\sundry\libarchive\Libarchive-build\include
 DEPENDPATH += D:/LibArchive/include
