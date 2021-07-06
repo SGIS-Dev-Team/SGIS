@@ -53,10 +53,16 @@ public:
     //获取要素。
     //通过vector容器将属性表的行组织起来，每一行对应一个要素的具体信息
     //再用map将vector组织起来。若读取失败将返回空map
+    //map<int,vector<QVariant>>:
+    //其中map中0对应存储每列相应属性字段的名称QString的vector<QVariant>
     //vector<QVariant>:
-    //  QPointF       Int           ...
-    //  点的二维坐标  点的OBJECTID  其他属性
-    //其中vector容器的第0个存储每列相应属性字段的名称QString
+    //  QString     QString     ...
+    //  name1         name2   other name
+    //其它编号1~n共n个，存储属性相应数据
+    //vector<QVariant>:
+    //  QPointF         QPointF                             Int           ...
+    //  点的投影坐标      点在WGS84上的纬度、经度(Lat Lon)      点的OBJECTID  其他属性
+    //
     RecordMap getFeature();
 
 };
