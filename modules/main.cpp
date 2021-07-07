@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include "modules/algorithm/soverviewbuilder.h"
 #include <QStyleFactory>
+#include "modules/algorithm/sreadshp.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,5 +22,10 @@ int main(int argc, char* argv[])
     //启动主程序
     MainWindow wnd;
 
+    SReadShp readShp;
+    readShp.setShpPath("G:/SHP/road.shp");
+
+    RecordMap temp = readShp.getFeatureWithCoor();
+    QRectF rect = readShp.getboundingRect(true);
     return app.exec();
 }
