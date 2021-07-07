@@ -1,14 +1,11 @@
 #include "sreadshp.h"
-
-SReadShp::~SReadShp()
-{
-
-}
+#include <QPolygonF>
 
 RecordMap SReadShp::getFeature()
 {
+
     RecordMap result;
-    std::vector<QVariant> temp;
+    std::vector<QVariant> tempVecQVar;
     int nIndex = 0;
 
     //驱动注册和相关配置
@@ -41,8 +38,8 @@ RecordMap SReadShp::getFeature()
     OGRFieldDefn* poFieldDefn = nullptr;
 
 
-    temp.push_back(QString("2D coordinate"));
-    temp.push_back(QString("Lat and Lon"));
+    tempVecQVar.push_back(QString("2D coordinate"));
+    tempVecQVar.push_back(QString("Lat and Lon"));
 
     //遍历字段名
     //GetFieldCount()和GetFieldDefn()可以遍历字段名
@@ -51,9 +48,9 @@ RecordMap SReadShp::getFeature()
     for (int nField = 0; nField < nFieldCount; nField++)
     {
         poFieldDefn = poFeatDefn->GetFieldDefn(nField);
-        temp.push_back(QString(poFieldDefn->GetNameRef()));
+        tempVecQVar.push_back(QString(poFieldDefn->GetNameRef()));
     }
-    result.insert(RecordMap::value_type(nIndex++, temp));
+    result.insert(RecordMap::value_type(nIndex++, tempVecQVar));
 
 
     //用于获取坐标的转换
@@ -71,7 +68,7 @@ RecordMap SReadShp::getFeature()
     //每次读取一个要素的所有信息,直到GetNextFeature()返回NULL
     while ((poFeature = poLayer->GetNextFeature()) != nullptr)
     {
-        temp = std::vector<QVariant>();
+        tempVecQVar = std::vector<QVariant>();
         //获取几何属性
         OGRGeometry* poGeometry = poFeature->GetGeometryRef();
         if (poGeometry == nullptr)
@@ -92,13 +89,43 @@ RecordMap SReadShp::getFeature()
             //这里是投影坐标
             double x = poPoint->getX();
             double y = poPoint->getY();
-            temp.push_back(QPointF(x, y));
+            tempVecQVar.push_back(QPointF(x, y));
 
             //再转换成经纬度
             trans->Transform(1, &x, &y);
-            temp.push_back(QPointF(x, y));
+            tempVecQVar.push_back(QPointF(x, y));
 
 
+            break;
+        }
+        case wkbLineString:
+        {
+            break;
+        }
+        case wkbPolygon:
+        {
+            //强制类型转换成相应子类，读取面边界坐标
+            OGRPolygon* poPolygon = static_cast<OGRPolygon*>(poGeometry);
+
+            OGRLinearRing* poBoundary = poPolygon->getExteriorRing();
+            int nNumPoint = poBoundary->getNumPoints();
+            double x = 0, y = 0;
+            QPolygonF tempPolygonXY;
+            QPolygonF tempPolygonLatLon;
+
+            for (int i = 0; i < nNumPoint; i++)
+            {
+                //这里是投影坐标
+                x = poBoundary->getX(i);
+                y = poBoundary->getY(i);
+                tempPolygonXY << QPointF(x, y);
+
+                //再转换成经纬度
+                trans->Transform(1, &x, &y);
+                tempPolygonLatLon << QPointF(x, y);
+            }
+            tempVecQVar.push_back(tempPolygonXY);
+            tempVecQVar.push_back(tempPolygonLatLon);
             break;
         }
         default:
@@ -114,33 +141,32 @@ RecordMap SReadShp::getFeature()
             //整型
             case OFTInteger:
             {
-                temp.push_back(poFeature->GetFieldAsInteger(nField));
+                tempVecQVar.push_back(poFeature->GetFieldAsInteger(nField));
                 break;
             }
             //小数
             case OFTReal:
             {
-                temp.push_back(poFeature->GetFieldAsDouble(nField));
+                tempVecQVar.push_back(poFeature->GetFieldAsDouble(nField));
                 break;
             }
             //字符串
             case OFTString:
             {
-                temp.push_back(QString(poFeature->GetFieldAsString(nField)));
+                tempVecQVar.push_back(QString(poFeature->GetFieldAsString(nField)));
                 break;
             }
             default:
             {
-                temp.push_back(QString(poFeature->GetFieldAsString(nField)));
+                tempVecQVar.push_back(QString(poFeature->GetFieldAsString(nField)));
                 break;
             }
             }
         }
-        result.insert(RecordMap::value_type(nIndex++, temp));
+        result.insert(RecordMap::value_type(nIndex++, tempVecQVar));
         OGRFeature::DestroyFeature(poFeature);
     }
     OCTDestroyCoordinateTransformation(trans);
     GDALClose(pDS);
     return result;
 }
-

@@ -6,14 +6,14 @@
 #include <QVariant>
 
 
-
 typedef std::map<int, std::vector<QVariant>> RecordMap;
 
 
 //-----------------------------------
 //          SReadShp
 //          shp文件读取类
-//  现在默认shp文件存储只有一个layer的点要素
+//  现在默认shp文件存储只有一个layer的要素
+//  读取线要素暂时不会返回坐标
 //-----------------------------------
 
 
@@ -22,8 +22,7 @@ class SReadShp
 public:
     explicit SReadShp() = default;
     explicit SReadShp(QString path): mstrShpPath(path) {};
-
-    virtual ~SReadShp();
+    virtual ~SReadShp() = default;
 
     /*-----虚函数重载-----*/
 public:
@@ -61,10 +60,9 @@ public:
     //其它编号1~n共n个，存储属性相应数据
     //vector<QVariant>:
     //  QPointF         QPointF                             Int           ...
-    //  点的投影坐标      点在WGS84上的纬度、经度(Lat Lon)      点的OBJECTID  其他属性
-    //
-    RecordMap getFeature();
+    //  要素的投影坐标    要素在WGS84上的纬度、经度(Lat Lon)     点的OBJECTID  其他属性
 
+    RecordMap getFeature();
 };
 
 
