@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1193</width>
-    <height>653</height>
+    <width>1069</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>S-GIS Editor</string>
   </property>
   <widget class="QWidget" name="mCentralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -44,20 +44,27 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1193</width>
-     <height>26</height>
+     <width>1069</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>Import...</string>
+     </property>
+     <addaction name="mActionImportRaster"/>
+     <addaction name="mActionImportShapeFile"/>
+    </widget>
     <addaction name="mActionNewTemplate"/>
     <addaction name="mActionOpenTemplate"/>
     <addaction name="separator"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionSaveAs"/>
-    <addaction name="mActionImport"/>
+    <addaction name="menuImport"/>
     <addaction name="mActionExport"/>
     <addaction name="separator"/>
     <addaction name="mActionCloseTemplate"/>
@@ -167,13 +174,11 @@
     <addaction name="mActionSelectTool"/>
     <addaction name="mActionCombineTool"/>
     <addaction name="separator"/>
-    <addaction name="mActionBrush"/>
-    <addaction name="mActionEraser"/>
     <addaction name="mActionPen"/>
     <addaction name="menuShape"/>
     <addaction name="mActionText"/>
     <addaction name="separator"/>
-    <addaction name="mActionAnotator"/>
+    <addaction name="mActionAnnotator"/>
     <addaction name="separator"/>
     <addaction name="mActionPreferences"/>
     <addaction name="mActionReportLeaks"/>
@@ -252,7 +257,14 @@
       <number>1</number>
      </property>
      <item>
-      <widget class="QLayerView" name="mLayerView"/>
+      <widget class="QLayerView" name="mLayerView">
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::InternalMove</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -397,9 +409,9 @@
     <string>Text</string>
    </property>
   </action>
-  <action name="mActionAnotator">
+  <action name="mActionAnnotator">
    <property name="text">
-    <string>Anotator</string>
+    <string>Annotator</string>
    </property>
   </action>
   <action name="mActionBringForward">
@@ -603,11 +615,6 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="mActionImport">
-   <property name="text">
-    <string>Import...</string>
-   </property>
-  </action>
   <action name="mActionCreateRect">
    <property name="text">
     <string>[Test] Create Rect</string>
@@ -631,6 +638,16 @@
   <action name="mActionReportLeaks">
    <property name="text">
     <string>[Test] Print Memory Leak Report</string>
+   </property>
+  </action>
+  <action name="mActionImportRaster">
+   <property name="text">
+    <string>Raster</string>
+   </property>
+  </action>
+  <action name="mActionImportShapeFile">
+   <property name="text">
+    <string>Shape File</string>
    </property>
   </action>
  </widget>

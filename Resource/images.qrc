@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/mainwnd">
+        <file>mainwnd/banner.png</file>
+    </qresource>
+</RCC>

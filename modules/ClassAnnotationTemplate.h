@@ -10,7 +10,7 @@ class CLASS : public //QObject
     /*-----构造函数与析构函数-----*/
 public:
     explicit CLASS();
-    ~CLASS();
+    virtual ~CLASS();
 
     /*-----虚函数重载-----*/
 public:

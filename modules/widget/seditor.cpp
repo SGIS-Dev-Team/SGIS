@@ -13,7 +13,7 @@ SEditor::SEditor(QWidget* parent): QMainWindow(parent),
 {
     ui->setupUi(this);
     initCustomDock();
-    initialize();
+    _initialize();
     showMaximized();
     //根据调用函数时发生错误的不同类型，修改字符串
     SLogger::getLogger()->addEntry("xxx", SLogger::LocalError, "Loading meta : meta text not exists.");
@@ -107,17 +107,24 @@ void SEditor::onActionLoadFragmentsTriggered()
 }
 
 #include "qdataimportwizard.h"
-void SEditor::onActionLoadHugeImageTriggered()
+void SEditor::onActionImportRasterTriggered()
 {
+    if (!mpImportDialog)
+    {
+        mpImportDialog = new QDataImportWizard();
+        _connectDataImportWizard();
+    }
+
     if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
-        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Select Raster Images"), "", "raster (*.tif *.tiff)");
         if (strImagePathList.isEmpty())
             return;
 
         mpImportDialog->addImagePaths(strImagePathList);
     }
+
     //打开数据导入向导对话框
     mpImportDialog->show();
     mpImportDialog->raise();
@@ -320,9 +327,10 @@ void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     emit closed();
+    QMainWindow::closeEvent(event);
 }
 
-void SEditor::initialize()
+void SEditor::_initialize()
 {
     /*-----初始化状态栏-----*/
     //画布缩放等级
@@ -334,24 +342,22 @@ void SEditor::initialize()
     //投影坐标
     mpStatLblProjCS = new QLabel(ui->mStatusBar);
 
-
     ui->mStatusBar->addPermanentWidget(mpStatLblProjCS);
     ui->mStatusBar->addPermanentWidget(mpStatLblGSD);
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
-
     /*-----初始化子窗口-----*/
-    //数据导入向导
-    mpImportDialog = new QDataImportWizard();
 
     /*-----创建绘图区-----*/
     createWorkspace();
 
-    initializeConnections();
+    _initializeConnections();
+
+    emit initComplete();
 }
 
-void SEditor::initializeConnections()
+void SEditor::_initializeConnections()
 {
     connect(ui->mActionZoomin, &QAction::triggered, this, &SEditor::onActionZoominTriggered);
     connect(ui->mActionZoomout, &QAction::triggered, this, &SEditor::onActionZoomoutTriggered);
@@ -360,10 +366,10 @@ void SEditor::initializeConnections()
     //-----测试用链接-----//
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
-    connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
     connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
     //-----测试用链接-----//
 
+    connect(ui->mActionImportRaster, &QAction::triggered, this, &SEditor::onActionImportRasterTriggered);
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
     connect(ui->mActionBringtoFront, &QAction::triggered, this, &SEditor::onActionBringtoFrontTriggered);
@@ -378,6 +384,12 @@ void SEditor::initializeConnections()
 
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
+
+    if (mpImportDialog) _connectDataImportWizard();
+}
+
+void SEditor::_connectDataImportWizard()
+{
     //数据导入向导对话框事件响应
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
 }

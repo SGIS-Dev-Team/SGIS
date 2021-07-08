@@ -20,6 +20,9 @@ int main(int argc, char* argv[])
 
     //启动主程序
     MainWindow wnd;
+    wnd.show();
 
     return app.exec();
 }
+
+

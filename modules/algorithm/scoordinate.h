@@ -25,10 +25,6 @@ public:
     explicit SCoordinate(QPointF Logic, QPointF Geo, double dx, double dy, QString Info = "")
         : mdX0(Geo.x() - Logic.x() * dx), mdY0(Geo.y() - Logic.y() * dy), mdDeltaX(dx), mdDeltaY(dy), mqstrCoorInfo(Info), mbFlag(true)  {}
 
-
-
-
-
     /*-----成员变量-----*/
 private:
     //默认的地理坐标和像素坐标等价

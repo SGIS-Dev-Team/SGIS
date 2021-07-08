@@ -30,6 +30,7 @@ public:
     /*-----信号-----*/
 signals:
     void closed();
+    void initComplete();
 
     /*-----槽函数-----*/
 private slots:
@@ -55,8 +56,9 @@ private slots:
     void onActionCreateRectTriggered();
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
-    void onActionLoadHugeImageTriggered();
-    //[数据导入对话框时间响应]
+    //导入栅格数据
+    void onActionImportRasterTriggered();
+    //[数据导入对话框事件响应]
     void onImportingData();
     void onActionReportLeaksTriggered();
     //[切换绘图区响应]
@@ -92,11 +94,13 @@ private:
     std::vector<std::shared_ptr<SDocument>> mpDocVec{};
 
     /*-----成员函数-----*/
-public:
+private:
     //初始化函数
-    void initialize();
+    void _initialize();
     //初始化链接
-    void initializeConnections();
+    void _initializeConnections();
+    void _connectDataImportWizard();
+
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
 
@@ -115,7 +119,7 @@ private:
     ImageInfoWidget* mpImageInfoWidget;
     QListWidget* mpOutputListWidget;
     //[数据导入向导]
-    QDataImportWizard* mpImportDialog;
+    QDataImportWizard* mpImportDialog{nullptr};
 };
 
 #endif // SEditor_H

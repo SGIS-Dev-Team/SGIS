@@ -2,22 +2,23 @@
 #include "ui_mainwindow.h"
 #include <QCloseEvent>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    initialize();
+    _initialize();
 }
 
 MainWindow::~MainWindow()
 {
     //释放托盘图标管理器
     delete mpTrayIconMgr;
+    delete mpEditor;
     delete ui;
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent* event)
 {
     //隐藏主窗口
     emit mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->triggered();
@@ -32,10 +33,10 @@ void MainWindow::setVisible(bool visible)
     QWidget::setVisible(visible);
 }
 
-void MainWindow::changeEvent(QEvent *event)
+void MainWindow::changeEvent(QEvent* event)
 {
     //判断窗口是否最大化
-    if(event->type() == QEvent::WindowStateChange)
+    if (event->type() == QEvent::WindowStateChange)
         mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(!isMaximized());
 }
 
@@ -47,19 +48,30 @@ void MainWindow::onTrayMenuActionMainWndTriggered()
 void MainWindow::onButtonEditorClicked()
 {
     //初始化编辑器类
-    if(!mWndEditor)
+    if (!mpEditor)
     {
-        mWndEditor = new SEditor(nullptr);
-        connect(mWndEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
+        mpEditor = new SEditor(nullptr);
+        _connectEditor();
     }
 
-    mWndEditor->show();
+    mpEditor->show();
 
     this->hide();
     //停用托盘菜单
     mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->setEnabled(false);
     mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(false);
     mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(false);
+}
+
+void MainWindow::onButtonGlobeClicked()
+{
+    if (!mpGlobe)
+    {
+        mpGlobe = new SGlobe(nullptr);
+        _connectGlobe();
+    }
+
+    mpGlobe->show();
 }
 
 void MainWindow::onEditorClosed()
@@ -72,27 +84,67 @@ void MainWindow::onEditorClosed()
     mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(true);
 }
 
-void MainWindow::initialize()
+void MainWindow::onEditorInitComplete()
+{
+    this->hide();
+}
+
+void MainWindow::onGlobeClosed()
+{
+    this->show();
+}
+
+void MainWindow::onGlobeInitComplete()
+{
+    this->hide();
+}
+
+void MainWindow::_initialize()
 {
     /*-----初始化主界面-----*/
-    //连接编辑器
-    connect(ui->mButtonEditor, &QPushButton::clicked, this, &MainWindow::onButtonEditorClicked);
+    //设置为无边框窗口
+    //this->setWindowFlags(Qt::ToolTip);
 
     /*-----初始化托盘图标-----*/
     mStrTrayConfigDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/sgif";
     mpTrayIconMgr = new STrayManager(mStrTrayConfigDir);
-    //链接响应事件
-    connect(mpTrayIconMgr->getActionPtr(STrayManager::Quit), &QAction::triggered, qApp, &QApplication::quit);
-    connect(mpTrayIconMgr->getActionPtr(STrayManager::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
-    connect(mpTrayIconMgr->getActionPtr(STrayManager::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
+
     //启动完成，打开主窗口或通知用户
-    if(mpTrayIconMgr->isShowingMainWnd())
+    if (mpTrayIconMgr->isShowingMainWnd())
         this->show();
-    else if(mpTrayIconMgr->isNotifOn())
-        mpTrayIconMgr->sendNotification(tr("S-GIS"), tr("S-GIS initialization complete. Click the tray icon to show the main window."));
+    else if (mpTrayIconMgr->isNotifOn())
+        mpTrayIconMgr->sendNotification(tr("S-GIS"), tr("S-GIS initialization complete. Click the tray icon to show the splash screen."));
 
     /*-----测试用-----*/
     //打开编辑器，隐藏主窗口
-    onButtonEditorClicked();
+    //onButtonEditorClicked();
+
+    _initializeConnections();
+}
+
+void MainWindow::_initializeConnections()
+{
+    //连接编辑器
+    if (mpEditor) _connectEditor();
+    if (mpGlobe) _connectGlobe();
+    //链接托盘菜单响应事件
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Quit), &QAction::triggered, qApp, &QApplication::quit);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
+    //链接界面按钮事件响应
+    connect(ui->mButtonEditor, &QPushButton::clicked, this, &MainWindow::onButtonEditorClicked);
+    connect(ui->mButtonGlobe, &QPushButton::clicked, this, &MainWindow::onButtonGlobeClicked);
+}
+
+void MainWindow::_connectEditor()
+{
+    connect(mpEditor, &SEditor::initComplete, this, &MainWindow::onEditorInitComplete);
+    connect(mpEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
+}
+
+void MainWindow::_connectGlobe()
+{
+    connect(mpGlobe, &SGlobe::initComplete, this, &MainWindow::onGlobeInitComplete);
+    connect(mpGlobe, &SGlobe::closed, this, &MainWindow::onGlobeClosed);
 }
 

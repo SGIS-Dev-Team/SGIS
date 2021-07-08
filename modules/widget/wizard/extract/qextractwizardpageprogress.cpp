@@ -14,8 +14,8 @@ QExtractWizardPageProgress::~QExtractWizardPageProgress()
 {
     for (size_t i = 0; i < muExtractThreadCount; ++i)
     {
-        mpExtractThreads[i].wait();
         mpExtractThreads[i].quit();
+        mpExtractThreads[i].wait();
     }
 
     if (mpExtractThreads)delete[] mpExtractThreads;
