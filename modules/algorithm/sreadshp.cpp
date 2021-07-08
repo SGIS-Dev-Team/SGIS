@@ -11,7 +11,7 @@ RecordMap SReadShp::getFeatureWithCoor(bool isLatLon)
     //驱动注册和相关配置
     GDALAllRegister();
     GDALDataset* pDS;
-    CPLSetConfigOption("SHAPE_ENCODING", "");  //解决中文乱码问题，但在qt里感觉会有问题？
+    CPLSetConfigOption("SHAPE_ENCODING", ""); //解决中文乱码问题，但在qt里不知道会不会有问题？
 
     //含中文QString->char*
     QByteArray qbarr = mstrShpPath.toUtf8();// 不能两句合起来写
@@ -85,6 +85,7 @@ RecordMap SReadShp::getFeatureWithCoor(bool isLatLon)
             return RecordMap();
         }
         //判断是不是点
+        mGeoType = poGeometry->getGeometryType();
         switch (poGeometry->getGeometryType())
         {
         case wkbPoint:
@@ -225,12 +226,12 @@ RecordMap SReadShp::getFeatureWithCoor(bool isLatLon)
     return result;
 }
 
-QRectF SReadShp::getboundingRect(bool isLatLon)
+QRectF SReadShp::getboundingRect()
 {
     //驱动注册和相关配置
     GDALAllRegister();
     GDALDataset* pDS;
-    CPLSetConfigOption("SHAPE_ENCODING", "");  //解决中文乱码问题，但在qt里感觉会有问题？
+    CPLSetConfigOption("SHAPE_ENCODING", "");  //解决中文乱码问题，但在qt里不知道会不会有问题？
 
     //含中文QString->char*
     QByteArray qbarr = mstrShpPath.toUtf8();// 不能两句合起来写

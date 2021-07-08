@@ -14,6 +14,7 @@ typedef std::map<int, std::vector<QVariant>> RecordMap;
 //          shp文件读取类
 //  现在默认shp文件存储只有一个layer的要素
 //  读取线要素暂时不会返回坐标
+//  调用getFeatureWithCoor()后通过geoType()获取要素类型
 //-----------------------------------
 
 
@@ -62,8 +63,8 @@ public:
     //  QPointF              Int           ...
     //  projcs(X,Y)/WGS84(Lat Lon)   OBJECTID    other attributes
     RecordMap getFeatureWithCoor(bool isLatLon = false);
-    //获取层的坐标范围，若isLatLon为false返回坐标为投影坐标，否则返回WGS84坐标(lat lon)
-    QRectF getboundingRect(bool isLatLon = false);
+    //获取层的坐标范围，返回坐标为投影坐标
+    QRectF getboundingRect();
 };
 
 
