@@ -178,7 +178,7 @@ void SEditor::onImportingData()
             double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
             double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
             double logicX, logicY;
-            mpCurDoc->getCoordinate().geo2logic(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
+            mpCurDoc->getCoordinate().fromMap(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
             pFragImg->setCenterPoint(QPointF(logicX, logicY));
             pFragImg->scale(geoTrans[1] / mpCurDoc->getCoordinate().deltaX(), geoTrans[5] / mpCurDoc->getCoordinate().deltaY());
             if (geoTrans != nullptr)
@@ -282,7 +282,7 @@ void SEditor::onCanvasMouseMoved(QPointF Log_pos)
     else
     {
         //已建立坐标映射，显示投身坐标
-        mpCurDoc->getCoordinate().logic2geo(Log_pos.x(), Log_pos.y(), x, y);
+        mpCurDoc->getCoordinate().toMap(Log_pos.x(), Log_pos.y(), x, y);
         mpStatLblCursorPos->setText("(" + QString::number(x, 'f', 3) + "," + QString::number(y, 'f', 3) + ")meter");
     }
 }

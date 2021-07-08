@@ -53,13 +53,13 @@ public:
 
     //------功能函数------//
 public:
-    void logic2geo(double logicX, double logicY, double& geoX, double& geoY)
+    void toMap(double logicX, double logicY, double& geoX, double& geoY)
     {
         geoX = mdX0 + mdDeltaX * logicX;
         geoY = mdY0 + mdDeltaY * logicY;
     }
 
-    void geo2logic(double geoX, double geoY, double& logicX, double& logicY)
+    void fromMap(double geoX, double geoY, double& logicX, double& logicY)
     {
         logicX = (geoX - mdX0) / mdDeltaX;
         logicY = (geoY - mdY0) / mdDeltaY;

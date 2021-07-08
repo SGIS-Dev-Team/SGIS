@@ -13,6 +13,7 @@ SOURCES += \
     modules/algorithm/archive_extractor/sarchiveextractor.cpp \
     modules/algorithm/archive_extractor/sarchivestreammeta.cpp \
     modules/algorithm/soverviewbuilder.cpp \
+    modules/algorithm/sreadshp.cpp \
     modules/algorithm/sslice.cpp \
     modules/doc/sdocument.cpp \
     modules/doc/simagestreammeta.cpp \
@@ -61,6 +62,7 @@ HEADERS += \
     modules/algorithm/archive_extractor/sarchivestreammeta.h \
     modules/algorithm/sequalizehist.h \
     modules/algorithm/soverviewbuilder.h \
+    modules/algorithm/sreadshp.h \
     modules/algorithm/sslice.h \
     modules/doc/sdocument.h \
     modules/doc/simagestreammeta.h \
