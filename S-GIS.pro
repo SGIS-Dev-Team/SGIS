@@ -27,6 +27,8 @@ SOURCES += \
     modules/paint/sshape.cpp \
     modules/paint/sshapefactory.cpp \
     modules/slogger.cpp \
+    modules/widget/globe/sglobe.cpp \
+    modules/widget/globe/sglobewidget.cpp \
     modules/widget/mainwindow.cpp \
     modules/widget/qcanvas.cpp \
     modules/widget/qcanvasarea.cpp \
@@ -35,6 +37,7 @@ SOURCES += \
     modules/widget/qlayerview.cpp \
     modules/widget/seditor.cpp \
     modules/widget/sfileinfowidget.cpp \
+    modules/widget/globe/sglobe.cpp \
     modules/widget/simageinfowidget.cpp \
     modules/widget/slayerinfowidget.cpp \
     modules/widget/sotherinfowidget.cpp \
@@ -74,6 +77,8 @@ HEADERS += \
     modules/paint/sshape.h \
     modules/paint/sshapefactory.h \
     modules/slogger.h \
+    modules/widget/globe/sglobe.h \
+    modules/widget/globe/sglobewidget.h \
     modules/widget/mainwindow.h \
     modules/widget/qcanvas.h \
     modules/widget/qcanvasarea.h \
@@ -81,6 +86,7 @@ HEADERS += \
     modules/widget/qimagelistview.h \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
+    modules/widget/globe/sglobe.h \
     modules/widget/straymgr.h \
     modules/widget/wizard/extract/qextractwizard.h \
     modules/widget/wizard/extract/qextractwizard.h \
@@ -98,13 +104,13 @@ HEADERS += \
     modules/widget/straymgr.h \
     modules/widget/wizard/extract/qfilelistview.h
 
-    modules/widget/wizard/extract/qfilelistview.h
-
 FORMS += \
+    modules/widget/globe/sglobe.ui \
     modules/widget/mainwindow.ui \
     modules/widget/qdataimportwizard.ui \
     modules/widget/seditor.ui \
     modules/widget/qdataimportwizard.ui \
+    modules/widget/globe/sglobe.ui \
     modules/widget/wizard/extract/qextractwizard.ui \
     modules/widget/wizard/extract/qextractwizard.ui \
     modules/widget/wizard/extract/qextractwizardpagefile.ui \
@@ -151,3 +157,12 @@ else:unix: LIBS += -LD:/LibArchive/lib/ -larchive
 
 INCLUDEPATH += D:/LibArchive/include
 DEPENDPATH += D:/LibArchive/include
+
+# OSGEarth Config
+
+win32:CONFIG(release, debug|release): LIBS += -LD:/OSG_Earth-2.10/release/lib/ -losgEarth -losg -losgDB -losgUtil -losgGA -losgViewer -losgText -lOpenThreads -losgEarthFeatures -losgEarthSplat -losgEarthSymbology -losgEarthUtil -losgEarthAnnotation
+else:win32:CONFIG(debug, debug|release): LIBS += -LD:/OSG_Earth-2.10/debug/lib/ -losgEarthd -losgd -losgDBd -losgUtild -losgGAd -losgViewerd -losgTextd -lOpenThreadsd -losgEarthFeaturesd -losgEarthSplatd -losgEarthSymbologyd -losgEarthUtild -losgEarthAnnotationd
+else:unix: LIBS += -LD:/OSG_Earth-2.10/debug/lib/ -losgEarth
+
+INCLUDEPATH += D:/OSG_Earth-2.10/include
+DEPENDPATH += D:/OSG_Earth-2.10/include

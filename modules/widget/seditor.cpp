@@ -107,7 +107,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 }
 
 #include "qdataimportwizard.h"
-void SEditor::onActionLoadHugeImageTriggered()
+void SEditor::onActionImportRasterTriggered()
 {
     if (!mpImportDialog)
     {
@@ -118,7 +118,7 @@ void SEditor::onActionLoadHugeImageTriggered()
     if (mpImportDialog->isEmpty())
     {
         //获取要读取的文件路径
-        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Open Huge Image"), "", "raster (*.tif *.tiff)");
+        QStringList strImagePathList = QFileDialog::getOpenFileNames(this, tr("Select Raster Images"), "", "raster (*.tif *.tiff)");
         if (strImagePathList.isEmpty())
             return;
 
@@ -327,6 +327,7 @@ void SEditor::closeEvent(QCloseEvent* event)
 {
     Q_UNUSED(event);
     emit closed();
+    QMainWindow::closeEvent(event);
 }
 
 void SEditor::_initialize()
@@ -365,10 +366,10 @@ void SEditor::_initializeConnections()
     //-----测试用链接-----//
     connect(ui->mActionLoadImage, &QAction::triggered, this, &SEditor::onActionLoadImageTriggered);
     connect(ui->mActionLoadFragments, &QAction::triggered, this, &SEditor::onActionLoadFragmentsTriggered);
-    connect(ui->mActionLoadHugeImage, &QAction::triggered, this, &SEditor::onActionLoadHugeImageTriggered);
     connect(ui->mActionReportLeaks, &QAction::triggered, this, &SEditor::onActionReportLeaksTriggered);
     //-----测试用链接-----//
 
+    connect(ui->mActionImportRaster, &QAction::triggered, this, &SEditor::onActionImportRasterTriggered);
     connect(ui->mActionBringForward, &QAction::triggered, this, &SEditor::onActionBringForwardTriggered);
     connect(ui->mActionSendBackward, &QAction::triggered, this, &SEditor::onActionSendBackwardTriggered);
     connect(ui->mActionBringtoFront, &QAction::triggered, this, &SEditor::onActionBringtoFrontTriggered);

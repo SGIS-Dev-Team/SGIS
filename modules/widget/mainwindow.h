@@ -5,6 +5,8 @@
 #include "modules/global.h"
 #include "modules/widget/straymgr.h"
 #include "modules/widget/seditor.h"
+#include "modules/widget/globe/sglobe.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -21,8 +23,8 @@ class MainWindow : public QMainWindow
 
     /*-----构造与析构函数-----*/
 public:
-    MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+    explicit MainWindow(QWidget* parent = nullptr);
+    virtual ~MainWindow();
 
     /*-----虚函数重载-----*/
 public:
@@ -41,10 +43,16 @@ private slots:
     void onTrayMenuActionMainWndTriggered();
     //编辑器按钮单击响应
     void onButtonEditorClicked();
+    //数字地球按钮单击响应
+    void onButtonGlobeClicked();
     //编辑器关闭事件响应
     void onEditorClosed();
     //编辑器初始化完毕
     void onEditorInitComplete();
+    //数字地球关闭事件响应
+    void onGlobeClosed();
+    //数字地球初始化完毕
+    void onGlobeInitComplete();
 
     /*-----成员变量-----*/
 private:
@@ -57,8 +65,8 @@ private:
 
     /*-----主窗口管理的窗口-----*/
 private:
-    SEditor* mEditor{nullptr};
-
+    SEditor* mpEditor{nullptr};
+    SGlobe* mpGlobe{nullptr};
 
 private:
 
@@ -68,6 +76,7 @@ private:
     void _initialize();
     void _initializeConnections();
     void _connectEditor();
+    void _connectGlobe();
 
     //UI界面
 private:

@@ -56,7 +56,8 @@ private slots:
     void onActionCreateRectTriggered();
     void onActionLoadImageTriggered();
     void onActionLoadFragmentsTriggered();
-    void onActionLoadHugeImageTriggered();
+    //导入栅格数据
+    void onActionImportRasterTriggered();
     //[数据导入对话框事件响应]
     void onImportingData();
     void onActionReportLeaksTriggered();

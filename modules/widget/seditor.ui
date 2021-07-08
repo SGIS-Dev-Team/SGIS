@@ -52,12 +52,19 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>Import...</string>
+     </property>
+     <addaction name="mActionImportRaster"/>
+     <addaction name="mActionImportShapeFile"/>
+    </widget>
     <addaction name="mActionNewTemplate"/>
     <addaction name="mActionOpenTemplate"/>
     <addaction name="separator"/>
     <addaction name="mActionSave"/>
     <addaction name="mActionSaveAs"/>
-    <addaction name="mActionImport"/>
+    <addaction name="menuImport"/>
     <addaction name="mActionExport"/>
     <addaction name="separator"/>
     <addaction name="mActionCloseTemplate"/>
@@ -167,13 +174,11 @@
     <addaction name="mActionSelectTool"/>
     <addaction name="mActionCombineTool"/>
     <addaction name="separator"/>
-    <addaction name="mActionBrush"/>
-    <addaction name="mActionEraser"/>
     <addaction name="mActionPen"/>
     <addaction name="menuShape"/>
     <addaction name="mActionText"/>
     <addaction name="separator"/>
-    <addaction name="mActionAnotator"/>
+    <addaction name="mActionAnnotator"/>
     <addaction name="separator"/>
     <addaction name="mActionPreferences"/>
     <addaction name="mActionReportLeaks"/>
@@ -252,63 +257,13 @@
       <number>1</number>
      </property>
      <item>
-      <widget class="QLayerView" name="mLayerView"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockWidget">
-   <property name="windowTitle">
-    <string>Layer Info</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>1</number>
+      <widget class="QLayerView" name="mLayerView">
+       <property name="dragEnabled">
+        <bool>true</bool>
        </property>
-       <widget class="QWidget" name="tab_3">
-        <attribute name="title">
-         <string>页</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>Tab 1</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Tab 2</string>
-        </attribute>
-       </widget>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::InternalMove</enum>
+       </property>
       </widget>
      </item>
     </layout>
@@ -454,9 +409,9 @@
     <string>Text</string>
    </property>
   </action>
-  <action name="mActionAnotator">
+  <action name="mActionAnnotator">
    <property name="text">
-    <string>Anotator</string>
+    <string>Annotator</string>
    </property>
   </action>
   <action name="mActionBringForward">
@@ -660,11 +615,6 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="mActionImport">
-   <property name="text">
-    <string>Import...</string>
-   </property>
-  </action>
   <action name="mActionCreateRect">
    <property name="text">
     <string>[Test] Create Rect</string>
@@ -688,6 +638,16 @@
   <action name="mActionReportLeaks">
    <property name="text">
     <string>[Test] Print Memory Leak Report</string>
+   </property>
+  </action>
+  <action name="mActionImportRaster">
+   <property name="text">
+    <string>Raster</string>
+   </property>
+  </action>
+  <action name="mActionImportShapeFile">
+   <property name="text">
+    <string>Shape File</string>
    </property>
   </action>
  </widget>

@@ -14,7 +14,7 @@ MainWindow::~MainWindow()
 {
     //释放托盘图标管理器
     delete mpTrayIconMgr;
-    delete mEditor;
+    delete mpEditor;
     delete ui;
 }
 
@@ -48,19 +48,30 @@ void MainWindow::onTrayMenuActionMainWndTriggered()
 void MainWindow::onButtonEditorClicked()
 {
     //初始化编辑器类
-    if (!mEditor)
+    if (!mpEditor)
     {
-        mEditor = new SEditor(nullptr);
+        mpEditor = new SEditor(nullptr);
         _connectEditor();
     }
 
-    mEditor->show();
+    mpEditor->show();
 
     this->hide();
     //停用托盘菜单
     mpTrayIconMgr->getActionPtr(STrayManager::MainWnd)->setEnabled(false);
     mpTrayIconMgr->getActionPtr(STrayManager::Maximize)->setEnabled(false);
     mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(false);
+}
+
+void MainWindow::onButtonGlobeClicked()
+{
+    if (!mpGlobe)
+    {
+        mpGlobe = new SGlobe(nullptr);
+        _connectGlobe();
+    }
+
+    mpGlobe->show();
 }
 
 void MainWindow::onEditorClosed()
@@ -74,6 +85,16 @@ void MainWindow::onEditorClosed()
 }
 
 void MainWindow::onEditorInitComplete()
+{
+    this->hide();
+}
+
+void MainWindow::onGlobeClosed()
+{
+    this->show();
+}
+
+void MainWindow::onGlobeInitComplete()
 {
     this->hide();
 }
@@ -104,18 +125,26 @@ void MainWindow::_initialize()
 void MainWindow::_initializeConnections()
 {
     //连接编辑器
-    if (mEditor) _connectEditor();
+    if (mpEditor) _connectEditor();
+    if (mpGlobe) _connectGlobe();
     //链接托盘菜单响应事件
     connect(mpTrayIconMgr->getActionPtr(STrayManager::Quit), &QAction::triggered, qApp, &QApplication::quit);
     connect(mpTrayIconMgr->getActionPtr(STrayManager::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
     connect(mpTrayIconMgr->getActionPtr(STrayManager::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
     //链接界面按钮事件响应
     connect(ui->mButtonEditor, &QPushButton::clicked, this, &MainWindow::onButtonEditorClicked);
+    connect(ui->mButtonGlobe, &QPushButton::clicked, this, &MainWindow::onButtonGlobeClicked);
 }
 
 void MainWindow::_connectEditor()
 {
-    connect(mEditor, &SEditor::initComplete, this, &MainWindow::onEditorInitComplete);
-    connect(mEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
+    connect(mpEditor, &SEditor::initComplete, this, &MainWindow::onEditorInitComplete);
+    connect(mpEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
+}
+
+void MainWindow::_connectGlobe()
+{
+    connect(mpGlobe, &SGlobe::initComplete, this, &MainWindow::onGlobeInitComplete);
+    connect(mpGlobe, &SGlobe::closed, this, &MainWindow::onGlobeClosed);
 }
 

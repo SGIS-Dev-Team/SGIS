@@ -16,4 +16,8 @@
     <qresource prefix="/WidgetIcon">
         <file>WidgetIcon/rotate.svg</file>
     </qresource>
+    <qresource prefix="/GlobeToolBoxIcon">
+        <file>globeToolBoxIcon/pan_tool.png</file>
+        <file>globeToolBoxIcon/Line.svg</file>
+    </qresource>
 </RCC>
