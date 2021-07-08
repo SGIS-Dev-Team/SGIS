@@ -29,7 +29,7 @@ void SGlobe::onActionLineTriggered()
     foreach (auto& coorString, coorsList)
         coorsVec.emplace_back(coorString.toDouble());
 
-    ui->mGlobeView->drawLine(coorsVec);
+    //ui->mGlobeView->drawLine(coorsVec);
 }
 
 void SGlobe::_initialize()
