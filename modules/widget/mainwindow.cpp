@@ -13,7 +13,15 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     //释放托盘图标管理器
+<<<<<<< Updated upstream
     delete mpTrayIconMgr;
+=======
+    if (mpTrayIconMgr) delete mpTrayIconMgr;
+    if (mpEditor) delete mpEditor;
+#ifndef DISABLE_GLOBE
+    if (mpGlobe)delete mpGlobe;
+#endif
+>>>>>>> Stashed changes
     delete ui;
 }
 
@@ -62,6 +70,24 @@ void MainWindow::onButtonEditorClicked()
     mpTrayIconMgr->getActionPtr(STrayManager::Switch)->setEnabled(false);
 }
 
+<<<<<<< Updated upstream
+=======
+void MainWindow::onButtonGlobeClicked()
+{
+#ifndef DISABLE_GLOBE
+
+    if (!mpGlobe)
+    {
+        mpGlobe = new SGlobe(nullptr);
+        _connectGlobe();
+    }
+
+    mpGlobe->show();
+
+#endif
+}
+
+>>>>>>> Stashed changes
 void MainWindow::onEditorClosed()
 {
     //显示主窗口
@@ -93,6 +119,42 @@ void MainWindow::initialize()
 
     /*-----测试用-----*/
     //打开编辑器，隐藏主窗口
+<<<<<<< Updated upstream
     onButtonEditorClicked();
+=======
+    //onButtonEditorClicked();
+
+    _initializeConnections();
+}
+
+void MainWindow::_initializeConnections()
+{
+    //连接编辑器
+    if (mpEditor) _connectEditor();
+#ifndef DISABLE_GLOBE
+    if (mpGlobe) _connectGlobe();
+#endif
+    //链接托盘菜单响应事件
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Quit), &QAction::triggered, qApp, &QApplication::quit);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::MainWnd), &QAction::triggered, this, &MainWindow::onTrayMenuActionMainWndTriggered);
+    connect(mpTrayIconMgr->getActionPtr(STrayManager::Maximize), &QAction::triggered, this, &QWidget::showMaximized);
+    //链接界面按钮事件响应
+    connect(ui->mButtonEditor, &QPushButton::clicked, this, &MainWindow::onButtonEditorClicked);
+    connect(ui->mButtonGlobe, &QPushButton::clicked, this, &MainWindow::onButtonGlobeClicked);
+}
+
+void MainWindow::_connectEditor()
+{
+    connect(mpEditor, &SEditor::initComplete, this, &MainWindow::onEditorInitComplete);
+    connect(mpEditor, &SEditor::closed, this, &MainWindow::onEditorClosed);
+}
+
+void MainWindow::_connectGlobe()
+{
+#ifndef DISABLE_GLOBE
+    connect(mpGlobe, &SGlobe::initComplete, this, &MainWindow::onGlobeInitComplete);
+    connect(mpGlobe, &SGlobe::closed, this, &MainWindow::onGlobeClosed);
+#endif
+>>>>>>> Stashed changes
 }
 

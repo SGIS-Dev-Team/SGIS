@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SGlobe</class>
+ <widget class="QMainWindow" name="SGlobe">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1331</width>
+    <height>925</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SGIS Digtal Earth</string>
+  </property>
+  <widget class="QWidget" name="mCentralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>5</number>
+    </property>
+    <property name="rightMargin">
+     <number>5</number>
+    </property>
+    <item>
+     <widget class="QOpenGLWidget" name="mGlobeView"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="mMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1331</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="mMenuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
+   <addaction name="mMenuView"/>
+  </widget>
+  <widget class="QStatusBar" name="mStatusBar"/>
+  <widget class="QToolBar" name="mToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="mActionViewPan"/>
+   <addaction name="mActionLine"/>
+  </widget>
+  <action name="mActionViewPan">
+   <property name="icon">
+    <iconset resource="../../../Resource/Icons.qrc">
+     <normaloff>:/GlobeToolBoxIcon/globeToolBoxIcon/pan_tool.png</normaloff>:/GlobeToolBoxIcon/globeToolBoxIcon/pan_tool.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pan</string>
+   </property>
+  </action>
+  <action name="mActionLine">
+   <property name="icon">
+    <iconset resource="../../../Resource/Icons.qrc">
+     <normaloff>:/GlobeToolBoxIcon/globeToolBoxIcon/Line.svg</normaloff>:/GlobeToolBoxIcon/globeToolBoxIcon/Line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Line</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../../../Resource/Icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

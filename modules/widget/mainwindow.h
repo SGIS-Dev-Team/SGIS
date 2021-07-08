@@ -5,6 +5,14 @@
 #include "modules/global.h"
 #include "modules/widget/straymgr.h"
 #include "modules/widget/seditor.h"
+<<<<<<< Updated upstream
+=======
+
+#ifndef DISABLE_GLOBE
+#include "modules/widget/globe/sglobe.h"
+#endif
+
+>>>>>>> Stashed changes
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -53,9 +61,16 @@ private:
 
     /*-----主窗口管理的窗口-----*/
 private:
+<<<<<<< Updated upstream
     SEditor* mWndEditor{nullptr};
 
 
+=======
+    SEditor* mpEditor{nullptr};
+#ifndef DISABLE_GLOBE
+    SGlobe* mpGlobe {nullptr};
+#endif
+>>>>>>> Stashed changes
 private:
 
     /*-----成员函数-----*/
