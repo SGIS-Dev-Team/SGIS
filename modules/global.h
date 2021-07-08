@@ -75,8 +75,6 @@
 //默认同时解压线程数
 #define DEFAULT_EXTRACT_THREAD_COUNT 4
 
-#define DISABLE_GLOBE
-
 //绘图对象类名
 namespace sgis
 {
