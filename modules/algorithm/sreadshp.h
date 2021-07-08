@@ -13,7 +13,6 @@ typedef std::map<int, std::vector<QVariant>> RecordMap;
 //          SReadShp
 //          shp文件读取类
 //  现在默认shp文件存储只有一个layer的要素
-//  读取线要素暂时不会返回坐标
 //  调用getFeatureWithCoor()后通过geoType()获取要素类型
 //-----------------------------------
 
