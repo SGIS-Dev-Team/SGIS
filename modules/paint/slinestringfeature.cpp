@@ -1,7 +1,7 @@
 ﻿#include "slinestringfeature.h"
 
-SLineStringFeature::SLineStringFeature(PaintObject _type, bool _selected, QPointF _center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
-    : SFeature(_type, _selected, _center, _layerName, _layerDiscription, _layerColor)
+SLineStringFeature::SLineStringFeature(bool _selected, QPointF _center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
+    : SFeature(PaintObject::LineStringFeature, _selected, _center, _layerName, _layerDiscription, _layerColor)
 {
 
 }
