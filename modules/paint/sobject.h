@@ -54,9 +54,9 @@ protected:
     /*-----虚函数-----*/
 public:
     //绘制函数
-    virtual void paint(QPainter &painter,
+    virtual void paint(QPainter& painter,
                        bool doTranslate = true,
-                       const QRectF &viewLogicalArea = QRectF(),
+                       const QRectF& viewLogicalArea = QRectF(),
                        double scaleValue = 0,
                        PaintTrigger trigger = User_Trigger)const = 0;
     //获取包围矩形（变换后），该矩形与相关Qt绘图类的boundingRect有所不同，是由原矩形进行缩放和旋转变换得到的。
@@ -69,7 +69,7 @@ public:
     virtual void writeBinaryData(QDataStream& stream)const = 0;
     virtual void readBinaryData(QDataStream& stream) = 0;
     //绘制边框矩形（宽度和半径指定为实际像素）
-    virtual void paintBoundRect(QPainter &painter, double scaleValue = 1, int lineWidth = BOUND_RECT_PEN_WIDTH, int radius = BOUND_RECT_CORNER_RADIUS);
+    virtual void paintBoundRect(QPainter& painter, double scaleValue = 1, int lineWidth = BOUND_RECT_PEN_WIDTH, int radius = BOUND_RECT_CORNER_RADIUS);
     //图层预览图标（调用时生成）
     virtual QIcon icon()const;
 
@@ -125,7 +125,7 @@ public:
     const QString& layerDiscription()const;
     const QColor& layerColor()const;
     PaintObject getType();
-    const QTransform &transform()const;
+    const QTransform& transform()const;
 
     //[修改函数]
     //变换
@@ -160,25 +160,30 @@ public:
     inline QPointF AtoC(const QPointF& pt)const;
     inline QPoint AtoC(const QPoint& pt)const;
 
+    //获取枚举对象的字符串
+    static QString typeString(PaintObject type);
+
+protected:
+
     void _initializeWith(const SObject& theObj);
 };
 
-QPointF SObject::CtoA(const QPointF &pt) const
+QPointF SObject::CtoA(const QPointF& pt) const
 {
     return pt + mPtCenter;
 }
 
-QPoint SObject::CtoA(const QPoint &pt) const
+QPoint SObject::CtoA(const QPoint& pt) const
 {
     return QPoint(pt.x() + mPtCenter.x(), pt.y() + mPtCenter.y());
 }
 
-QPointF SObject::AtoC(const QPointF &pt) const
+QPointF SObject::AtoC(const QPointF& pt) const
 {
     return pt - mPtCenter;
 }
 
-QPoint SObject::AtoC(const QPoint &pt) const
+QPoint SObject::AtoC(const QPoint& pt) const
 {
     return QPoint(pt.x() - mPtCenter.x(), pt.y() - mPtCenter.y());
 }
