@@ -7,6 +7,7 @@
 
 #include "../paint/simage.h"
 #include "simageinfowidget.h"
+#include "modules/algorithm/sreadshp.h"
 
 SEditor::SEditor(QWidget* parent): QMainWindow(parent),
     ui(new Ui::SEditor)
@@ -130,7 +131,7 @@ void SEditor::onActionImportRasterTriggered()
     mpImportDialog->raise();
 }
 
-void SEditor::onImportingData()
+void SEditor::onImportingRaster()
 {
     //将影像读入
     mpCurDoc->getLayerManager().clearSelection();
@@ -178,7 +179,7 @@ void SEditor::onImportingData()
             double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
             double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
             double logicX, logicY;
-            mpCurDoc->getCoordinate().fromMap(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
+            mpCurDoc->getCoordinate().mapFromGeo(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2, logicX, logicY);
             pFragImg->setCenterPoint(QPointF(logicX, logicY));
             pFragImg->scale(geoTrans[1] / mpCurDoc->getCoordinate().deltaX(), geoTrans[5] / mpCurDoc->getCoordinate().deltaY());
             if (geoTrans != nullptr)
@@ -207,6 +208,16 @@ void SEditor::onActionReportLeaksTriggered()
 #ifndef QT_NO_DEBUG
     VLDReportLeaks();
 #endif
+}
+
+void SEditor::onActionImportShapeFileTriggered()
+{
+    QStringList shpFileList = QFileDialog::getOpenFileNames(this, tr("Import Shape File"), tr(""), tr("ESRI Shape File (*.shp)"));
+
+    for (auto& filePath : shpFileList)
+    {
+        SReadShp reader(filePath);
+    }
 }
 
 void SEditor::onActionBringForwardTriggered()
@@ -282,7 +293,7 @@ void SEditor::onCanvasMouseMoved(QPointF Log_pos)
     else
     {
         //已建立坐标映射，显示投身坐标
-        mpCurDoc->getCoordinate().toMap(Log_pos.x(), Log_pos.y(), x, y);
+        mpCurDoc->getCoordinate().mapToGeo(Log_pos.x(), Log_pos.y(), x, y);
         mpStatLblCursorPos->setText("(" + QString::number(x, 'f', 3) + "," + QString::number(y, 'f', 3) + ")meter");
     }
 }
@@ -391,7 +402,7 @@ void SEditor::_initializeConnections()
 void SEditor::_connectDataImportWizard()
 {
     //数据导入向导对话框事件响应
-    connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingData);
+    connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingRaster);
 }
 
 void SEditor::createWorkspace(const QSize& CanvasSize)

@@ -20,10 +20,12 @@ SOURCES += \
     modules/doc/simagestreammeta.cpp \
     modules/doc/slayermanager.cpp \
     modules/main.cpp \
+    modules/paint/sfeature.cpp \
     modules/paint/sfragimage.cpp \
     modules/paint/sfragloader.cpp \
     modules/paint/sfragmatrix.cpp \
     modules/paint/simage.cpp \
+    modules/paint/slinestringfeature.cpp \
     modules/paint/sobject.cpp \
     modules/paint/sshape.cpp \
     modules/paint/sshapefactory.cpp \
@@ -69,11 +71,13 @@ HEADERS += \
     modules/doc/simagestreammeta.h \
     modules/doc/slayermanager.h \
     modules/global.h \
+    modules/paint/sfeature.h \
     modules/paint/sfragimage.h \
     modules/paint/sfragloader.h \
     modules/paint/sfragmatrix.h \
     modules/paint/simage.h \
     modules/paint/simagemeta.h \
+    modules/paint/slinestringfeature.h \
     modules/paint/sobject.h \
     modules/paint/sobjectfactory.h \
     modules/paint/sshape.h \

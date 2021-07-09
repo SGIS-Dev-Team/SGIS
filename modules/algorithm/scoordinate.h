@@ -1,4 +1,4 @@
-#ifndef SCOORDINATE_H
+﻿#ifndef SCOORDINATE_H
 #define SCOORDINATE_H
 
 #include <QString>
@@ -18,18 +18,18 @@ class SCoordinate
     /*-----构造函数与析构函数-----*/
 public:
     explicit SCoordinate() = default;
-    explicit SCoordinate(double x0, double y0, double dx, double dy, QString Info = "")
-        : mdX0(x0), mdY0(y0), mdDeltaX(dx), mdDeltaY(dy), mqstrCoorInfo(Info), mbFlag(true) {}
+    explicit SCoordinate(double x0, double y0, double scaleX, double scaleY, QString Info = "")
+        : mdX0(x0), mdY0(y0), mdScaleX(scaleX), mdScaleY(scaleY), mqstrCoorInfo(Info), mbFlag(true) {}
     explicit SCoordinate(double x, double y, double gx, double gy, double dx, double dy, QString Info = "")
-        : mdX0(gx - x * dx), mdY0(gy - y * dy), mdDeltaX(dx), mdDeltaY(dy), mqstrCoorInfo(Info), mbFlag(true)  {}
+        : mdX0(gx - x * dx), mdY0(gy - y * dy), mdScaleX(dx), mdScaleY(dy), mqstrCoorInfo(Info), mbFlag(true)  {}
     explicit SCoordinate(QPointF Logic, QPointF Geo, double dx, double dy, QString Info = "")
-        : mdX0(Geo.x() - Logic.x() * dx), mdY0(Geo.y() - Logic.y() * dy), mdDeltaX(dx), mdDeltaY(dy), mqstrCoorInfo(Info), mbFlag(true)  {}
+        : mdX0(Geo.x() - Logic.x() * dx), mdY0(Geo.y() - Logic.y() * dy), mdScaleX(dx), mdScaleY(dy), mqstrCoorInfo(Info), mbFlag(true)  {}
 
     /*-----成员变量-----*/
 private:
     //默认的地理坐标和像素坐标等价
     double mdX0 = 0, mdY0 = 0;
-    double mdDeltaX = 1, mdDeltaY = -1;
+    double mdScaleX = 1, mdScaleY = -1;
     //TODO:可以改成坐标信息类
     QString mqstrCoorInfo;
     bool mbFlag = false;
@@ -40,32 +40,32 @@ public:
     //-----访问与修改函数-----//
     inline double x0() const {return mdX0;}
     inline double y0() const {return mdY0;}
-    inline double deltaX() const {return mdDeltaX;}
-    inline double deltaY() const {return mdDeltaY;}
+    inline double deltaX() const {return mdScaleX;}
+    inline double deltaY() const {return mdScaleY;}
     inline QString info() const {return mqstrCoorInfo;}
 
     inline void setX0(double x0) {mbFlag = true; mdX0 = x0;}
     inline void setY0(double y0) {mbFlag = true; mdY0 = y0;}
-    inline void setDeltaX(double dx) {mbFlag = true; mdDeltaX = dx;}
-    inline void setDeltaY(double dy) {mbFlag = true; mdDeltaY = dy;}
+    inline void setDeltaX(double dx) {mbFlag = true; mdScaleX = dx;}
+    inline void setDeltaY(double dy) {mbFlag = true; mdScaleY = dy;}
     inline void setInfo(QString info) {mbFlag = true; mqstrCoorInfo = info;}
 
 
     //------功能函数------//
 public:
-    void toMap(double logicX, double logicY, double& geoX, double& geoY)
+    void mapToGeo(double logicX, double logicY, double& geoX, double& geoY)
     {
-        geoX = mdX0 + mdDeltaX * logicX;
-        geoY = mdY0 + mdDeltaY * logicY;
+        geoX = mdX0 + mdScaleX * logicX;
+        geoY = mdY0 + mdScaleY * logicY;
     }
 
-    void fromMap(double geoX, double geoY, double& logicX, double& logicY)
+    void mapFromGeo(double geoX, double geoY, double& logicX, double& logicY)
     {
-        logicX = (geoX - mdX0) / mdDeltaX;
-        logicY = (geoY - mdY0) / mdDeltaY;
+        logicX = (geoX - mdX0) / mdScaleX;
+        logicY = (geoY - mdY0) / mdScaleY;
     }
     bool isEmpty() {return !mbFlag;}
-    void clear() {mbFlag = false; mdX0 = 0, mdY0 = 0; mdDeltaX = 1, mdDeltaY = 1; mqstrCoorInfo = QString();}
+    void clear() {mbFlag = false; mdX0 = 0, mdY0 = 0; mdScaleX = 1, mdScaleY = 1; mqstrCoorInfo = QString();}
     QString projCS()
     {
         QRegExp rx("(PROJCS\\[\")([\\w]*)(\")");

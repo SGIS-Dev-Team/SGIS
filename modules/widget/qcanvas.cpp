@@ -3,10 +3,10 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QScrollBar>
-#include <modules/paint/sshape.h>
 #include <modules/paint/simage.h>
+#include <modules/paint/slinestringfeature.h>
 
-QCanvas::QCanvas(QWidget *parent, QSize canvasSize): QWidget(parent)
+QCanvas::QCanvas(QWidget* parent, QSize canvasSize): QWidget(parent)
 {
     //属性设置
     setBackgroundRole(QPalette::Base);
@@ -22,7 +22,7 @@ QCanvas::~QCanvas()
 
 }
 
-void QCanvas::paintEvent(QPaintEvent *event)
+void QCanvas::paintEvent(QPaintEvent* event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
@@ -32,16 +32,51 @@ void QCanvas::paintEvent(QPaintEvent *event)
 
     painter.scale(mdScale, mdScale);
 
-    if(mpDoc)
+    if (mpDoc)
         mpDoc->paint(painter, mViewArea, mdScale, mTrigger);
     this->resetPaintTrigger();
+
+
+    //-----测试要素绘图开始-----//
+
+    //地理坐标系设置为画布坐标系等同
+    std::shared_ptr<SCoordinate> pGeoRef = std::make_shared<SCoordinate>(0, 0, 1, 1);
+
+    //构建要素
+    SLineStringFeature* pLineString = new SLineStringFeature(PaintObject::LineStringFeature, true);
+    pLineString->setGeoReference(pGeoRef);
+
+    //添加顶点
+    pLineString->beginModifyVertex();
+
+    //第一条线
+    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{500, 500}, {1000, 800}, {1500, 900}}));
+
+    //第二条线
+    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{3000, 500}, {3000, 900}, {2000, 900}}));
+
+    //结束添加
+    pLineString->endModifyVertex();
+
+    //设置要素样式
+    pLineString->rPen().setWidth(20);
+    pLineString->rPen().setStyle(Qt::PenStyle::DashLine);
+    pLineString->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+    pLineString->rPen().setColor(Qt::green);
+    pLineString->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+
+    //绘图
+    pLineString->paint(painter, true, mViewArea, mdScale, mTrigger);
+
+    //-----测试要素绘图结束-----//
+
 
     /*-----画布背景绘图部分-----*/
     painter.resetTransform();
 
 #ifdef CANVAS_DRAW_CROSS_LINE
     //若画布缩放比例大于800%，则显示像素网格
-    if(mdScale >= 8.0)
+    if (mdScale >= 8.0)
     {
         QPen gridPen = painter.pen();
         gridPen.setColor(QColor(0, 0, 0));
@@ -50,7 +85,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
         //绘制纵向网格线
         QPointF* pPtFPairsX = new QPointF[mSzLogical.width() * 2] {};
         double h_Act = mSzActual.height();
-        for(int x_Log = 1; x_Log < mSzLogical.width(); ++x_Log)
+        for (int x_Log = 1; x_Log < mSzLogical.width(); ++x_Log)
         {
             double x_Act = x_Log * mdScale;
             pPtFPairsX[x_Log * 2] = QPointF(x_Act, 0);
@@ -61,7 +96,7 @@ void QCanvas::paintEvent(QPaintEvent *event)
         //绘制横向网格线
         QPointF* pPtFPairsY = new QPointF[mSzLogical.height() * 2];
         double w_Act = mSzActual.width();
-        for(int y_Log = 1; y_Log < mSzLogical.height(); ++y_Log)
+        for (int y_Log = 1; y_Log < mSzLogical.height(); ++y_Log)
         {
             double y_Act = y_Log * mdScale;
             pPtFPairsY[y_Log * 2] = QPointF(0, y_Act);
@@ -73,11 +108,11 @@ void QCanvas::paintEvent(QPaintEvent *event)
 #endif
 }
 
-void QCanvas::mouseMoveEvent(QMouseEvent *event)
+void QCanvas::mouseMoveEvent(QMouseEvent* event)
 {
     QPointF actPos = event->pos();
     //------坐标显示------//
-    if(actPos.x() < 0 || actPos.x() >= mSzActual.width() || actPos.y() < 0 || actPos.y() >= mSzActual.height())
+    if (actPos.x() < 0 || actPos.x() >= mSzActual.width() || actPos.y() < 0 || actPos.y() >= mSzActual.height())
         return;
     //显示逻辑坐标
     QPointF lgcPos = AtoL(actPos);
@@ -86,13 +121,13 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     mnCursorOnCornerCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx = -1;
     mbCursorOnRotateIcon = mbCursorOnSelectedLayer = false;
 
-    if(!mbLeftPressed)
+    if (!mbLeftPressed)
     {
         //------鼠标位置判断与鼠标悬浮图标显示------//
         Qt::CursorShape cursor_shape{};
 
         //对每个已选中图层的外接矩形进行判断
-        for(const auto& iter : mpDoc->getLayerManager().getSelectedLayerIterList())
+        for (const auto& iter : mpDoc->getLayerManager().getSelectedLayerIterList())
         {
             SObject* pObj = mpDstObj = *iter;
             bool isCursorOnCtrlPt{false};
@@ -101,8 +136,8 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
             QPointF nearest_pt;
             QPolygonF bound_rect = pObj->boundingRect();
 
-            for(int i = 0; i < bound_rect.size(); ++i)
-                if((this->LtoA(bound_rect[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+            for (int i = 0; i < bound_rect.size(); ++i)
+                if ((this->LtoA(bound_rect[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
                 {
                     nearest_pt = bound_rect[i];
                     isCursorOnCtrlPt = true;
@@ -112,11 +147,11 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
 
             //计算外接矩形边中点并判断是否在点圆内
             QPointF ptMid[4];
-            if(!isCursorOnCtrlPt)
-                for(int i = 0; i < 4; ++i)
+            if (!isCursorOnCtrlPt)
+                for (int i = 0; i < 4; ++i)
                 {
                     ptMid[i] = (bound_rect[i] + bound_rect[(i + 1) % 4]) / 2.0;
-                    if((this->LtoA(ptMid[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
+                    if ((this->LtoA(ptMid[i]) - actPos).manhattanLength() <= BOUND_RECT_CORNER_RADIUS * 2)
                     {
                         nearest_pt = ptMid[i];
                         isCursorOnCtrlPt = true;
@@ -126,19 +161,19 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                 }
 
             //判断鼠标点是否在旋转图标上
-            if(!isCursorOnCtrlPt)
+            if (!isCursorOnCtrlPt)
             {
                 //设置变换:我打赌Qt写这个类的人用了Lazy Evaluation
                 QTransform transform;
                 QPointF ptMid0_act = this->LtoA(ptMid[0]);
                 transform.translate(ptMid0_act.x(), ptMid0_act.y());
                 transform.rotate(pObj->rotateAngle());
-                if(pObj->scaleFactorY() > 0)
+                if (pObj->scaleFactorY() > 0)
                     transform.translate(0, ROTATE_ICON_CENTER_Y);
                 else
                     transform.translate(0, -ROTATE_ICON_CENTER_Y);
 
-                if(transform.inverted().map(actPos).manhattanLength() < ROTATE_ICON_RADIUS * 2)
+                if (transform.inverted().map(actPos).manhattanLength() < ROTATE_ICON_RADIUS * 2)
                 {
                     mbCursorOnRotateIcon = true;
                     cursor_shape = Qt::OpenHandCursor;
@@ -147,21 +182,21 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
             }
 
             //选择最合适的鼠标图标
-            if(isCursorOnCtrlPt)
+            if (isCursorOnCtrlPt)
             {
                 double x = nearest_pt.x() - pObj->centerPoint().x();
                 double y = nearest_pt.y() - pObj->centerPoint().y();
 
-                if(x == 0)
+                if (x == 0)
                     cursor_shape = Qt::SizeVerCursor;
                 else
                 {
                     const double tan_22_5 = 0.414213562373095;
                     const double tan_67_5 = 2.414213562373095;
                     double tan_sita = abs(y / x);
-                    if(tan_sita < tan_22_5)
+                    if (tan_sita < tan_22_5)
                         cursor_shape = Qt::SizeHorCursor;
-                    else if(tan_sita < tan_67_5)
+                    else if (tan_sita < tan_67_5)
                         cursor_shape = x * y < 0 ? Qt::SizeBDiagCursor : Qt::SizeFDiagCursor;
                     else
                         cursor_shape = Qt::SizeVerCursor;
@@ -171,36 +206,36 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
 
             //最后再判断鼠标点是否在已选中的图层上
             mbCursorOnSelectedLayer = pObj->contains(lgcPos);
-            if(mbCursorOnSelectedLayer)
+            if (mbCursorOnSelectedLayer)
                 cursor_shape = Qt::DragMoveCursor;
         }
 
         this->setCursor(QCursor(cursor_shape));
-        if(!(mnCursorOnCornerCtrlPointIdx != -1 || mnCursorOnMiddleCtrlPointIdx != -1 || mbCursorOnSelectedLayer || mbCursorOnRotateIcon))
+        if (!(mnCursorOnCornerCtrlPointIdx != -1 || mnCursorOnMiddleCtrlPointIdx != -1 || mbCursorOnSelectedLayer || mbCursorOnRotateIcon))
             mpDstObj = nullptr;
     }
     else
     {
-        if(mpDstObj)
+        if (mpDstObj)
         {
             //鼠标左键按下时事件
             QPointF ptTranslated(0, 0);
             double angleRotated{0};
             double xScaled{1}, yScaled{1};
 
-            if(mbLeftPressedOnSelectedLayer)
+            if (mbLeftPressedOnSelectedLayer)
             {
                 //拖动选中图层
                 ptTranslated = lgcPos - mPtLgcLastPos;
             }
-            else if(mnLeftPressedOnCornerCtrlPointIdx != -1 || mnLeftPressedOnMiddleCtrlPointIdx != -1)
+            else if (mnLeftPressedOnCornerCtrlPointIdx != -1 || mnLeftPressedOnMiddleCtrlPointIdx != -1)
             {
                 switch (event->modifiers())
                 {
                 //中心缩放
                 case Qt::KeyboardModifier::ControlModifier:
                 {
-                    const QPointF &centerPt = this->LtoA(mpDstObj->centerPoint());
+                    const QPointF& centerPt = this->LtoA(mpDstObj->centerPoint());
                     //变换到mpDstObj的旋转后坐标系再计算缩放
                     QTransform rotater;
                     rotater.translate(centerPt.x(), centerPt.y());
@@ -213,9 +248,9 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                     xScaled = curPt.x() / startPt.x();
                     yScaled = curPt.y() / startPt.y();
                     //对控制点为中点的情况单独考虑
-                    if(mnLeftPressedOnMiddleCtrlPointIdx == 0 || mnLeftPressedOnMiddleCtrlPointIdx == 2)
+                    if (mnLeftPressedOnMiddleCtrlPointIdx == 0 || mnLeftPressedOnMiddleCtrlPointIdx == 2)
                         xScaled = 1;
-                    if(mnLeftPressedOnMiddleCtrlPointIdx == 1 || mnLeftPressedOnMiddleCtrlPointIdx == 3)
+                    if (mnLeftPressedOnMiddleCtrlPointIdx == 1 || mnLeftPressedOnMiddleCtrlPointIdx == 3)
                         yScaled = 1;
 
                     break;
@@ -229,20 +264,20 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
                     break;
                 }
             }
-            else if(mbLeftPressedOnRotateIcon)
+            else if (mbLeftPressedOnRotateIcon)
             {
                 //计算偏角
-                const QPointF &centerPt = this->LtoA(mpDstObj->centerPoint());
+                const QPointF& centerPt = this->LtoA(mpDstObj->centerPoint());
                 double x1 = mPtLgcLastPos.x() * mdScale - centerPt.x(), x2 = actPos.x() - centerPt.x();
                 double y1 = mPtLgcLastPos.y() * mdScale - centerPt.y(), y2 = actPos.y() - centerPt.y();
                 angleRotated = acos((x1 * x2 + y1 * y2) / sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))) / PI * 180;
-                if(x1 * y2 - x2 * y1 < 0)
+                if (x1 * y2 - x2 * y1 < 0)
                     angleRotated = -angleRotated;
             }
 
             //应用变换
             const std::list<list_iterator>& selectedIterList = mpDoc->getLayerManager().getSelectedLayerIterList();
-            for(const list_iterator& iter : selectedIterList)
+            for (const list_iterator& iter : selectedIterList)
             {
                 SObject* pObj = *iter;
                 pObj->translate(ptTranslated);
@@ -258,7 +293,7 @@ void QCanvas::mouseMoveEvent(QMouseEvent *event)
     this->mPtLgcLastPos = lgcPos;
 }
 
-void QCanvas::mousePressEvent(QMouseEvent * event)
+void QCanvas::mousePressEvent(QMouseEvent* event)
 {
     QPointF lgcPos = AtoL(QPointF(event->pos()));
 
@@ -271,29 +306,29 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
         //根据按下的位置改变图标
         Qt::CursorShape cursor_shape{};
 
-        if(mbCursorOnSelectedLayer)
+        if (mbCursorOnSelectedLayer)
         {
             cursor_shape = Qt::SizeAllCursor;
             mbLeftPressedOnSelectedLayer = true;
         }
-        else if(mnCursorOnCornerCtrlPointIdx != -1)
+        else if (mnCursorOnCornerCtrlPointIdx != -1)
         {
             cursor_shape = Qt::CrossCursor;
             mnLeftPressedOnCornerCtrlPointIdx = mnCursorOnCornerCtrlPointIdx;
         }
-        else if(mnCursorOnMiddleCtrlPointIdx != -1)
+        else if (mnCursorOnMiddleCtrlPointIdx != -1)
         {
             cursor_shape = Qt::CrossCursor;
             mnLeftPressedOnMiddleCtrlPointIdx = mnCursorOnMiddleCtrlPointIdx;
         }
-        else if(mbCursorOnRotateIcon)
+        else if (mbCursorOnRotateIcon)
         {
             cursor_shape = Qt::ClosedHandCursor;
             mbLeftPressedOnRotateIcon = true;
         }
 
         //记录变换前参数
-        if(mpDstObj)
+        if (mpDstObj)
         {
             mdOriginalScaleX = mpDstObj->scaleFactorX();
             mdOriginalScaleY = mpDstObj->scaleFactorY();
@@ -316,7 +351,7 @@ void QCanvas::mousePressEvent(QMouseEvent * event)
     //记录鼠标点位置
     this->mPtLgcLeftPressPos = lgcPos;
 }
-void QCanvas::mouseReleaseEvent(QMouseEvent * event)
+void QCanvas::mouseReleaseEvent(QMouseEvent* event)
 {
     switch (event->button())
     {
@@ -326,15 +361,15 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
         QPointF lgcPos = AtoL(QPointF(event->pos()));
         int dragDistance = (this->LtoA(mPtLgcLeftPressPos) - event->pos()).manhattanLength();
 
-        if(dragDistance < DRAG_TRIGGERING_DISTANCE)
-            if(mpDoc)
+        if (dragDistance < DRAG_TRIGGERING_DISTANCE)
+            if (mpDoc)
             {
                 //选中顶层对象
                 SLayerManager& mgr = mpDoc->getLayerManager();
 
                 bool doMultiSelect{false};
                 //多重选择
-                if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+                if (event->modifiers() == Qt::KeyboardModifier::ControlModifier)
                     doMultiSelect = true;
 
                 mgr.clickSelect(lgcPos, doMultiSelect);
@@ -358,9 +393,9 @@ void QCanvas::mouseReleaseEvent(QMouseEvent * event)
     this->setCursor(QCursor());
 }
 
-void QCanvas::wheelEvent(QWheelEvent * event)
+void QCanvas::wheelEvent(QWheelEvent* event)
 {
-    if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier)
     {
         emit scaling(AtoL(event->position()), event->angleDelta().y());
         return;
@@ -392,7 +427,7 @@ double QCanvas::scaleValue() const
     return mdScale;
 }
 
-const QRectF &QCanvas::viewArea() const
+const QRectF& QCanvas::viewArea() const
 {
     return mViewArea;
 }
@@ -412,7 +447,7 @@ SObject::PaintTrigger QCanvas::currentPaintTrigger() const
     return mTrigger;
 }
 
-void QCanvas::setDocument(SDocument * pDoc)
+void QCanvas::setDocument(SDocument* pDoc)
 {
     this->mpDoc = pDoc;
 }
@@ -431,17 +466,17 @@ bool QCanvas::setScaleValue(double value)
 {
     bool bScaled{false};
     mdScale = value < ScaleLevelValue[0] ?  bScaled = false, ScaleLevelValue[0] :
-              value > ScaleLevelValue[SCALE_LEVEL - 1] ? bScaled = false, ScaleLevelValue[SCALE_LEVEL - 1] : value, bScaled = true;
+                                                      value > ScaleLevelValue[SCALE_LEVEL - 1] ? bScaled = false, ScaleLevelValue[SCALE_LEVEL - 1] : value, bScaled = true;
     mSzActual = QSize(mSzLogical.width() * value, mSzLogical.height() * value);
     this->setFixedSize(mSzActual);
-    if(bScaled)
+    if (bScaled)
         emit scaled(mdScale);
     return bScaled;
 }
 
 bool QCanvas::setScaleLevel(int level)
 {
-    if(level < 0 || level > SCALE_LEVEL - 1)
+    if (level < 0 || level > SCALE_LEVEL - 1)
         return false;
     return setScaleValue(ScaleLevelValue[level]);
 }
@@ -450,8 +485,8 @@ bool QCanvas::setScaleLevelUp()
 {
     //判断当前缩放等级
     int level = -1;
-    while(level != SCALE_LEVEL - 1)
-        if(mdScale < ScaleLevelValue[++level])
+    while (level != SCALE_LEVEL - 1)
+        if (mdScale < ScaleLevelValue[++level])
             break;
     return setScaleLevel(level);
 }
@@ -460,13 +495,13 @@ bool QCanvas::setScaleLevelDown()
 {
     //判断当前缩放等级
     int level = SCALE_LEVEL;
-    while(level != 0)
-        if(mdScale > ScaleLevelValue[--level])
+    while (level != 0)
+        if (mdScale > ScaleLevelValue[--level])
             break;
     return setScaleLevel(level);
 }
 
-void QCanvas::setViewArea(const QRectF & rect)
+void QCanvas::setViewArea(const QRectF& rect)
 {
     mViewArea = rect;
 }

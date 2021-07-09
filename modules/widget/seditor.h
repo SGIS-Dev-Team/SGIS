@@ -58,9 +58,13 @@ private slots:
     void onActionLoadFragmentsTriggered();
     //导入栅格数据
     void onActionImportRasterTriggered();
-    //[数据导入对话框事件响应]
-    void onImportingData();
+    //[栅格数据导入对话框事件响应]
+    void onImportingRaster();
+    //导出内存泄露报告
     void onActionReportLeaksTriggered();
+    //[矢量数据导入事件响应]
+    void onActionImportShapeFileTriggered();
+
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]
