@@ -10,6 +10,7 @@
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QListWidget>
+#include <QGridLayout>
 #include "modules/global.h"
 #include "vld.h"
 
@@ -74,17 +75,28 @@ private slots:
     void onCanvasScaled(double value);
     //[图层事件响应]
     void onLayersUpdated(SLayerManager* which);
-
-    //更新tiff图层信息
-    void updateTiffLayoutInfo(SLayerManager* which);
     //输出日志信息
     void onOutput(const QString& entry);
 
-    /*-----虚函数重载-----*/
-public:
-    void closeEvent(QCloseEvent* event)override;
+    //颜色选中槽函数
+    void onSelectColor();
 
+    /*-----虚函数重载-----*/
+private:
+    void closeEvent(QCloseEvent* event)override;
+    virtual bool eventFilter(QObject *watched, QEvent *event);
     /*-----成员变量-----*/
+private:
+    //
+    void initDockPalleteWidget();
+    void adjustPallete(QSize size);
+
+    //更新tiff图层信息
+    void updateImageInfo(SLayerManager* which);
+    void fillByImageFilePath(QString strFilePath);
+    void fillImageFileInfo(GDALDataset* pGDALDataset);
+    void fillImageLayerInfo(GDALDataset* pGDALDataset);
+    void fillImageProjectionInfo(GDALDataset* pGDALDataset);
 private:
     //[Me]
     QString Me = QString("SEditor");
@@ -108,9 +120,6 @@ private:
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);
 
-    //创建输出和Tiff信息窗口
-    void initCustomDock();
-
     /*-----UI与控件-----*/
 private:
     Ui::SEditor* ui;
@@ -119,11 +128,11 @@ private:
     QLabel* mpStatLblCanvasScale;
     QLabel* mpStatLblGSD;      //先用GSD代替比例尺
     QLabel* mpStatLblProjCS;
-    //
-    ImageInfoWidget* mpImageInfoWidget;
-    QListWidget* mpOutputListWidget;
     //[数据导入向导]
     QDataImportWizard* mpImportDialog{nullptr};
+    //
+    QGridLayout* mpPaletteLayout;
+    std::vector<QWidget*> mpPaletteButtons{};
 };
 
 #endif // SEditor_H

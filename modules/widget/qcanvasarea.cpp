@@ -33,6 +33,7 @@ void QCanvasArea::_initialize()
     //创建画布
     mpCanvas = new QCanvas(this, mCanvasSize);
     //链接事件响应
+    connect(this, &QCanvasArea::colorChanged, mpCanvas, &QCanvas::onDrawColorChanged);    //链接颜色改变信号
     connect(mpCanvas, &QCanvas::scaling, this, &QCanvasArea::onCanvasScaling);
     connect(this->horizontalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, &QCanvasArea::onSliderValueChange);

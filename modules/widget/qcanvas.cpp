@@ -5,7 +5,8 @@
 #include <QScrollBar>
 #include <modules/paint/simage.h>
 #include <modules/paint/slinestringfeature.h>
-
+#include <modules/paint/spointfeature.h>
+#include <modules/paint/spolygonfeature.h>
 QCanvas::QCanvas(QWidget* parent, QSize canvasSize): QWidget(parent)
 {
     //属性设置
@@ -43,7 +44,7 @@ void QCanvas::paintEvent(QPaintEvent* event)
     std::shared_ptr<SCoordinate> pGeoRef = std::make_shared<SCoordinate>(0, 0, 1, 1);
 
     //构建要素
-    SLineStringFeature* pLineString = new SLineStringFeature(PaintObject::LineStringFeature, true);
+    std::shared_ptr<SLineStringFeature> pLineString(new SLineStringFeature(true));
     pLineString->setGeoReference(pGeoRef);
 
     //添加顶点
@@ -62,12 +63,39 @@ void QCanvas::paintEvent(QPaintEvent* event)
     pLineString->rPen().setWidth(20);
     pLineString->rPen().setStyle(Qt::PenStyle::DashLine);
     pLineString->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
-    pLineString->rPen().setColor(Qt::green);
+    pLineString->rPen().setColor(mpDrawColor);
     pLineString->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
 
     //绘图
     pLineString->paint(painter, true, mViewArea, mdScale, mTrigger);
 
+
+    std::shared_ptr<SPointFeature>  pPointFeature(new SPointFeature(true));
+    pPointFeature->setGeoReference(pGeoRef);
+    pPointFeature->addPoint(QPointF(qrand() %200, 200));
+    pPointFeature->addPoint(QPointF(qrand() %220, 400));
+    pPointFeature->addPoint(QPointF(qrand() %230, 300));
+    //设置要素样式
+    pPointFeature->rPen().setWidth(20);
+    pPointFeature->rPen().setStyle(Qt::PenStyle::DashLine);
+    pPointFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+    pPointFeature->rPen().setColor(mpDrawColor);
+    pPointFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+    pPointFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
+
+    //
+    auto  pPolygonFeature = std::make_shared<SPolygonFeature>(true);
+    pPolygonFeature->setGeoReference(pGeoRef);
+    pPolygonFeature->addPoint(QPointF(qrand() %200, 200));
+    pPolygonFeature->addPoint(QPointF(qrand() %300, qrand() % 400));
+    pPolygonFeature->addPoint(QPointF(500, 150));
+    //设置要素样式
+    pPolygonFeature->rPen().setWidth(20);
+    pPolygonFeature->rPen().setStyle(Qt::PenStyle::DashLine);
+    pPolygonFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+    pPolygonFeature->rPen().setColor(mpDrawColor);
+    pPolygonFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+    pPolygonFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
     //-----测试要素绘图结束-----//
 
 
@@ -410,6 +438,14 @@ void QCanvas::doRepaint()
 void QCanvas::doUpdate()
 {
     updateViewArea();
+}
+
+void QCanvas::onDrawColorChanged(QColor color)
+{
+    //设置当前选中颜色
+    mpDrawColor  = color;
+    //刷新
+    update();
 }
 
 QSize QCanvas::logicalSize() const
