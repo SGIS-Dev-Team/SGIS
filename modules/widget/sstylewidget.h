@@ -39,7 +39,7 @@ private:
 
     QComboBox* mpComboLineType;
     QComboBox* mpComboFill;
-    QComboBox* mpComboEndPoint;
+    QComboBox* mpComboCapStyle;
     QComboBox* mpComboJoint;
     QSpinBox* mpSpinBoxWidth;
 
@@ -65,11 +65,17 @@ public:
 private:
     void _initializeConnections();
     void _disconnect();
+    //设置enable属性
     void changeToPointShape();
     void changeToLineShape();
     void changeToPolygonShape();
     void changeToRaster();
-
+    //设置图层的样式
+    void setLayerPen(QPen& pen);
+    void setLayerBrush(QBrush& brush);
+    //根据图层样式，显示在窗口上,用以模拟PPT中选项的行为
+    void setStylePen(QPen& pen);
+    void setStyleBrush(QBrush& brush);
 
 };
 
