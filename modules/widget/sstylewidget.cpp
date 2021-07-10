@@ -36,7 +36,7 @@ StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
     mpComboLineType->addItem(QString(tr("DashDotLine")), int(Qt::DashDotLine));
     mpComboLineType->addItem(QString(tr("DashDotDotLine")), int(Qt::DashDotDotLine));
     mpComboLineType->addItem(QString(tr("CustomDashLine")), int(Qt::CustomDashLine));
-    mpComboLineType->addItem(QString(), QVariant());
+    mpComboLineType->addItem(QString(tr("MultiValue")), QVariant());
     //填充
     mpComboFill->addItem(QString(tr("SolidPattern")), int(Qt::SolidLine));
     mpComboFill->addItem(QString(tr("Dense2Pattern")), int(Qt::Dense2Pattern));
@@ -44,17 +44,17 @@ StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
     mpComboFill->addItem(QString(tr("FDiagPattern")), int(Qt::FDiagPattern));
     mpComboFill->addItem(QString(tr("CrossPattern")), int(Qt::CrossPattern));
     mpComboFill->addItem(QString(tr("DiagCrossPattern")), int(Qt::DiagCrossPattern));
-    mpComboFill->addItem(QString(), QVariant());
+    mpComboFill->addItem(QString(tr("MultiValue")), QVariant());
     //端点
     mpComboEndPoint->addItem(QString(tr("FlatCap")), int(Qt::FlatCap));
     mpComboEndPoint->addItem(QString(tr("SquareCap")), int(Qt::SquareCap));
     mpComboEndPoint->addItem(QString(tr("RoundCap")), int(Qt::RoundCap));
-    mpComboEndPoint->addItem(QString(), QVariant());
+    mpComboEndPoint->addItem(QString(tr("MultiValue")), QVariant());
     //连接点
     mpComboJoint->addItem(QString(tr("MiterJoin")), int(Qt::MiterJoin));
     mpComboJoint->addItem(QString(tr("BevelJoin")), int(Qt::BevelJoin));
     mpComboJoint->addItem(QString(tr("RoundJoin")), int(Qt::RoundJoin));
-    mpComboJoint->addItem(QString(), QVariant());
+    mpComboJoint->addItem(QString(tr("MultiValue")), QVariant());
     //线宽
     mpSpinBoxWidth->setMaximum(10);
     mpSpinBoxWidth->setMinimum(1);
@@ -67,11 +67,24 @@ StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
     mpComboJoint->setEnabled(false);
     mpSpinBoxWidth->setEnabled(false);
 
+    _initializeConnections();
+
+
 }
 
 void StyleWidget::_initializeConnections()
 {
+    connect(mpComboLineType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
+    connect(mpComboFill, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
+    connect(mpComboEndPoint, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
+    connect(mpComboJoint, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
+    connect(mpSpinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &StyleWidget::changeComeUp);
+}
 
+void StyleWidget::changeComeUp()
+{
+    if (mbRealChangeFlag)
+        emit StyleWidget::styleChanged();
 }
 
 void StyleWidget::_disconnect()
@@ -127,15 +140,21 @@ void StyleWidget::changeToPolygonShape()
 void StyleWidget::changeToRaster()
 {
     //全部不可选
+
     mpComboLineType->setEnabled(false);
     mpComboFill->setEnabled(false);
     mpComboEndPoint->setEnabled(false);
-    mpComboJoint->setEnabled(false);
+    mpComboJoint->setEnabled(true);
     mpSpinBoxWidth->setEnabled(false);
+
+    mpComboJoint->setCurrentText(QString(tr("RoundJoin")));
 }
 
 void StyleWidget::onSelectStateChanged()
 {
+    //程序进行的修改
+    mbRealChangeFlag = false;
+
     //从layermanager中获取图层信息
     if (mpLayerManager == nullptr)
     {
@@ -154,6 +173,10 @@ void StyleWidget::onSelectStateChanged()
             changeToRaster();
         }
     }
+    //程序修改结束
+    mbRealChangeFlag = false;
 
 }
+
+
 

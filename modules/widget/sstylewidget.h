@@ -24,10 +24,13 @@ public:
 
     /*-----信号-----*/
 signals:
-
+    void styleChanged();
     /*-----槽函数-----*/
 public slots:
     void onSelectStateChanged();
+    void changeComeUp();
+private slots:
+
 
 
     /*-----成员变量-----*/
@@ -45,6 +48,11 @@ private:
     QLabel* mpLabelEndPoint;
     QLabel* mpLabelJoint;
     QLabel* mpLabelWidth;
+
+    /*-----属性-----*/
+    //为true，是用户交互产生的信号
+    //为false,是程序修改时产生的信号（应当忽视）
+    bool mbRealChangeFlag = false;
 
     /*-----成员函数-----*/
 public:
