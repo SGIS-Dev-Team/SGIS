@@ -85,8 +85,11 @@ enum PaintObject
     TextBase,
     BrushBase,
     ImageBase,
-    FragImageBase
-
+    Raster,
+    FeatureBase,
+    PointFeature,
+    LineStringFeature,
+    PolygonFeature,
 };
 }
 #endif // GLOBAL_H

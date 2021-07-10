@@ -12,6 +12,7 @@
 #include <QListWidget>
 #include "modules/global.h"
 #include "vld.h"
+#include "modules/widget/sstylewidget.h"
 
 namespace Ui
 {
@@ -118,6 +119,7 @@ private:
     //
     ImageInfoWidget* mpImageInfoWidget;
     QListWidget* mpOutputListWidget;
+    StyleWidget* mpStyleWidget;
     //[数据导入向导]
     QDataImportWizard* mpImportDialog{nullptr};
 };
