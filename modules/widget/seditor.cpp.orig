@@ -626,5 +626,24 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     ui->mLayerView->setDocument(mpCurDoc);
     //设置style窗口对应的layermanager
     mpStyleWidget->SetLayerManager(&(mpCurDoc->getLayerManager()));
-    ui->mDockStyle->setWidget(mpStyleWidget = new StyleWidget());
 }
+<<<<<<< HEAD
+
+void SEditor::initCustomDock()
+{
+    ui->mDockStyle->setWidget(mpStyleWidget = new StyleWidget());
+    //创建tiff信息窗口
+    auto pDock = new QDockWidget("ImageInfo");
+    pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
+    addDockWidget(Qt::RightDockWidgetArea, pDock);
+
+    //创建输出信息窗口
+    pDock = new QDockWidget("Output");
+    pDock->setWidget(mpOutputListWidget = new QListWidget());
+    addDockWidget(Qt::RightDockWidgetArea, pDock);
+    //绑定 logger日志 添加信号
+    QObject::connect(SLogger::getLogger(), &SLogger::signalAddEntry,
+                     this, &SEditor::onOutput);
+}
+=======
+>>>>>>> origin/palette

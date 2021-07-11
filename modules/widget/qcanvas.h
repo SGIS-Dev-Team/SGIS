@@ -52,6 +52,8 @@ public slots:
     void doRepaint();
     void doUpdate();
 
+    //响应颜色选择变化
+    void onDrawColorChanged(QColor color);
     /*-----控制标记-----*/
 private:
     //鼠标点的位置
@@ -103,6 +105,7 @@ private:
     SObject::PaintTrigger mTrigger{SObject::User_Trigger};
 
     /*-----成员函数-----*/
+    QColor mpDrawColor;
 public:
     //[访问函数]
 

@@ -62,9 +62,9 @@ LayerInfoWidget::~LayerInfoWidget()
 
 void LayerInfoWidget::fill(GDALDataset* pGDALDataset)
 {
-	//¸ù¾Ý´ÓGDALDataset¶ÁÈ¡µ½µÄÊµ¼ÊÐÅÏ¢Ìî³ä - ÕâÀï¾ßÌå ¶¼ÊÇ´ú±íÉ¶ÒâÒå µÃÄãÍêÉÆÒ»ÏÂ
+	//æ ¹æ®ä»ŽGDALDatasetè¯»å–åˆ°çš„å®žé™…ä¿¡æ¯å¡«å…… - è¿™é‡Œå…·ä½“ éƒ½æ˜¯ä»£è¡¨å•¥æ„ä¹‰ å¾—ä½ å®Œå–„ä¸€ä¸‹
 
-	//±ÈÈç --ÏÂÃæÕâ¸öÎÒ²éÁËÏÂÊÇÖ¸Í¼ÏñÏñËØÖµ¿í¸ß
+	//æ¯”å¦‚ --ä¸‹é¢è¿™ä¸ªæˆ‘æŸ¥äº†ä¸‹æ˜¯æŒ‡å›¾åƒåƒç´ å€¼å®½é«˜
 	mpWidthLabel->setText(QString::number(pGDALDataset->GetRasterXSize()));
 	mpHeightLabel->setText(QString::number(pGDALDataset->GetRasterYSize()));
 	//

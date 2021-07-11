@@ -28,7 +28,8 @@ public:
 
     /*-----信号-----*/
 signals:
-
+    //颜色改变信号
+    void colorChanged(QColor color);
     /*-----槽函数-----*/
 private slots:
     //画布缩放信号响应

@@ -129,7 +129,13 @@ private:
     QLabel* mpStatLblCanvasScale;
     QLabel* mpStatLblGSD;      //先用GSD代替比例尺
     QLabel* mpStatLblProjCS;
+<<<<<<< HEAD
+    //
+    ImageInfoWidget* mpImageInfoWidget;
+    QListWidget* mpOutputListWidget;
     StyleWidget* mpStyleWidget;
+=======
+>>>>>>> origin/palette
     //[数据导入向导]
     QDataImportWizard* mpImportDialog{nullptr};
     //
