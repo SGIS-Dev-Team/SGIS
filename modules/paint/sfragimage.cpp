@@ -5,13 +5,13 @@
 #include <ctime>
 
 SFragImage::SFragImage(SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
-    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+    : SObject(PaintObject::Raster, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 }
 
 SFragImage::SFragImage(const SImageStreamMeta& _streamMeta, SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
-    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+    : SObject(PaintObject::Raster, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 

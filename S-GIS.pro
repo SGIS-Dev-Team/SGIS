@@ -45,6 +45,7 @@ SOURCES += \
     modules/widget/slayerinfowidget.cpp \
     modules/widget/sotherinfowidget.cpp \
     modules/widget/sprojectioninfowidget.cpp \
+    modules/widget/sstylewidget.cpp \
     modules/widget/straymgr.cpp \
     modules/widget/wizard/extract/qextractwizard.cpp \
     modules/widget/wizard/extract/qextractwizardpagefile.cpp \
@@ -93,6 +94,7 @@ HEADERS += \
     modules/widget/qlayerview.h \
     modules/widget/seditor.h \
     modules/widget/globe/sglobe.h \
+    modules/widget/sstylewidget.h \
     modules/widget/straymgr.h \
     modules/widget/wizard/extract/qextractwizard.h \
     modules/widget/wizard/extract/qextractwizard.h \

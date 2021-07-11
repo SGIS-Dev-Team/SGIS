@@ -26,7 +26,8 @@ SEditor::SEditor(QWidget* parent): QMainWindow(parent),
 SEditor::~SEditor()
 {
     //TODO:释放所有手动创建且没有指定父控件的控件指针
-    if (mpImportDialog)delete mpImportDialog;
+    if (mpImportDialog)
+        delete mpImportDialog;
     mpImportDialog = nullptr;
 
     delete ui;
@@ -358,8 +359,6 @@ void SEditor::_initialize()
     ui->mStatusBar->addPermanentWidget(mpStatLblCursorPos);
     ui->mStatusBar->addPermanentWidget(mpStatLblCanvasScale);
 
-    /*-----初始化子窗口-----*/
-
     /*-----创建绘图区-----*/
     createWorkspace();
 
@@ -396,7 +395,10 @@ void SEditor::_initializeConnections()
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
 
-    if (mpImportDialog) _connectDataImportWizard();
+    if (mpImportDialog)
+        _connectDataImportWizard();
+
+    connect(&mpCurDoc->getLayerManager(), &SLayerManager::selectStateChanged, mpStyleWidget, &StyleWidget::onSelectStateChanged);
 }
 
 void SEditor::_connectDataImportWizard()
@@ -427,10 +429,13 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     onCanvasScaled(1);
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
+    //设置style窗口对应的layermanager
+    mpStyleWidget->SetLayerManager(&(mpCurDoc->getLayerManager()));
 }
 
 void SEditor::initCustomDock()
 {
+    ui->mDockStyle->setWidget(mpStyleWidget = new StyleWidget());
     //创建tiff信息窗口
     auto pDock = new QDockWidget("ImageInfo");
     pDock->setWidget(mpImageInfoWidget = new ImageInfoWidget());
