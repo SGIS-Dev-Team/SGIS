@@ -2,19 +2,19 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 
-QCanvasArea::QCanvasArea(const QSize &CanvasSize, QWidget *parent): QScrollArea(parent)
+QCanvasArea::QCanvasArea(const QSize& CanvasSize, QWidget* parent): QScrollArea(parent)
 {
     mCanvasSize = CanvasSize;
     _initialize();
 }
 
-QCanvasArea::QCanvasArea(QWidget *parent): QCanvasArea(DEFAULT_CANVAS_SIZE, parent) {}
+QCanvasArea::QCanvasArea(QWidget* parent): QCanvasArea(DEFAULT_CANVAS_SIZE, parent) {}
 
 QCanvasArea::~QCanvasArea()
 {
 }
 
-QCanvas * QCanvasArea::canvas()const
+QCanvas* QCanvasArea::canvas()const
 {
     return mpCanvas;
 }
@@ -26,6 +26,23 @@ QRectF QCanvasArea::viewArea() const
                   this->verticalScrollBar()->value() / scaleValue,
                   this->horizontalScrollBar()->pageStep() / scaleValue,
                   this->verticalScrollBar()->pageStep() / scaleValue);
+}
+
+void QCanvasArea::ensureVisible(const QRectF& rect)
+{
+    //获取视图区域大小
+    QSize viewPortSize = this->viewport()->size();
+
+    //设置缩放比例使得视图区域能够完全容纳该矩形
+    double ratioX = viewPortSize.width() / rect.width();
+    double ratioY = viewPortSize.height() / rect.height();
+
+    mpCanvas->setScaleValue(MIN(ratioX, ratioY));
+
+    //调整滑动条位置到区域左上角
+    QPointF topLeft = this->mpCanvas->LtoA(rect.topLeft());
+    this->horizontalScrollBar()->setValue(topLeft.x());
+    this->verticalScrollBar()->setValue(topLeft.y());
 }
 
 void QCanvasArea::_initialize()
@@ -42,26 +59,26 @@ void QCanvasArea::_initialize()
     mpCanvas->setViewArea(viewArea());
 }
 
-void QCanvasArea::wheelEvent(QWheelEvent *event)
+void QCanvasArea::wheelEvent(QWheelEvent* event)
 {
     //Ctrl+滚轮   缩放画布
     //滚轮        滚动条上下移动
     //Shift+滚轮  滚动条左右移动
     int delta = event->angleDelta().y();
 
-    if(event->modifiers() == Qt::KeyboardModifier::ControlModifier)
+    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier)
     {
         return;
         bool isScaled{false};
-        if(delta > 0)
+        if (delta > 0)
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() + mpCanvas->scaleValue() / 10.0);
         else
             isScaled = mpCanvas->setScaleValue(mpCanvas->scaleValue() - mpCanvas->scaleValue() / 10.0);
     }
 
-    else if(event->modifiers() == Qt::KeyboardModifier::ShiftModifier)
+    else if (event->modifiers() == Qt::KeyboardModifier::ShiftModifier)
         this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - delta);
-    else if(event->modifiers() == Qt::KeyboardModifier::NoModifier)
+    else if (event->modifiers() == Qt::KeyboardModifier::NoModifier)
         this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - delta);
 
 }
@@ -69,7 +86,7 @@ void QCanvasArea::wheelEvent(QWheelEvent *event)
 
 void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
 {
-    QScrollBar *hor = this->horizontalScrollBar(), *ver = this->verticalScrollBar();
+    QScrollBar* hor = this->horizontalScrollBar(), *ver = this->verticalScrollBar();
     //确定视图区左上角点在画布上的实际坐标
     QPointF ptViewportLTActual(hor->value(), ver->value());
     //计算鼠标点实际坐标
@@ -80,12 +97,12 @@ void QCanvasArea::onCanvasScaling(QPointF lgcPos, int delta)
     //进行缩放操作
     bool isScaled{false};
 
-    if(delta > 0)
+    if (delta > 0)
         isScaled = mpCanvas->setScaleValue(dScale0 * 1.10);
     else
         isScaled = mpCanvas->setScaleValue(dScale0 * 0.90);
 
-    if(!isScaled)
+    if (!isScaled)
         return;
 
     //获取当前缩放值

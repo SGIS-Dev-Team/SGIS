@@ -104,10 +104,21 @@ public:
     //[修改函数]
     //设置影像金字塔文件路径，影像文件名（不要带格式后缀）
     void setPyramidDir(const QString& dirPath);
+    //设置均衡化函数
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    //预设置波段
+    void presetBandIndices(int r, int g, int b);
+    //设置波段
     void setBandIndices(int r, int g, int b);
+    //获取波段值
+    int redBandIndex()      {return mFragMatVec.front().getData()->redBandIdx();}
+    int greenBandIndex()    {return mFragMatVec.front().getData()->greenBandIdx();}
+    int blueBandIndex()     {return mFragMatVec.front().getData()->blueBandIdx();}
+    int bandIndex(int which) {return which == 0 ? redBandIndex() : which == 1 ? greenBandIndex() : which == 2 ? blueBandIndex() : -1;}
     //常驻顶层金字塔图像
     void setHoldTopPyramidEnabled(bool hold);
+    //获取图像描述
+    SImageMeta imageMeta()const {return SImage::getMetaOf(getLargestImgPath());}
 
     //[功能函数]
 public:

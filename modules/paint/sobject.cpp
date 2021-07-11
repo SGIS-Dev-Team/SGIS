@@ -266,8 +266,8 @@ QString SObject::typeString(PaintObject type)
     case sgis::ImageBase:
         return "Image Base";
         break;
-    case sgis::FragImageBase:
-        return "Frag Image Base";
+    case sgis::Raster:
+        return "Raster";
         break;
     case sgis::PointFeature:
         return "Point Feature";
