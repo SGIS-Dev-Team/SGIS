@@ -14,16 +14,16 @@ StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
     pGridLayout->setMargin(1);
 
     pGridLayout->addWidget(mpLabelLineType = new QLabel(tr("Line Type")), 0, 0);
-    pGridLayout->addWidget(mpLabelFill = new QLabel(tr("Fill")), 1, 0);
-    pGridLayout->addWidget(mpLabelEndPoint = new QLabel(tr("End Point")), 2, 0);
-    pGridLayout->addWidget(mpLabelJoint = new QLabel(tr("Joint")), 3, 0);
-    pGridLayout->addWidget(mpLabelWidth = new QLabel(tr("Width")), 4, 0);
+    pGridLayout->addWidget(mpLabelEndPoint = new QLabel(tr("End Point")), 1, 0);
+    pGridLayout->addWidget(mpLabelJoint = new QLabel(tr("Joint")), 2, 0);
+    pGridLayout->addWidget(mpLabelWidth = new QLabel(tr("Width")), 3, 0);
+    pGridLayout->addWidget(mpLabelFill = new QLabel(tr("Fill")), 4, 0);
 
     pGridLayout->addWidget(mpComboLineType = new QComboBox(), 0, 1);
-    pGridLayout->addWidget(mpComboFill = new QComboBox(), 1, 1);
-    pGridLayout->addWidget(mpComboCapStyle = new QComboBox(), 2, 1);
-    pGridLayout->addWidget(mpComboJoint = new QComboBox(), 3, 1);
-    pGridLayout->addWidget(mpSpinBoxWidth = new QSpinBox(), 4, 1);
+    pGridLayout->addWidget(mpComboCapStyle = new QComboBox(), 1, 1);
+    pGridLayout->addWidget(mpComboJoint = new QComboBox(), 2, 1);
+    pGridLayout->addWidget(mpSpinBoxWidth = new QSpinBox(), 3, 1);
+    pGridLayout->addWidget(mpComboFill = new QComboBox(), 4, 1);
 
     //标签的对齐方式
 
@@ -57,7 +57,7 @@ StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
 
     //线宽
     mpSpinBoxWidth->setMaximum(10);
-    mpSpinBoxWidth->setMinimum(1);
+    mpSpinBoxWidth->setMinimum(-1);
     mpSpinBoxWidth->setValue(3);
 
     //全部不可选
@@ -84,7 +84,8 @@ void StyleWidget::_initializeConnections()
     connect(mpComboFill, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
     connect(mpComboCapStyle, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
     connect(mpComboJoint, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &StyleWidget::changeComeUp);
-    connect(mpSpinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &StyleWidget::changeComeUp);
+
+    connect(mpSpinBoxWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &StyleWidget::onSpinBoxValueChanged);
 }
 
 void StyleWidget::_disconnect()
@@ -92,32 +93,12 @@ void StyleWidget::_disconnect()
 
 }
 
-void StyleWidget::changeComeUp()
+void StyleWidget::onSpinBoxValueChanged(int value)
 {
-    if (!mbRealChangeFlag)
-        return;
-    //修改选中图层的样式
-    //从layermanager中获取图层信息
-    if (mpLayerManager == nullptr)
-    {
-        return;
-    }
-    const std::list<list_iterator>Iterlist = mpLayerManager->getSelectedLayerIterList();
-    list_iterator tempIter;
-    SObject* pSObj;
-    for (auto begin = Iterlist.cbegin(); begin != Iterlist.cend(); begin++)
-    {
-        tempIter = *begin;
-        //访问图层
-        pSObj =  *tempIter;
-
-    }
-
-
-
-
-
-    emit StyleWidget::styleChanged();
+    if (value <= 0)
+        mpSpinBoxWidth->setValue(1);
+    else
+        changeComeUp();
 }
 
 
@@ -170,11 +151,13 @@ void StyleWidget::changeToRaster()
     mpComboFill->setEnabled(false);
     mpComboCapStyle->setEnabled(false);
     mpComboJoint->setEnabled(false);
-    mpSpinBoxWidth->setEnabled(false);
+    mpSpinBoxWidth->setEnabled(true);
 }
 
 void StyleWidget::setLayerPen(QPen& pen)
 {
+    if (!mpComboLineType->isEnabled())
+        return;
     if (mpComboLineType->currentIndex() != -1)
     {
         pen.setStyle(static_cast<Qt::PenStyle>((mpComboLineType->currentData().toInt())));
@@ -187,12 +170,16 @@ void StyleWidget::setLayerPen(QPen& pen)
     {
         pen.setJoinStyle(static_cast<Qt::PenJoinStyle>((mpComboJoint->currentData().toInt())));
     }
-    pen.setWidth(mpSpinBoxWidth->value());
-
+    if (mpSpinBoxWidth->value() != -1)
+    {
+        pen.setWidth(mpSpinBoxWidth->value());
+    }
 }
 
 void StyleWidget::setLayerBrush(QBrush& brush)
 {
+    if (!mpComboFill->isEnabled())
+        return;
     if (mpComboFill->currentIndex() != -1)
     {
         brush.setStyle(static_cast<Qt::BrushStyle>(mpComboFill->currentData().toInt()));
@@ -219,17 +206,29 @@ void StyleWidget::setStylePen(QPen& pen)
     }
     else
     {
-        if (static_cast<Qt::PenStyle>(mpComboLineType->currentData().toInt()) != pen.style())
+        if (mpComboLineType->currentIndex() == -1)
+        {}
+        else if (static_cast<Qt::PenStyle>(mpComboLineType->currentData().toInt()) != pen.style())
         {
             mpComboLineType->setCurrentIndex(-1);
         }
-        if (static_cast<Qt::PenCapStyle>(mpComboCapStyle->currentData().toInt()) != pen.capStyle())
+        if (mpComboCapStyle->currentIndex() == -1)
+        {}
+        else if (static_cast<Qt::PenCapStyle>(mpComboCapStyle->currentData().toInt()) != pen.capStyle())
         {
             mpComboCapStyle->setCurrentIndex(-1);
         }
-        if (static_cast<Qt::PenJoinStyle>(mpComboJoint->currentData().toInt()) != pen.joinStyle())
+        if (mpComboJoint->currentIndex() == -1)
+        {}
+        else if (static_cast<Qt::PenJoinStyle>(mpComboJoint->currentData().toInt()) != pen.joinStyle())
         {
             mpComboJoint->setCurrentIndex(-1);
+        }
+        if (mpSpinBoxWidth->value() == -1)
+        {}
+        else if (mpSpinBoxWidth->value() != pen.width())
+        {
+            mpSpinBoxWidth->setValue(-1);
         }
     }
 }
@@ -243,6 +242,10 @@ void StyleWidget::setStyleBrush(QBrush& brush)
 
         index = mpComboFill->findData(static_cast<int>(brush.style()));
         mpComboFill->setCurrentIndex(index);
+    }
+    else if (mpComboFill->currentIndex() == -1)
+    {
+        return;
     }
     else if (static_cast<Qt::BrushStyle>(mpComboFill->currentData().toInt()) != brush.style())
     {
@@ -264,14 +267,23 @@ void StyleWidget::onSelectStateChanged()
     const std::list<list_iterator>Iterlist = mpLayerManager->getSelectedLayerIterList();
     list_iterator tempIter;
     SObject* pSObj;
+    changeToRaster();
     for (auto begin = Iterlist.cbegin(); begin != Iterlist.cend(); begin++)
     {
-        tempIter = *begin;
         //访问图层
-        pSObj =  *tempIter;
-        if (pSObj->getType() == Raster)
+        pSObj =  **begin;
+        if (pSObj->getType() == PointFeature)
         {
-            changeToRaster();
+            setStyleBrush(pSObj->getBrush());
+        }
+        if (pSObj->getType() == LineStringFeature)
+        {
+            setStylePen(pSObj->getPen());
+        }
+        if (pSObj->getType() == PolygonFeature)
+        {
+            setStylePen(pSObj->getPen());
+            setStyleBrush(pSObj->getBrush());
         }
     }
 
@@ -280,5 +292,41 @@ void StyleWidget::onSelectStateChanged()
 
 }
 
+
+void StyleWidget::changeComeUp()
+{
+    if (!mbRealChangeFlag)
+        return;
+    //修改选中图层的样式
+    //从layermanager中获取图层信息
+    if (mpLayerManager == nullptr)
+    {
+        return;
+    }
+    const std::list<list_iterator>Iterlist = mpLayerManager->getSelectedLayerIterList();
+    list_iterator tempIter;
+    SObject* pSObj;
+    for (auto begin = Iterlist.cbegin(); begin != Iterlist.cend(); begin++)
+    {
+        //访问图层
+        pSObj =  **begin;
+        if (pSObj->getType() == PointFeature)
+        {
+            setLayerBrush(pSObj->rBrush());
+        }
+        if (pSObj->getType() == LineStringFeature)
+        {
+            setLayerPen(pSObj->rPen());
+        }
+        if (pSObj->getType() == PolygonFeature)
+        {
+            setLayerPen(pSObj->rPen());
+            setLayerBrush(pSObj->rBrush());
+        }
+    }
+
+
+    emit StyleWidget::styleChanged();
+}
 
 

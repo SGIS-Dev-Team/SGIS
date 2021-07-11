@@ -30,6 +30,8 @@ public slots:
     void onSelectStateChanged();
     void changeComeUp();
 private slots:
+    //过滤掉用于表达多值存在的-1值
+    void onSpinBoxValueChanged(int value);
 
 
 
