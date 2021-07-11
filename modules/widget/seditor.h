@@ -65,12 +65,6 @@ private slots:
     //[矢量数据导入事件响应]
     void onActionImportShapeFileTriggered();
 
-    //响应图层视图要求FitToArea
-    void onLayerViewFitToArea(const QRectF& rect);
-    //响应图层视图导入信号
-    void onLayerViewImportRaster();
-    void onLayerViewImportShapeFile();
-
     //[切换绘图区响应]
     void onTabSwitched();
     //[画布事件响应]
@@ -109,8 +103,7 @@ private:
     void _initialize();
     //初始化链接
     void _initializeConnections();
-    void _connectRasterImportWizard();
-    void _connectLayerView();
+    void _connectDataImportWizard();
 
     //创建新的绘图区
     void createWorkspace(const QSize& CanvasSize = DEFAULT_CANVAS_SIZE);

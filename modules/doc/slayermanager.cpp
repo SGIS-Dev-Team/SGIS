@@ -22,26 +22,14 @@ void SLayerManager::onLayerViewClicked(const QModelIndex& index)
 {
     if (index.model() != &this->mLayerModel)
         return;
-
-    auto iter = _iterAt(_posSwitch(index.row()));
-
     //处理图层可见性
     if (index.column() == 0)
     {
         QStandardItem* pItem = this->mLayerModel.itemFromIndex(index);
-        (*iter)->setVisible(pItem->checkState() == Qt::Checked ? true : false);
-
-        if (mbUpdateSignal)
-            emit layersUpdated(this);
+        SObject* obj = *_iterAt(_posSwitch(index.row()));
+        obj->setVisible(pItem->checkState() == Qt::Checked ? true : false);
+        emit layersUpdated(this);
     }
-
-    //在选择找到该项
-    auto sltIter = std::find(mSelectedLayerIterList.begin(), mSelectedLayerIterList.end(), iter);
-
-    //若选择链表中没有，但该图层被标记为选中
-    //if (sltIter == mSelectedLayerIterList.end() && (*iter)->isSelected())
-
-
 }
 
 void SLayerManager::addLayer(SObject* obj)
@@ -71,29 +59,24 @@ void SLayerManager::insertLayers(const std::vector<SObject*>& objVec, int pos)
 
 void SLayerManager::insertLayers(const std::vector<SObject*>& objVec, list_iterator it)
 {
-    int nRow = mLayerList.size() - _posOf(it);
+    int nRow = _posSwitch(_posOf(it));
 
-    //这样插入会使得在objVec索引值靠前的图层最后在更低层
     for (SObject* obj : objVec)
     {
         Q_ASSERT(obj);
-        //插入到图层链表
+        //这样插入会使得在objVec索引值靠前的图层最后在更低层
         list_iterator inserted_iter = mLayerList.insert(it, obj);
-        //插入到图层模型
         mLayerModel.insertRow(nRow++, _createRowItem(obj));
-        //增加选择链表结点
+
         if (obj->isSelected())
             mSelectedLayerIterList.push_back(inserted_iter);
     }
 
-    if (mbUpdateSignal)
-    {
-        emit selectStateChanged();
-        emit layersUpdated(this);
-    }
+    clearSelection();
+    emit layersUpdated(this);
 }
 
-void SLayerManager::replaceLayer(int pos, SObject* newLayer)
+void SLayerManager::replaceLayer(size_t pos, SObject* newLayer)
 {
     list_iterator iter = _iterAt(pos);
     replaceLayer(iter, newLayer);
@@ -114,127 +97,45 @@ void SLayerManager::replaceLayer(list_iterator it, SObject* newLayer)
     this->mLayerModel.removeRow(pos);
     this->mLayerModel.insertRow(pos, _createRowItem(newLayer));
 
-    if (mbUpdateSignal)
-    {
-        emit selectStateChanged();
-        emit layersUpdated(this);
-    }
-}
-
-void SLayerManager::removeSelectedLayers()
-{
-    std::vector<list_iterator> iterVec;
-    iterVec.reserve(mSelectedLayerIterList.size());
-
-    for (auto& iter : mSelectedLayerIterList)
-        iterVec.push_back(iter);
-
-    removeLayers(iterVec);
+    clearSelection();
+    emit layersUpdated(this);
 }
 
 void SLayerManager::removeLayer(SObject* obj)
 {
-    Q_ASSERT(obj);
+    if (!obj)
+        return;
     list_iterator iter = std::find(mLayerList.begin(), mLayerList.end(), obj);
-    Q_ASSERT(iter != mLayerList.end());
 
-    removeLayers({iter});
+    if (iter == mLayerList.end())
+        return;
+
+    removeLayer(iter);
 }
 
-void SLayerManager::removeLayer(int pos)
+void SLayerManager::removeLayer(size_t pos)
 {
-    removeLayers({_iterAt(pos)});
+    list_iterator iter = _iterAt(pos);
+
+    if (iter == mLayerList.end())
+        return;
+
+    removeLayer(iter);
 }
 
 void SLayerManager::removeLayer(list_iterator it)
 {
-    removeLayers(std::vector<list_iterator>({it}));
-}
+    //从选中链表中删除图层
+    mSelectedLayerIterList.remove(it);
+    mLayerList.erase(it);
 
-void SLayerManager::removeLayers(std::vector<SObject*> objVec)
-{
-    removeLayers(_objVecToIterVec(objVec));
-}
+    SObjectFactory::releaseObject(*it);
 
-void SLayerManager::removeLayers(std::vector<int> posVec)
-{
-    removeLayers(_posVecToIterVec(posVec));
-}
+    //从数据模型中删除图层
+    mLayerModel.removeRow(_posSwitch(_posOf(it)));
 
-void SLayerManager::removeLayers(std::vector<list_iterator> iterVec)
-{
-    for (auto& iter : iterVec)
-    {
-        //删除数据模型中的图层行
-        mLayerModel.removeRow(_posSwitch(_posOf(iter)));
-        //若被选中，则清除选择链表中的该图层
-        if ((*iter)->isSelected())
-            mSelectedLayerIterList.remove(iter);
-        //释放该图层的内存
-        SObjectFactory::releaseObject(*iter);
-        //清除图层链表中的该项
-        mLayerList.erase(iter);
-    }
-
-    if (mbUpdateSignal)
-    {
-        emit selectStateChanged();
-        emit layersUpdated(this);
-    }
-}
-
-void SLayerManager::moveLayer(SObject* srcObj, SObject* dstObj)
-{
-    list_iterator srcIter = std::find(mLayerList.begin(), mLayerList.end(), srcObj);
-    list_iterator dstIter = std::find(mLayerList.begin(), mLayerList.end(), dstObj);
-
-    Q_ASSERT(srcIter != mLayerList.end());
-
-    moveLayers({srcIter}, dstIter);
-}
-
-void SLayerManager::moveLayer(int srcPos, int dstPos)
-{
-    moveLayers({_iterAt(srcPos)}, _iterAt(dstPos));
-}
-
-void SLayerManager::moveLayer(const list_iterator& srcIter, const list_iterator& dstIter)
-{
-    moveLayers({srcIter}, dstIter);
-}
-
-void SLayerManager::moveLayers(const std::vector<SObject*>& srcObjVec, SObject* dstObj)
-{
-    moveLayers(_objVecToIterVec(srcObjVec), std::find(mLayerList.begin(), mLayerList.end(), dstObj));
-}
-
-void SLayerManager::moveLayers(const std::vector<int>& srcPosVec, int dstPos)
-{
-    moveLayers(_posVecToIterVec(srcPosVec), _iterAt(dstPos));
-}
-
-void SLayerManager::moveLayers(const std::vector<list_iterator>& srcIterVec, const list_iterator& dstIter)
-{
-    std::vector<SObject*> srcObjVec;
-    srcObjVec.reserve(srcIterVec.size());
-
-    for (auto& iter : srcIterVec)
-        srcObjVec.push_back(*iter);
-
-    _beginModifyLayers();
-    insertLayers(srcObjVec, dstIter);
-    removeLayers(srcIterVec);
-    _endModifyLayers();
-}
-
-const SObject* SLayerManager::operator[](int pos) const
-{
-    return *_iterAt(pos);
-}
-
-SObject* SLayerManager::operator[](int pos)
-{
-    return *_iterAt(pos);
+    clearSelection();
+    emit layersUpdated(this);
 }
 
 const layer_list& SLayerManager::getLayerList()const
@@ -258,6 +159,11 @@ std::vector<int> SLayerManager::getSelectedRowIndices() const
     }
 
     return idxVec;
+}
+
+const QStandardItemModel* SLayerManager::getLayerModel()const
+{
+    return &mLayerModel;
 }
 
 SObject* SLayerManager::getTopLayerOn(const QPointF& pt, bool onlySelected, bool inBoundRect) const
@@ -330,26 +236,9 @@ void SLayerManager::select(const std::vector<int>& indexVec)
     for (auto& idx : indexVec)
     {
         auto iter = _iterAt(_posSwitch(idx));
-        SObject* pObj = *iter;
-
-        if (pObj->isSelected())
-        {
-            pObj->setSelected(false);
-
-            std::list<list_iterator>::iterator sltIter = std::find(mSelectedLayerIterList.begin(), mSelectedLayerIterList.end(), iter);
-
-            Q_ASSERT(sltIter != mSelectedLayerIterList.end());
-
-            mSelectedLayerIterList.erase(sltIter);
-        }
-        else
-        {
-            pObj->setSelected(true);
-
-            mSelectedLayerIterList.push_back(iter);
-        }
+        (*iter)->setSelected(true);
+        mSelectedLayerIterList.push_back(iter);
     }
-
     emit selectStateChanged();
 }
 
@@ -364,9 +253,9 @@ void SLayerManager::clearSelection()
     emit selectStateChanged();
 }
 
-list_iterator SLayerManager::_iterAt(int pos)
+list_iterator SLayerManager::_iterAt(size_t pos)
 {
-    Q_ASSERT(pos < mLayerList.size() && pos >= 0);
+    Q_ASSERT(pos < mLayerList.size());
 
     list_iterator iter = mLayerList.begin();
     for (size_t i = 0; i < pos; ++i)
@@ -374,19 +263,9 @@ list_iterator SLayerManager::_iterAt(int pos)
     return iter;
 }
 
-list_const_iterator SLayerManager::_iterAt(int pos) const
+size_t SLayerManager::_posOf(list_iterator it)const
 {
-    Q_ASSERT(pos < mLayerList.size() && pos >= 0);
-
-    list_const_iterator iter = mLayerList.begin();
-    for (size_t i = 0; i < pos; ++i)
-        ++iter;
-    return iter;
-}
-
-int SLayerManager::_posOf(list_iterator it)const
-{
-    int pos{0};
+    size_t pos{0};
     while (it != mLayerList.begin())
     {
         ++pos;
@@ -447,40 +326,6 @@ void SLayerManager::sendToBack()
         [](SLayerManager * mgr)->list_iterator{return mgr->mLayerList.begin();});
 }
 
-void SLayerManager::setVisible(bool visible)
-{
-    for (auto& iter : mSelectedLayerIterList)
-    {
-        (*iter)->setVisible(visible);
-        mLayerModel.item(_posSwitch(_posOf(iter)), 0)->setCheckState(visible ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
-    }
-    emit layersUpdated(this);
-}
-
-QRectF SLayerManager::getBoundingRectOfSelected() const
-{
-    double xMin{DBL_MAX}, xMax{-DBL_MAX}, yMin{DBL_MAX}, yMax{-DBL_MAX};
-
-    for (auto& iter : mSelectedLayerIterList)
-    {
-        QPolygonF boundingRect = (*iter)->boundingRect();
-
-        foreach (const QPointF& pt, boundingRect)
-        {
-            if (pt.x() < xMin)
-                xMin = pt.x();
-            if (pt.x() > xMax)
-                xMax = pt.x();
-            if (pt.y() < yMin)
-                yMin = pt.y();
-            if (pt.y() > yMax)
-                yMax = pt.y();
-        }
-    }
-
-    return QRectF(QPointF(xMin, yMin), QPointF(xMax, yMax));
-}
-
 void SLayerManager::_sortSelectList()
 {
     std::map<int, list_iterator> sltIterMap;
@@ -509,33 +354,4 @@ void SLayerManager::_reOrderLayerList(list_iterator(*getInsertPos)(SLayerManager
     for (auto& iter : mSelectedLayerIterList)
         mLayerList.erase(iter);
     mSelectedLayerIterList = sltIterTmpList;
-}
-
-std::vector<list_iterator> SLayerManager::_objVecToIterVec(const std::vector<SObject*>& objVec)
-{
-    std::vector<list_iterator> iterVec;
-    iterVec.reserve(objVec.size());
-
-    for (auto& pObj : objVec)
-    {
-        list_iterator iter = std::find(mLayerList.begin(), mLayerList.end(), pObj);
-        Q_ASSERT(iter != mLayerList.end());
-        iterVec.push_back(iter);
-    }
-
-    return iterVec;
-}
-
-std::vector<list_iterator> SLayerManager::_posVecToIterVec(const std::vector<int>& posVec)
-{
-    std::vector<list_iterator> iterVec;
-    iterVec.reserve(posVec.size());
-
-    for (auto& pos : posVec)
-    {
-        Q_ASSERT(pos >= 0 && pos < mLayerList.size());
-        iterVec.push_back(_iterAt(pos));
-    }
-
-    return iterVec;
 }

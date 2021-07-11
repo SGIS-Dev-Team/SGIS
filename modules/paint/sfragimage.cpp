@@ -5,13 +5,13 @@
 #include <ctime>
 
 SFragImage::SFragImage(SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
-    : SObject(PaintObject::Raster, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 }
 
 SFragImage::SFragImage(const SImageStreamMeta& _streamMeta, SFragLoader& _loader, bool _selected, QPointF center, const QString& _layerName, const QString& _layerDiscription, const QColor& _layerColor)
-    : SObject(PaintObject::Raster, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
+    : SObject(PaintObject::FragImageBase, _selected, center, _layerName, _layerDiscription, _layerColor), mFragLoader(_loader)
 {
     _initializeConnections();
 
@@ -74,12 +74,6 @@ void SFragImage::setHistEqFunc(std::shared_ptr<void> pEqFunc[])
 {
     for (auto& mat : mFragMatVec)
         mat.setHistEqFunc(pEqFunc);
-}
-
-void SFragImage::presetBandIndices(int r, int g, int b)
-{
-    for (auto& mat : mFragMatVec)
-        mat.presetBandIndices(r, g, b);
 }
 
 void SFragImage::setBandIndices(int r, int g, int b)
