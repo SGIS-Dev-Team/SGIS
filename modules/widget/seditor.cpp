@@ -362,7 +362,7 @@ void SEditor::updateImageInfo(SLayerManager* which)
 
 void SEditor::fillByImageFilePath(QString strFilePath)
 {
-    if (auto pDataset = (GDALDataset *)GDALOpen(strFilePath.toUtf8().data(), GA_ReadOnly))
+    if (auto pDataset = (GDALDataset*)GDALOpen(strFilePath.toUtf8().data(), GA_ReadOnly))
     {
         fillImageFileInfo(pDataset);
         fillImageLayerInfo(pDataset);
@@ -472,11 +472,11 @@ void SEditor::closeEvent(QCloseEvent* event)
     QMainWindow::closeEvent(event);
 }
 
-bool SEditor::eventFilter(QObject *watched, QEvent *event)
+bool SEditor::eventFilter(QObject* watched, QEvent* event)
 {
     //调色板大小变化
     if (watched == ui->mDockPalleteWidget
-            && event->type() == QEvent::Resize)
+        && event->type() == QEvent::Resize)
     {
         //根据调色板新的大小，重新进行排布布局
         adjustPallete(static_cast<QResizeEvent*>(event)->size());
@@ -514,7 +514,7 @@ void SEditor::initDockPalleteWidget()
 void SEditor::adjustPallete(QSize size)
 {
     //调色板大小变化，重新排布 - 先清空原布局
-    while(mpPaletteLayout->count() != 0)
+    while (mpPaletteLayout->count() != 0)
     {
         if (auto pLayerItem = mpPaletteLayout->takeAt(0))
         {
@@ -523,7 +523,7 @@ void SEditor::adjustPallete(QSize size)
     }
     //根据宽度，计算每行能放置多少个颜色
     auto nColCount = (size.width() / 35);
-    qDebug()<<"ColCount:"<<nColCount;
+    qDebug() << "ColCount:" << nColCount;
     auto nRowCount = (mpPaletteButtons.size() + nColCount - 1) % nColCount;
     for (auto i = 0; i < mpPaletteButtons.size(); i++)
     {
@@ -625,6 +625,7 @@ void SEditor::createWorkspace(const QSize& CanvasSize)
     //设置图层视图
     ui->mLayerView->setDocument(mpCurDoc);
     //设置style窗口对应的layermanager
+    mpStyleWidget = new StyleWidget(ui->mDockStyle);
     mpStyleWidget->SetLayerManager(&(mpCurDoc->getLayerManager()));
-    ui->mDockStyle->setWidget(mpStyleWidget = new StyleWidget());
+    ui->mDockStyle->setWidget(mpStyleWidget);
 }

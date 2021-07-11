@@ -1,5 +1,8 @@
-#include "sstylewidget.h"
+﻿#include "sstylewidget.h"
 #include <QPainter>
+#include "modules/paint/spointfeature.h"
+#include "modules/paint/spolygonfeature.h"
+#include "modules/paint/slinestringfeature.h"
 
 
 StyleWidget::StyleWidget(QWidget* parent) : QWidget(parent)
@@ -274,16 +277,16 @@ void StyleWidget::onSelectStateChanged()
         pSObj =  **begin;
         if (pSObj->getType() == PointFeature)
         {
-            setStyleBrush(pSObj->getBrush());
+            setStyleBrush(dynamic_cast<SPointFeature*>(pSObj)->rBrush());
         }
         if (pSObj->getType() == LineStringFeature)
         {
-            setStylePen(pSObj->getPen());
+            setStylePen(dynamic_cast<SLineStringFeature*>(pSObj)->rPen());
         }
         if (pSObj->getType() == PolygonFeature)
         {
-            setStylePen(pSObj->getPen());
-            setStyleBrush(pSObj->getBrush());
+            setStylePen(dynamic_cast<SPolygonFeature*>(pSObj)->rPen());
+            setStyleBrush(dynamic_cast<SPolygonFeature*>(pSObj)->rBrush());
         }
     }
 
@@ -312,16 +315,16 @@ void StyleWidget::changeComeUp()
         pSObj =  **begin;
         if (pSObj->getType() == PointFeature)
         {
-            setLayerBrush(pSObj->rBrush());
+            setLayerBrush(dynamic_cast<SPointFeature*>(pSObj)->rBrush());
         }
         if (pSObj->getType() == LineStringFeature)
         {
-            setLayerPen(pSObj->rPen());
+            setLayerPen(dynamic_cast<SLineStringFeature*>(pSObj)->rPen());
         }
         if (pSObj->getType() == PolygonFeature)
         {
-            setLayerPen(pSObj->rPen());
-            setLayerBrush(pSObj->rBrush());
+            setLayerPen(dynamic_cast<SPolygonFeature*>(pSObj)->rPen());
+            setLayerBrush(dynamic_cast<SPolygonFeature*>(pSObj)->rBrush());
         }
     }
 

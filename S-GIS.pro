@@ -149,34 +149,34 @@ RESOURCES += \
 # GDAL Config
 
 INCLUDEPATH += \
-    F:\GDAL\x64\include
+    D:/GDAL/release-1928-x64/include
 
 LIBS += \
-    F:\GDAL\x64\lib\Release\gdal_i.lib
+    D:/GDAL/release-1928-x64/lib/gdal_i.lib
 
 # Visual Leak Detector Config
 
-win32:CONFIG(release, debug|release): LIBS += -L'F:\Visual Leak Detector\lib\Win64' -lvld
+win32:CONFIG(release, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 else:win32:CONFIG(debug, debug|release): LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 else:unix: LIBS += -L'C:/Program Files (x86)/Visual Leak Detector/lib/Win64/' -lvld
 
-INCLUDEPATH += 'F:\Visual Leak Detector\include'
+INCLUDEPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
 DEPENDPATH += 'C:/Program Files (x86)/Visual Leak Detector/include'
 
 # LibArchive Config
 
-win32:CONFIG(release, debug|release): LIBS += -LD:\Personal\Desktop\sundry\libarchive\Libarchive-build\lib\Release -larchive
+win32:CONFIG(release, debug|release): LIBS += -LD:/LibArchive/lib/release/ -larchive
 else:win32:CONFIG(debug, debug|release): LIBS += -LD:/LibArchive/lib/debug/ -larchive
-else:unix: LIBS += -LD:/Personal/Desktop/sundry/libarchive/Libarchive-build/lib -larchive
+else:unix: LIBS += -LD:/LibArchive/lib/ -larchive
 
-INCLUDEPATH += D:\Personal\Desktop\sundry\libarchive\Libarchive-build\include
+INCLUDEPATH += D:/LibArchive/include
 DEPENDPATH += D:/LibArchive/include
 
 # OSGEarth Config
 
-win32:CONFIG(release, debug|release): LIBS += -LF:/OSG_Earth-2.10/release/lib/ -losgEarth -losg -losgDB -losgUtil -losgGA -losgViewer -losgText -lOpenThreads -losgEarthFeatures -losgEarthSplat -losgEarthSymbology -losgEarthUtil -losgEarthAnnotation
-else:win32:CONFIG(debug, debug|release): LIBS += -LF:/OSG_Earth-2.10/debug/lib/ -losgEarthd -losgd -losgDBd -losgUtild -losgGAd -losgViewerd -losgTextd -lOpenThreadsd -losgEarthFeaturesd -losgEarthSplatd -losgEarthSymbologyd -losgEarthUtild -losgEarthAnnotationd
-else:unix: LIBS += -LF:/OSG_Earth-2.10/debug/lib/ -losgEarth
+win32:CONFIG(release, debug|release): LIBS += -LD:/OSG_Earth-2.10/release/lib/ -losgEarth -losg -losgDB -losgUtil -losgGA -losgViewer -losgText -lOpenThreads -losgEarthFeatures -losgEarthSplat -losgEarthSymbology -losgEarthUtil -losgEarthAnnotation
+else:win32:CONFIG(debug, debug|release): LIBS += -LD:/OSG_Earth-2.10/debug/lib/ -losgEarthd -losgd -losgDBd -losgUtild -losgGAd -losgViewerd -losgTextd -lOpenThreadsd -losgEarthFeaturesd -losgEarthSplatd -losgEarthSymbologyd -losgEarthUtild -losgEarthAnnotationd
+else:unix: LIBS += -LD:/OSG_Earth-2.10/debug/lib/ -losgEarth
 
-INCLUDEPATH += F:/OSG_Earth-2.10/include
-DEPENDPATH += F:/OSG_Earth-2.10/include
+INCLUDEPATH += D:/OSG_Earth-2.10/include
+DEPENDPATH += D:/OSG_Earth-2.10/include

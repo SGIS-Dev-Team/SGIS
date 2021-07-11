@@ -40,62 +40,62 @@ void QCanvas::paintEvent(QPaintEvent* event)
 
     //-----测试要素绘图开始-----//
 
-    //地理坐标系设置为画布坐标系等同
-    std::shared_ptr<SCoordinate> pGeoRef = std::make_shared<SCoordinate>(0, 0, 1, 1);
+//    //地理坐标系设置为画布坐标系等同
+//    std::shared_ptr<SCoordinate> pGeoRef = std::make_shared<SCoordinate>(0, 0, 1, 1);
 
-    //构建要素
-    std::shared_ptr<SLineStringFeature> pLineString(new SLineStringFeature(true));
-    pLineString->setGeoReference(pGeoRef);
+//    //构建要素
+//    std::shared_ptr<SLineStringFeature> pLineString(new SLineStringFeature(true));
+//    pLineString->setGeoReference(pGeoRef);
 
-    //添加顶点
-    pLineString->beginModifyVertex();
+//    //添加顶点
+//    pLineString->beginModifyVertex();
 
-    //第一条线
-    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{500, 500}, {1000, 800}, {1500, 900}}));
+//    //第一条线
+//    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{500, 500}, {1000, 800}, {1500, 900}}));
 
-    //第二条线
-    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{3000, 500}, {3000, 900}, {2000, 900}}));
+//    //第二条线
+//    pLineString->getGeoPoints().push_back(std::vector<QPointF>({{3000, 500}, {3000, 900}, {2000, 900}}));
 
-    //结束添加
-    pLineString->endModifyVertex();
+//    //结束添加
+//    pLineString->endModifyVertex();
 
-    //设置要素样式
-    pLineString->rPen().setWidth(20);
-    pLineString->rPen().setStyle(Qt::PenStyle::DashLine);
-    pLineString->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
-    pLineString->rPen().setColor(mpDrawColor);
-    pLineString->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+//    //设置要素样式
+//    pLineString->rPen().setWidth(20);
+//    pLineString->rPen().setStyle(Qt::PenStyle::DashLine);
+//    pLineString->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+//    pLineString->rPen().setColor(mpDrawColor);
+//    pLineString->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
 
-    //绘图
-    pLineString->paint(painter, true, mViewArea, mdScale, mTrigger);
+//    //绘图
+//    pLineString->paint(painter, true, mViewArea, mdScale, mTrigger);
 
 
-    std::shared_ptr<SPointFeature>  pPointFeature(new SPointFeature(true));
-    pPointFeature->setGeoReference(pGeoRef);
-    pPointFeature->addPoint(QPointF(qrand() %200, 200));
-    pPointFeature->addPoint(QPointF(qrand() %220, 400));
-    pPointFeature->addPoint(QPointF(qrand() %230, 300));
-    //设置要素样式
-    pPointFeature->rPen().setWidth(20);
-    pPointFeature->rPen().setStyle(Qt::PenStyle::DashLine);
-    pPointFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
-    pPointFeature->rPen().setColor(mpDrawColor);
-    pPointFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
-    pPointFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
+//    std::shared_ptr<SPointFeature>  pPointFeature(new SPointFeature(true));
+//    pPointFeature->setGeoReference(pGeoRef);
+//    pPointFeature->addPoint(QPointF(qrand() %200, 200));
+//    pPointFeature->addPoint(QPointF(qrand() %220, 400));
+//    pPointFeature->addPoint(QPointF(qrand() %230, 300));
+//    //设置要素样式
+//    pPointFeature->rPen().setWidth(20);
+//    pPointFeature->rPen().setStyle(Qt::PenStyle::DashLine);
+//    pPointFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+//    pPointFeature->rPen().setColor(mpDrawColor);
+//    pPointFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+//    pPointFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
 
-    //
-    auto  pPolygonFeature = std::make_shared<SPolygonFeature>(true);
-    pPolygonFeature->setGeoReference(pGeoRef);
-    pPolygonFeature->addPoint(QPointF(qrand() %200, 200));
-    pPolygonFeature->addPoint(QPointF(qrand() %300, qrand() % 400));
-    pPolygonFeature->addPoint(QPointF(500, 150));
-    //设置要素样式
-    pPolygonFeature->rPen().setWidth(20);
-    pPolygonFeature->rPen().setStyle(Qt::PenStyle::DashLine);
-    pPolygonFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
-    pPolygonFeature->rPen().setColor(mpDrawColor);
-    pPolygonFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
-    pPolygonFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
+//    //
+//    auto  pPolygonFeature = std::make_shared<SPolygonFeature>(true);
+//    pPolygonFeature->setGeoReference(pGeoRef);
+//    pPolygonFeature->addPoint(QPointF(qrand() %200, 200));
+//    pPolygonFeature->addPoint(QPointF(qrand() %300, qrand() % 400));
+//    pPolygonFeature->addPoint(QPointF(500, 150));
+//    //设置要素样式
+//    pPolygonFeature->rPen().setWidth(20);
+//    pPolygonFeature->rPen().setStyle(Qt::PenStyle::DashLine);
+//    pPolygonFeature->rPen().setCapStyle(Qt::PenCapStyle::RoundCap);
+//    pPolygonFeature->rPen().setColor(mpDrawColor);
+//    pPolygonFeature->rPen().setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+//    pPolygonFeature->paint(painter, true, mViewArea, mdScale, mTrigger);
     //-----测试要素绘图结束-----//
 
 

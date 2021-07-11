@@ -1,4 +1,4 @@
-#ifndef STYLEWIDGET_H
+﻿#ifndef STYLEWIDGET_H
 #define STYLEWIDGET_H
 
 #include <QWidget>
