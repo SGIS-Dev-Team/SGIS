@@ -98,7 +98,7 @@ void SEditor::onActionLoadFragmentsTriggered()
 
     pFragImg->setCenterPoint(QPointF((DEFAULT_CANVAS_SIZE / 2).width(), (DEFAULT_CANVAS_SIZE / 2).height()));
 
-    pFragImg->setBandIndices(1, 2, 3);
+    pFragImg->presetBandIndices(1, 2, 3);
 
     pFragImg->setHoldTopPyramidEnabled(true);
 
@@ -113,7 +113,7 @@ void SEditor::onActionImportRasterTriggered()
     if (!mpImportDialog)
     {
         mpImportDialog = new QDataImportWizard();
-        _connectDataImportWizard();
+        _connectRasterImportWizard();
     }
 
     if (mpImportDialog->isEmpty())
@@ -137,14 +137,14 @@ void SEditor::onImportingRaster()
     mpCurDoc->getLayerManager().clearSelection();
 
     auto& streamMetaVec = mpImportDialog->getStreamMetaVec();
-    for (auto& pStreamMeta : streamMetaVec)
+    for (auto it = streamMetaVec.rbegin(); it != streamMetaVec.rend(); ++it)
     {
-        SImageStreamMeta& streamMeta = *pStreamMeta;
+        SImageStreamMeta& streamMeta = *(*it);
 
         if (streamMeta.isImported())
             continue;
 
-        SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader());
+        SFragImage* pFragImg = new SFragImage(streamMeta, mpCurDoc->getFragLoader(), true);
 
         //更新坐标映射
         if (mpCurDoc->getCoordinate().isEmpty())
@@ -154,7 +154,6 @@ void SEditor::onImportingRaster()
             double nWidth = SImage::getMetaOf(pFragImg->getLargestImgPath()).width();
             double nHeight = SImage::getMetaOf(pFragImg->getLargestImgPath()).height();
             QString proRef = SImage::getMetaOf(pFragImg->getLargestImgPath()).projRef();
-
 
             mpCurDoc->getCoordinate() = SCoordinate(pFragImg->centerPoint(), QPointF(geoTrans[0] + geoTrans[1] * nWidth / 2, geoTrans[3] + geoTrans[5] * nHeight / 2), geoTrans[1], geoTrans[5], proRef);
             if (geoTrans != nullptr)
@@ -188,7 +187,7 @@ void SEditor::onImportingRaster()
 
         //强制加载ImageMeta
         streamMeta.imageMeta();
-        pFragImg->setBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
+        pFragImg->presetBandIndices(streamMeta.getRedBandIndex(), streamMeta.getGreenBandIndex(), streamMeta.getBlueBandIndex());
 
         pFragImg->setHoldTopPyramidEnabled(true);
 
@@ -218,6 +217,21 @@ void SEditor::onActionImportShapeFileTriggered()
     {
         SReadShp reader(filePath);
     }
+}
+
+void SEditor::onLayerViewFitToArea(const QRectF& rect)
+{
+    mpCurCanvasArea->ensureVisible(rect);
+}
+
+void SEditor::onLayerViewImportRaster()
+{
+    mpImportDialog->show();
+}
+
+void SEditor::onLayerViewImportShapeFile()
+{
+
 }
 
 void SEditor::onActionBringForwardTriggered()
@@ -396,13 +410,19 @@ void SEditor::_initializeConnections()
     connect(ui->mActionDistributeHorizentally, &QAction::triggered, this, &SEditor::onActionDistributeHorizentallyTriggered);
     connect(ui->mActionDistributeVertically, &QAction::triggered, this, &SEditor::onActionDistributeVerticallyTriggered);
 
-    if (mpImportDialog) _connectDataImportWizard();
+    if (mpImportDialog) _connectRasterImportWizard();
+
 }
 
-void SEditor::_connectDataImportWizard()
+void SEditor::_connectRasterImportWizard()
 {
     //数据导入向导对话框事件响应
     connect(this->mpImportDialog, &QDataImportWizard::importingData, this, &SEditor::onImportingRaster);
+}
+
+void SEditor::_connectLayerView()
+{
+    connect(ui->mLayerView, &QLayerView::fitViewToArea, this, &SEditor::onLayerViewFitToArea);
 }
 
 void SEditor::createWorkspace(const QSize& CanvasSize)

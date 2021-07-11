@@ -8,10 +8,10 @@ class SFragMatrix
 {
     /*-----构造函数与析构函数-----*/
 public:
-    explicit SFragMatrix(size_t _rows, size_t _cols, const QString &_dataPath);
-    explicit SFragMatrix(const QString &_dataPath);
-    explicit SFragMatrix(size_t _rows, size_t _cols, SImage *_data, size_t _count);
-    explicit SFragMatrix(size_t _rows, size_t _cols, std::vector<SImage> &_data);
+    explicit SFragMatrix(size_t _rows, size_t _cols, const QString& _dataPath);
+    explicit SFragMatrix(const QString& _dataPath);
+    explicit SFragMatrix(size_t _rows, size_t _cols, SImage* _data, size_t _count);
+    explicit SFragMatrix(size_t _rows, size_t _cols, std::vector<SImage>& _data);
     explicit SFragMatrix(size_t _rows, size_t _cols);
     //拷贝构造函数
     SFragMatrix(const SFragMatrix& mat);
@@ -23,7 +23,7 @@ public:
     /*-----成员变量-----*/
 private:
     //数据
-    SImage *data{nullptr};
+    SImage* data{nullptr};
     //金字塔图像路径
     QString strLevelPath{};
     //行列数
@@ -49,19 +49,19 @@ private:
 public:
     //[访问函数]
     //重载括号运算符
-    inline SImage &operator()(size_t row, size_t col);
+    inline SImage& operator()(size_t row, size_t col);
     //取出矩阵分块
     std::vector<SImage*> block(size_t begin_row, size_t row_span, size_t begin_col, size_t col_span)const;
     //取出矩阵分块区域，使用中心坐标系
     std::vector<SImage*> block(QRectF rect)const;
     //加载区域内的对象
-    void loadBlockArea(const QRectF &rect, SFragLoader &loader)const;
+    void loadBlockArea(const QRectF& rect, SFragLoader& loader)const;
     //获取数据
-    inline SImage *getData()const;
+    inline SImage* getData()const;
     //是否为空
     inline bool isEmpty()const;
     //获取金字塔图像路径
-    inline const QString &getLevelPath()const;
+    inline const QString& getLevelPath()const;
 
     //元数据
     inline size_t Rows()const;
@@ -86,15 +86,18 @@ public:
     void loadAll()const;
     //设置均衡化函数
     void setHistEqFunc(std::shared_ptr<void> pEqFunc[]);
+    //预设置波段
+    void presetBandIndices(int r, int g, int b);
     //设置波段
     void setBandIndices(int r, int g, int b);
+
     //设置金字塔图像路径
-    void setLevelPath(const QString &path);
+    void setLevelPath(const QString& path);
 
     //[功能函数]
 public:
     //在中心坐标系下的逻辑绘图区域绘图
-    void paint(QPainter &painter, const QRectF &viewLgcArea_centered = QRectF())const;
+    void paint(QPainter& painter, const QRectF& viewLgcArea_centered = QRectF())const;
 
 private:
     //根据元数据计算第row行第col列的分片影像的中心坐标(金字塔对应原图像的)
@@ -111,13 +114,13 @@ private:
 
 };
 
-SImage &SFragMatrix::operator()(size_t row, size_t col)
+SImage& SFragMatrix::operator()(size_t row, size_t col)
 {
     Q_ASSERT(row < rows && col < cols);
     return data[row * cols + col];
 }
 
-SImage *SFragMatrix::getData() const
+SImage* SFragMatrix::getData() const
 {
     return data;
 }
@@ -168,11 +171,11 @@ void SFragMatrix::_reAllocAll()
     this->data = new SImage[rows * cols];
 }
 
-void SFragMatrix::_initializeWith(const SFragMatrix &mat)
+void SFragMatrix::_initializeWith(const SFragMatrix& mat)
 {
     _reAllocAll(mat.rows, mat.cols);
 
-    for(size_t i = 0; i < rows * cols; ++i)
+    for (size_t i = 0; i < rows * cols; ++i)
         data[i] = mat.data[i];
 
     setLevelMeta(mat.originalWidth, mat.originalHeight, mat.levelWidth, mat.levelHeight, mat.fragWidth, mat.fragHeight);
@@ -183,7 +186,7 @@ bool SFragMatrix::isEmpty()const
     return rows * cols == 0 ? true : false;
 }
 
-const QString &SFragMatrix::getLevelPath() const
+const QString& SFragMatrix::getLevelPath() const
 {
     return strLevelPath;
 }

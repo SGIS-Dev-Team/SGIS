@@ -72,7 +72,8 @@ void SDocument::paint(QPainter& painter, const QRectF& viewArea, double scaleVal
     std::list<list_iterator> selectedLayerIterList = mLayerMgr.getSelectedLayerIterList();
     painter.setRenderHint(QPainter::Antialiasing);
     for (auto& iter : selectedLayerIterList)
-        (*iter)->paintBoundRect(painter, scaleValue);
+        if ((*iter)->isVisible())
+            (*iter)->paintBoundRect(painter, scaleValue);
 
 }
 
