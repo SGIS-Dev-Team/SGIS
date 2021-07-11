@@ -85,7 +85,7 @@ enum PaintObject
     TextBase,
     BrushBase,
     ImageBase,
-    Raster,
+    FragImageBase,
     FeatureBase,
     PointFeature,
     LineStringFeature,

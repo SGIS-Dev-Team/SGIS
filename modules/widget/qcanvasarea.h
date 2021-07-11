@@ -16,9 +16,9 @@ class QCanvasArea : public QScrollArea
     /*-----构造函数与析构函数-----*/
 public:
     //指定画布尺寸创建新绘图区
-    explicit QCanvasArea(const QSize& CanvasSize, QWidget* parent = Q_NULLPTR);
+    explicit QCanvasArea(const QSize& CanvasSize, QWidget *parent = Q_NULLPTR);
     //使用默认尺寸创建新绘图区
-    explicit QCanvasArea(QWidget* parent = Q_NULLPTR);
+    explicit QCanvasArea(QWidget *parent = Q_NULLPTR);
     virtual ~QCanvasArea();
 
     /*-----虚函数重载-----*/
@@ -40,20 +40,18 @@ private slots:
     /*-----成员变量-----*/
 private:
     //画布
-    QCanvas* mpCanvas{};
+    QCanvas *mpCanvas{};
     //画布尺寸
     QSize mCanvasSize{};
 
     /*-----成员函数-----*/
 public:
     //[访问函数]
-    QCanvas* canvas()const;
+    QCanvas * canvas()const;
     //获取视图区逻辑坐标矩形
     QRectF viewArea()const;
 
     //[功能函数]
-    void ensureVisible(const QRectF& rect);
-
 private:
     void _initialize();
 };
